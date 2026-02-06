@@ -1,0 +1,176 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Mes offres - NoVas Jobs{% endblock %}
+
+{% block body %}
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center glow-primary">
+                <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+            </div>
+            <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
+        </a>
+        
+        <div class="hidden md:flex items-center gap-8">
+            <a href="{{ path('app_jobs_index') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Jobs</a>
+            <a href="{{ path('app_jobs_mes_offres') }}" class="text-sm text-primary font-medium">Mes offres</a>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <a href="{{ path('app_jobs_ajouter') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
+                <i data-lucide="plus" class="w-4 h-4 inline mr-1"></i>
+                Nouvelle offre
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- Content -->
+<section class="relative pt-32 pb-16 min-h-screen">
+    <div class="absolute inset-0 gradient-orb"></div>
+    <div class="absolute top-0 left-1/4 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[120px]"></div>
+    
+    <div class="relative max-w-6xl mx-auto px-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+                <h1 class="font-serif text-3xl font-medium mb-2">Mes <span class="italic text-primary">offres</span></h1>
+                <p class="text-muted-foreground">Gérez vos opportunités et suivez les candidatures.</p>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="flex p-1 rounded-xl bg-white/5 border border-white/10">
+                <button class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium">Actives</button>
+                <button class="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground transition">Pourvues</button>
+                <button class="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground transition">Archivées</button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <i data-lucide="briefcase" class="w-5 h-5 text-primary"></i>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold">{{ stats.total }}</p>
+                        <p class="text-xs text-muted-foreground">Offres publiées</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                        <i data-lucide="activity" class="w-5 h-5 text-accent"></i>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-accent">{{ stats.actives }}</p>
+                        <p class="text-xs text-muted-foreground">Actives</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <i data-lucide="users" class="w-5 h-5 text-primary"></i>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold">{{ stats.candidatures }}</p>
+                        <p class="text-xs text-muted-foreground">Candidatures</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                        <i data-lucide="check-circle" class="w-5 h-5 text-accent"></i>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-accent">{{ stats.pourvues }}</p>
+                        <p class="text-xs text-muted-foreground">Pourvues</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jobs List -->
+        <div class="space-y-4">
+            {% for job in jobs %}
+            <div class="glass-card rounded-2xl p-6 hover:border-primary/30 transition-all group">
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <!-- Info -->
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex items-center gap-3">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium 
+                                    {% if job.statut == 'active' %}bg-accent/20 text-accent
+                                    {% elseif job.statut == 'pourvue' %}bg-primary/20 text-primary
+                                    {% else %}bg-white/10 text-muted-foreground{% endif %}">
+                                    {{ job.statut|capitalize }}
+                                </span>
+                                <span class="text-xs text-muted-foreground">Publié le {{ job.datePublication|date('d/m/Y') }}</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xl font-bold text-primary">{{ job.remuneration }}€</p>
+                                <p class="text-xs text-muted-foreground">/heure</p>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold mb-2">{{ job.titre }}</h3>
+                        <p class="text-sm text-muted-foreground mb-4 line-clamp-2">{{ job.description }}</p>
+                        
+                        <div class="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="map-pin" class="w-4 h-4"></i>
+                                {{ job.localisation }}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="clock" class="w-4 h-4"></i>
+                                {{ job.duree }}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="users" class="w-4 h-4"></i>
+                                {{ job.nbCandidatures }} candidature(s)
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex lg:flex-col gap-2 lg:border-l lg:border-white/10 lg:pl-6">
+                        <a href="{{ path('app_jobs_candidatures', {'id': job.id}) }}" 
+                           class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition text-sm font-medium">
+                            <i data-lucide="users" class="w-4 h-4"></i>
+                            Candidatures
+                        </a>
+                        <a href="{{ path('app_jobs_modifier', {'id': job.id}) }}" 
+                           class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/20 hover:bg-white/5 transition text-sm">
+                            <i data-lucide="edit" class="w-4 h-4"></i>
+                            Modifier
+                        </a>
+                        <button onclick="if(confirm('Supprimer cette offre ?')) window.location.href='{{ path('app_jobs_supprimer', {'id': job.id}) }}'" 
+                                class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition text-sm">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            Supprimer
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-16 glass-card rounded-2xl">
+                <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="inbox" class="w-8 h-8 text-primary"></i>
+                </div>
+                <h3 class="font-semibold mb-2">Aucune offre publiée</h3>
+                <p class="text-muted-foreground mb-6">Commencez par créer votre première opportunité.</p>
+                <a href="{{ path('app_jobs_ajouter') }}" class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-medium hover:bg-primary/90 transition">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    Créer une offre
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

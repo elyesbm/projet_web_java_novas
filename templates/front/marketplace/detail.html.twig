@@ -1,0 +1,178 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}{{ article.titre }} - EduVie Marketplace{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="{{ path('app_marketplace_index') }}" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                <span class="text-sm">Retour au catalogue</span>
+            </a>
+            
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="pt-32 pb-24 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- Left - Images -->
+                <div class="space-y-4">
+                    <div class="glass-card rounded-3xl p-4">
+                        <div class="aspect-square rounded-2xl overflow-hidden">
+                            <img id="mainImage" src="{{ asset('images/' ~ article.image) }}" alt="{{ article.titre }}" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    
+                    <!-- Thumbnails -->
+                    <div class="flex gap-3">
+                        {% for img in article.images %}
+                        <button onclick="document.getElementById('mainImage').src = '{{ asset('images/' ~ img) }}'" class="w-20 h-20 rounded-xl overflow-hidden border-2 border-transparent hover:border-primary transition-all">
+                            <img src="{{ asset('images/' ~ img) }}" class="w-full h-full object-cover">
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Right - Details & Purchase -->
+                <div class="space-y-6">
+                    <!-- Header -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ article.type == 'academic' ? 'bg-academic/20 text-academic' : 'bg-personal/20 text-personal' }}">
+                                {{ article.type == 'academic' ? 'Academic' : 'Personal' }}
+                            </span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-secondary text-muted-foreground">
+                                {{ article.categorie.nom }}
+                            </span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                                {{ article.statut }}
+                            </span>
+                        </div>
+                        
+                        <h1 class="font-serif text-3xl md:text-4xl font-medium mb-4">{{ article.titre }}</h1>
+                        
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="flex items-center gap-2">
+                                <img src="{{ asset('images/' ~ article.vendeur.avatar) }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30">
+                                <div>
+                                    <p class="font-medium">{{ article.vendeur.nom }}</p>
+                                    <p class="text-xs text-muted-foreground">{{ article.vendeur.niveau }}</p>
+                                </div>
+                            </div>
+                            <div class="h-8 w-px bg-white/10"></div>
+                            <div class="flex items-center gap-1 text-sm text-muted-foreground">
+                                <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                                <span class="font-medium text-foreground">{{ article.vendeur.note }}</span>
+                                <span>({{ article.vendeur.annonces }} annonces)</span>
+                            </div>
+                        </div>
+                        
+                        <p class="font-serif text-4xl font-bold text-primary mb-2">{{ article.prix }} €</p>
+                        <p class="text-sm text-muted-foreground">Prix negociable</p>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="glass-card rounded-2xl p-6">
+                        <h3 class="font-medium mb-3">Description</h3>
+                        <p class="text-muted-foreground leading-relaxed whitespace-pre-line">{{ article.contenu }}</p>
+                    </div>
+
+                    <!-- Purchase Form -->
+                    <div class="glass-card rounded-3xl p-6 border border-primary/30">
+                        <h3 class="font-serif text-xl font-medium mb-4 flex items-center gap-2">
+                            <i data-lucide="shopping-cart" class="w-5 h-5 text-primary"></i>
+                            Formulaire d'achat
+                        </h3>
+                        
+                        <form method="post" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Prenom</label>
+                                    <input type="text" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="Jean">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Nom</label>
+                                    <input type="text" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="Dupont">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-muted-foreground">Email universitaire</label>
+                                <input type="email" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="jean.dupont@univ.fr">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-muted-foreground">Telephone</label>
+                                <input type="tel" class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="06 12 34 56 78">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-muted-foreground">Message au vendeur (optionnel)</label>
+                                <textarea rows="3" class="w-full bg-secondary border border-white/10 rounded-xl p-4 focus:outline-none focus:border-primary transition-all resize-none" placeholder="Bonjour, je suis interesse par votre article..."></textarea>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 p-4 bg-secondary/50 rounded-xl">
+                                <input type="checkbox" required class="w-5 h-5 rounded border-white/10 bg-secondary text-primary focus:ring-primary">
+                                <span class="text-sm text-muted-foreground">Je confirme etre etudiant et avoir lu les <a href="#" class="text-primary hover:underline">conditions de vente</a></span>
+                            </div>
+                            
+                            <button type="submit" class="w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
+                                <i data-lucide="credit-card" class="w-5 h-5"></i>
+                                Contacter le vendeur
+                            </button>
+                            
+                            <p class="text-center text-xs text-muted-foreground">
+                                Le paiement se fait en main propre sur le campus
+                            </p>
+                        </form>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="flex items-center justify-between text-sm text-muted-foreground">
+                        <span class="flex items-center gap-2">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                            {{ article.vues }} vues
+                        </span>
+                        <span class="flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4"></i>
+                            Publie le {{ article.date|date('d M Y') }}
+                        </span>
+                        <button class="flex items-center gap-2 hover:text-primary transition-colors">
+                            <i data-lucide="flag" class="w-4 h-4"></i>
+                            Signaler
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Similar Articles -->
+            <section class="mt-16">
+                <h2 class="font-serif text-2xl font-medium mb-6">Articles similaires</h2>
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for sim in articles_similaires %}
+                    <a href="{{ path('app_marketplace_detail', {id: sim.id}) }}" class="glass-card rounded-2xl overflow-hidden hover:border-primary/30 transition-all group">
+                        <div class="h-40 overflow-hidden">
+                            <img src="{{ asset('images/' ~ sim.image) }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-medium mb-2 group-hover:text-primary transition-colors">{{ sim.titre }}</h3>
+                            <p class="font-serif text-xl font-bold text-primary">{{ sim.prix }} €</p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,605 @@
+{# templates/home/index.html.twig #}
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}NoVas - Votre Parcours Etudiant{% endblock %}
+
+{% block body %}
+<!-- Navigation -->
+<nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-border/30">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+            <!-- Logo -->
+            <!-- Logo -->
+            <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
+                <img src="{{ asset('images/logo.png') }}" alt="EduVie" class="h-10 w-auto">
+                <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#about" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">A propos</a>
+                <a href="#success-stories" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Success Stories</a>
+                <a href="#features" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Fonctionnalites</a>
+            </div>
+
+            <!-- Auth Buttons -->
+            <div class="flex items-center gap-4">
+                <button onclick="openLoginModal()" class="hidden sm:inline-flex items-center justify-center rounded-xl text-sm font-medium text-foreground hover:text-primary transition-colors h-10 px-4">
+                    Se connecter
+                </button>
+                <button onclick="openRegisterModal()" class="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-6 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all hover:-translate-y-0.5">
+                    Creer un compte
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="relative min-h-screen flex items-center pt-20 overflow-hidden">
+    <!-- Background Elements -->
+    <div class="absolute inset-0 -z-10">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-academic/10 rounded-full blur-3xl animate-pulse-slow delay-300"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-personal/5 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20">
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
+            <!-- Left Content -->
+            <div class="space-y-8 animate-slide-up">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
+                    <i data-lucide="sparkles" class="h-4 w-4 text-primary"></i>
+                    <span class="text-sm font-medium text-primary">Plateforme educative innovante</span>
+                </div>
+
+                <h1 class="font-serif text-5xl md:text-6xl lg:text-7xl font-medium leading-tight">
+                    Developpez votre <br>
+                    <span class="italic gradient-text">potentiel unique</span>
+                </h1>
+
+                <p class="text-lg text-muted-foreground max-w-xl leading-relaxed">
+                    NoVas accompagne les etudiants dans leur developpement academique et personnel. 
+                    Decouvrez des parcours sur mesure, des ateliers interactifs et une communaute bienveillante.
+                </p>
+
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="openRegisterModal()" class="group inline-flex items-center justify-center rounded-2xl text-base font-medium bg-primary text-primary-foreground h-14 px-8 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all hover:-translate-y-1">
+                        Commencer gratuitement
+                        <i data-lucide="arrow-right" class="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                    <button onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'})" class="inline-flex items-center justify-center rounded-2xl text-base font-medium border-2 border-border hover:border-primary/50 hover:bg-primary/5 h-14 px-8 transition-all">
+                        En savoir plus
+                    </button>
+                </div>
+
+                <!-- Stats -->
+                <div class="flex gap-8 pt-8 border-t border-border/50">
+                    <div>
+                        <p class="font-serif text-3xl font-bold text-primary">2,500+</p>
+                        <p class="text-sm text-muted-foreground">Etudiants actifs</p>
+                    </div>
+                    <div>
+                        <p class="font-serif text-3xl font-bold text-academic">150+</p>
+                        <p class="text-sm text-muted-foreground">Parcours disponibles</p>
+                    </div>
+                    <div>
+                        <p class="font-serif text-3xl font-bold text-personal">98%</p>
+                        <p class="text-sm text-muted-foreground">Taux de satisfaction</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Content - Hero Image -->
+            <div class="relative animate-slide-up delay-200">
+                <div class="relative">
+                    <!-- Main Image -->
+                    <div class="relative rounded-3xl overflow-hidden shadow-2xl shadow-primary/20">
+                        <img src="{{ asset('images/hero-students.jpg') }}" alt="Etudiants" class="w-full h-[600px] object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent"></div>
+                    </div>
+
+                    <!-- Floating Cards -->
+                    <div class="absolute -left-8 top-1/4 glass rounded-2xl p-4 shadow-xl animate-float">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl bg-academic/20 flex items-center justify-center">
+                                <i data-lucide="book-open" class="h-6 w-6 text-academic"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-foreground">+500</p>
+                                <p class="text-xs text-muted-foreground">Cours disponibles</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="absolute -right-4 bottom-1/4 glass rounded-2xl p-4 shadow-xl animate-float delay-300">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl bg-personal/20 flex items-center justify-center">
+                                <i data-lucide="users" class="h-6 w-6 text-personal"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-foreground">Communaute</p>
+                                <p class="text-xs text-muted-foreground">5,000+ membres</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="absolute left-1/4 -bottom-6 glass rounded-2xl p-4 shadow-xl animate-float delay-500">
+                        <div class="flex items-center gap-2">
+                            <div class="flex -space-x-2">
+                                <img src="{{ asset('images/student-avatar.jpg') }}" class="w-8 h-8 rounded-full border-2 border-card object-cover">
+                                <img src="{{ asset('images/student-avatar.jpg') }}" class="w-8 h-8 rounded-full border-2 border-card object-cover">
+                                <img src="{{ asset('images/student-avatar.jpg') }}" class="w-8 h-8 rounded-full border-2 border-card object-cover">
+                            </div>
+                            <span class="text-sm font-medium text-foreground">Rejoignez-les!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="py-24 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="text-center mb-16 animate-slide-up">
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 rounded-full text-sm font-medium text-accent mb-6">
+                <i data-lucide="info" class="h-4 w-4"></i>
+                A propos de nous
+            </span>
+            <h2 class="font-serif text-4xl md:text-5xl font-medium mb-6">
+                Pourquoi choisir <span class="italic text-primary">NoVas</span> ?
+            </h2>
+            <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Nous croyons que chaque etudiant merite un accompagnement personnalise pour reussir 
+                tant sur le plan academique que personnel.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="group p-8 rounded-3xl bg-card border border-border/50 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-2 animate-slide-up delay-100">
+                <div class="w-16 h-16 rounded-2xl bg-academic/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i data-lucide="graduation-cap" class="h-8 w-8 text-academic"></i>
+                </div>
+                <h3 class="font-serif text-xl font-semibold mb-3">Academique</h3>
+                <p class="text-muted-foreground leading-relaxed">
+                    Des parcours structures dans divers domaines : informatique, sciences, lettres, 
+                    avec des ressources de qualite et des exercices pratiques.
+                </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="group p-8 rounded-3xl bg-card border border-border/50 hover:border-personal/30 hover:shadow-2xl hover:shadow-personal/10 transition-all duration-500 hover:-translate-y-2 animate-slide-up delay-200">
+                <div class="w-16 h-16 rounded-2xl bg-personal/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i data-lucide="heart" class="h-8 w-8 text-personal"></i>
+                </div>
+                <h3 class="font-serif text-xl font-semibold mb-3">Personnel</h3>
+                <p class="text-muted-foreground leading-relaxed">
+                    Developpez vos soft skills : communication, leadership, gestion du stress, 
+                    creativite, pour devenir la meilleure version de vous-meme.
+                </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="group p-8 rounded-3xl bg-card border border-border/50 hover:border-accent/30 hover:shadow-2xl hover:shadow-accent/10 transition-all duration-500 hover:-translate-y-2 animate-slide-up delay-300">
+                <div class="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i data-lucide="users" class="h-8 w-8 text-accent"></i>
+                </div>
+                <h3 class="font-serif text-xl font-semibold mb-3">Communautaire</h3>
+                <p class="text-muted-foreground leading-relaxed">
+                    Echangez avec des milliers d'etudiants, participez a des ateliers, 
+                    trouvez des partenaires d'etude et elargissez votre reseau.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Success Stories Section -->
+<section id="success-stories" class="py-24 bg-card relative overflow-hidden">
+    <!-- Decorative elements -->
+    <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+    <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+    
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-sm font-medium text-primary mb-6">
+                <i data-lucide="trophy" class="h-4 w-4"></i>
+                Success Stories
+            </span>
+            <h2 class="font-serif text-4xl md:text-5xl font-medium mb-6">
+                Ils ont transforme leur <br>
+                <span class="italic text-primary">parcours avec NoVas</span>
+            </h2>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Story 1 -->
+            <div class="group relative">
+                <div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-academic/20 rounded-3xl transform rotate-2 group-hover:rotate-3 transition-transform"></div>
+                <div class="relative bg-card p-8 rounded-3xl border border-border/50 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                    <div class="flex items-center gap-1 mb-4">
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                    </div>
+                    
+                    <p class="text-foreground mb-6 leading-relaxed italic">
+                        "Grace a NoVas, j'ai pu obtenir mon premier stage en developpement web tout en ameliorant ma confiance en moi. Les ateliers de prise de parole ont ete transformateurs !"
+                    </p>
+                    
+                    <div class="flex items-center gap-4">
+                        <img src="{{ asset('images/student-avatar.jpg') }}" alt="Marie" class="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary/20">
+                        <div>
+                            <p class="font-semibold text-foreground">Marie Dubois</p>
+                            <p class="text-sm text-muted-foreground">L3 Informatique - Stage chez Google</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-6 border-t border-border/50">
+                        <div class="flex items-center gap-2 text-sm text-academic">
+                            <i data-lucide="trending-up" class="h-4 w-4"></i>
+                            <span>+85% en competences techniques</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Story 2 -->
+            <div class="group relative mt-8 md:mt-0">
+                <div class="absolute inset-0 bg-gradient-to-br from-personal/20 to-accent/20 rounded-3xl transform -rotate-1 group-hover:-rotate-2 transition-transform"></div>
+                <div class="relative bg-card p-8 rounded-3xl border border-border/50 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                    <div class="flex items-center gap-1 mb-4">
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                    </div>
+                    
+                    <p class="text-foreground mb-6 leading-relaxed italic">
+                        "J'ai decouvert ma passion pour le leadership grace au parcours personnel. Aujourd'hui, je suis presidente du bureau des etudiants et j'organise des evenements pour 500+ personnes."
+                    </p>
+                    
+                    <div class="flex items-center gap-4">
+                        <img src="{{ asset('images/student-avatar.jpg') }}" alt="Thomas" class="w-14 h-14 rounded-2xl object-cover ring-2 ring-personal/20">
+                        <div>
+                            <p class="font-semibold text-foreground">Thomas Bernard</p>
+                            <p class="text-sm text-muted-foreground">M1 Management - President BDE</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-6 border-t border-border/50">
+                        <div class="flex items-center gap-2 text-sm text-personal">
+                            <i data-lucide="award" class="h-4 w-4"></i>
+                            <span>Leadership reconnu par l'universite</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Story 3 -->
+            <div class="group relative">
+                <div class="absolute inset-0 bg-gradient-to-br from-accent/20 to-primary/20 rounded-3xl transform rotate-1 group-hover:rotate-2 transition-transform"></div>
+                <div class="relative bg-card p-8 rounded-3xl border border-border/50 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                    <div class="flex items-center gap-1 mb-4">
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                        <i data-lucide="star" class="h-5 w-5 text-personal fill-personal"></i>
+                    </div>
+                    
+                    <p class="text-foreground mb-6 leading-relaxed italic">
+                        "Le double accompagnement academique et personnel m'a permis de reussir ma these tout en gardant un equilibre de vie. Je recommande NoVas a tous les doctorants !"
+                    </p>
+                    
+                    <div class="flex items-center gap-4">
+                        <img src="{{ asset('images/student-avatar.jpg') }}" alt="Sarah" class="w-14 h-14 rounded-2xl object-cover ring-2 ring-accent/20">
+                        <div>
+                            <p class="font-semibold text-foreground">Dr. Sarah Chen</p>
+                            <p class="text-sm text-muted-foreground">Doctorante - Chercheuse en IA</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-6 border-t border-border/50">
+                        <div class="flex items-center gap-2 text-sm text-accent-foreground">
+                            <i data-lucide="book-open" class="h-4 w-4"></i>
+                            <span>These publiee dans Nature</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Banner -->
+        <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 p-8 rounded-3xl bg-gradient-to-r from-primary/5 via-academic/5 to-personal/5 border border-border/50">
+            <div class="text-center">
+                <p class="font-serif text-4xl font-bold text-primary">10K+</p>
+                <p class="text-sm text-muted-foreground mt-1">Etudiants inscrits</p>
+            </div>
+            <div class="text-center">
+                <p class="font-serif text-4xl font-bold text-academic">500+</p>
+                <p class="text-sm text-muted-foreground mt-1">Parcours completes</p>
+            </div>
+            <div class="text-center">
+                <p class="font-serif text-4xl font-bold text-personal">50+</p>
+                <p class="text-sm text-muted-foreground mt-1">Partenaires entreprises</p>
+            </div>
+            <div class="text-center">
+                <p class="font-serif text-4xl font-bold text-accent-foreground">4.9/5</p>
+                <p class="text-sm text-muted-foreground mt-1">Note moyenne</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-24 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-academic/10"></div>
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-personal/20 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-academic/20 rounded-full blur-3xl"></div>
+    
+    <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center relative">
+        <h2 class="font-serif text-4xl md:text-5xl font-medium mb-6">
+            Pret a commencer votre <br>
+            <span class="italic gradient-text">transformation</span> ?
+        </h2>
+        <p class="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Rejoignez des milliers d'etudiants qui ont deja transforme leur parcours. 
+            L'inscription est gratuite et prend moins de 2 minutes.
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+            <button onclick="openRegisterModal()" class="group inline-flex items-center justify-center rounded-2xl text-lg font-medium bg-primary text-primary-foreground h-16 px-10 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all hover:-translate-y-1">
+                Creer mon compte gratuit
+                <i data-lucide="arrow-right" class="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </div>
+        <p class="text-sm text-muted-foreground mt-4">Pas de carte bancaire requise</p>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-card border-t border-border/50 py-16">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-2">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-personal flex items-center justify-center">
+                        <i data-lucide="graduation-cap" class="h-5 w-5 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold">Edu<span class="text-primary">Vie</span></span>
+                </div>
+                <p class="text-muted-foreground max-w-sm mb-6">
+                    La plateforme qui accompagne les etudiants dans leur developpement 
+                    academique et personnel pour une reussite complete.
+                </p>
+                <div class="flex gap-4">
+                    <a href="#" class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors">
+                        <i data-lucide="twitter" class="h-5 w-5"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors">
+                        <i data-lucide="linkedin" class="h-5 w-5"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors">
+                        <i data-lucide="instagram" class="h-5 w-5"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-foreground mb-4">Plateforme</h4>
+                <ul class="space-y-3 text-muted-foreground">
+                    <li><a href="#" class="hover:text-primary transition-colors">Parcours</a></li>
+                    <li><a href="#" class="hover:text-primary transition-colors">Ateliers</a></li>
+                    <li><a href="#" class="hover:text-primary transition-colors">Communaute</a></li>
+                    <li><a href="#" class="hover:text-primary transition-colors">Success Stories</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-foreground mb-4">Aide</h4>
+                <ul class="space-y-3 text-muted-foreground">
+                    <li><a href="#" class="hover:text-primary transition-colors">FAQ</a></li>
+                    <li><a href="#" class="hover:text-primary transition-colors">Contact</a></li>
+                    <li><a href="#" class="hover:text-primary transition-colors">Confidentialite</a></li>
+                    <li><a href="#" class="hover:text-primary transition-colors">Conditions</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="pt-8 border-t border-border/50 text-center text-sm text-muted-foreground">
+            <p>&copy; 2024 NoVas. Tous droits reserves.</p>
+        </div>
+    </div>
+</footer>
+
+<!-- Register Modal -->
+<div id="registerModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-foreground/40 backdrop-blur-sm transition-opacity" onclick="closeRegisterModal()"></div>
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl bg-card rounded-3xl shadow-2xl border border-border overflow-hidden animate-scale-in">
+            <!-- Close button -->
+            <button onclick="closeRegisterModal()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center hover:bg-secondary transition-colors z-10">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+            
+            <div class="grid md:grid-cols-2">
+                <!-- Left side - Image -->
+                <div class="hidden md:block relative bg-gradient-to-br from-primary to-personal p-8">
+                    <div class="absolute inset-0 opacity-20">
+                        <img src="{{ asset('images/student-hero.jpg') }}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="relative h-full flex flex-col justify-between text-white">
+                        <div>
+                            <h3 class="font-serif text-2xl font-bold mb-2">Rejoignez NoVas</h3>
+                            <p class="text-white/80">Commencez votre transformation des aujourd'hui.</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="h-5 w-5"></i>
+                                </div>
+                                <span class="text-sm">Acces gratuit aux parcours</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="h-5 w-5"></i>
+                                </div>
+                                <span class="text-sm">Communaute bienveillante</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                                    <i data-lucide="check" class="h-5 w-5"></i>
+                                </div>
+                                <span class="text-sm">Certificats reconnus</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right side - Form -->
+                <div class="p-8">
+                    <h3 class="font-serif text-2xl font-bold text-foreground mb-2">Creer un compte</h3>
+                    <p class="text-muted-foreground text-sm mb-6">Remplissez vos informations pour commencer.</p>
+                    
+                    <form class="space-y-4" action="{{ path('app_register') }}" method="post">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-1">Prenom</label>
+                                <input type="text" name="firstName" required class="w-full h-11 rounded-xl border border-border bg-secondary/30 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" placeholder="Jean">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-1">Nom</label>
+                                <input type="text" name="lastName" required class="w-full h-11 rounded-xl border border-border bg-secondary/30 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" placeholder="Dupont">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-1">Email universitaire</label>
+                            <input type="email" name="email" required class="w-full h-11 rounded-xl border border-border bg-secondary/30 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" placeholder="jean.dupont@univ.fr">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-1">Mot de passe</label>
+                            <input type="password" name="password" required class="w-full h-11 rounded-xl border border-border bg-secondary/30 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" placeholder="••••••••">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-1">Niveau d'etudes</label>
+                            <select name="level" class="w-full h-11 rounded-xl border border-border bg-secondary/30 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+                                <option value="">Selectionnez...</option>
+                                <option value="l1">Licence 1</option>
+                                <option value="l2">Licence 2</option>
+                                <option value="l3">Licence 3</option>
+                                <option value="m1">Master 1</option>
+                                <option value="m2">Master 2</option>
+                                <option value="doctorat">Doctorat</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex items-start gap-2">
+                            <input type="checkbox" id="terms" required class="mt-1 w-4 h-4 rounded border-border text-primary focus:ring-primary">
+                            <label for="terms" class="text-xs text-muted-foreground">
+                                J'accepte les <a href="#" class="text-primary hover:underline">conditions d'utilisation</a> et la <a href="#" class="text-primary hover:underline">politique de confidentialite</a>.
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25">
+                            Creer mon compte
+                        </button>
+                    </form>
+                    
+                    <p class="text-center text-sm text-muted-foreground mt-4">
+                        Deja inscrit ? <button onclick="closeRegisterModal(); openLoginModal();" class="text-primary font-medium hover:underline">Se connecter</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-foreground/40 backdrop-blur-sm transition-opacity" onclick="closeLoginModal()"></div>
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+        <div class="relative w-full max-w-md bg-card rounded-3xl shadow-2xl border border-border p-8 animate-scale-in">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center hover:bg-secondary transition-colors">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+            
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="graduation-cap" class="h-8 w-8 text-primary"></i>
+                </div>
+                <h3 class="font-serif text-2xl font-bold text-foreground">Connexion</h3>
+                <p class="text-muted-foreground text-sm">Heureux de vous revoir !</p>
+            </div>
+            
+            <form class="space-y-4" action="{{ path('app_login') }}" method="post">
+                <div>
+                    <label class="block text-sm font-medium text-foreground mb-1">Email</label>
+                    <input type="email" name="email" required class="w-full h-11 rounded-xl border border-border bg-secondary/30 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" placeholder="jean.dupont@univ.fr">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-foreground mb-1">Mot de passe</label>
+                    <input type="password" name="password" required class="w-full h-11 rounded-xl border border-border bg-secondary/30 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" placeholder="••••••••">
+                </div>
+                
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" class="w-4 h-4 rounded border-border text-primary focus:ring-primary">
+                        <span class="text-muted-foreground">Se souvenir de moi</span>
+                    </label>
+                    <a href="#" class="text-primary hover:underline">Mot de passe oublie ?</a>
+                </div>
+                
+                <button type="submit" class="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25">
+                    Se connecter
+                </button>
+            </form>
+            
+            <p class="text-center text-sm text-muted-foreground mt-6">
+                Pas encore de compte ? <button onclick="closeLoginModal(); openRegisterModal();" class="text-primary font-medium hover:underline">S'inscrire</button>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openRegisterModal() {
+        document.getElementById('registerModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        lucide.createIcons();
+    }
+    
+    function closeRegisterModal() {
+        document.getElementById('registerModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+    
+    function openLoginModal() {
+        document.getElementById('loginModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        lucide.createIcons();
+    }
+    
+    function closeLoginModal() {
+        document.getElementById('loginModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+    
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeRegisterModal();
+            closeLoginModal();
+        }
+    });
+</script>
+{% endblock %}
