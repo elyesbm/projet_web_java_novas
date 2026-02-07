@@ -16,7 +16,7 @@ class Commentaire
     #[ORM\Column(type: 'text')]
     private ?string $image = null;
 
-    #[ORM\Column(type: 'date')]
+    #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $date_creation = null;
 
     #[ORM\Column(type: 'text')]

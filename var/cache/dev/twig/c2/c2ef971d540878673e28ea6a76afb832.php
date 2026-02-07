@@ -304,6 +304,6 @@ class __TwigTemplate_9d920afd01acff0fb580e052ed896575 extends Template
     <script>lucide.createIcons();</script>
     {% block javascripts %}{% endblock %}
 </body>
-</html>", "front/base_home.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\base_home.html.twig");
+</html>", "front/base_home.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\front\\base_home.html.twig");
     }
 }

@@ -379,6 +379,6 @@ class __TwigTemplate_80b196a5634ff991dac027f9dd88313f extends Template
         lucide.createIcons();
     }
 </script>
-{% endblock %}", "front/auth/login.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\auth\\login.html.twig");
+{% endblock %}", "front/auth/login.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\front\\auth\\login.html.twig");
     }
 }

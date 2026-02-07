@@ -135,26 +135,19 @@ class __TwigTemplate_75b385c800662d5cd543d5e694dcd6a8 extends Template
                 <!-- Contexte -->
                 <div>
                     <label class=\"block text-sm font-medium mb-3 text-muted-foreground\">Contexte de votre publication</label>
-                    <div class=\"grid grid-cols-3 gap-4\">
+                    <div class=\"grid grid-cols-2 gap-4\">
                         <label class=\"cursor-pointer\">
-                            <input type=\"radio\" name=\"contexte\" value=\"academic\" class=\"peer hidden\">
+                            <input type=\"radio\" name=\"contexte\" value=\"1\" class=\"peer hidden\" checked>
                             <div class=\"p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-academic peer-checked:bg-academic/20 transition-all text-center\">
                                 <i data-lucide=\"graduation-cap\" class=\"w-8 h-8 text-academic mx-auto mb-2\"></i>
                                 <p class=\"font-medium text-sm\">Academic</p>
                             </div>
                         </label>
                         <label class=\"cursor-pointer\">
-                            <input type=\"radio\" name=\"contexte\" value=\"personal\" class=\"peer hidden\">
+                            <input type=\"radio\" name=\"contexte\" value=\"2\" class=\"peer hidden\">
                             <div class=\"p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-personal peer-checked:bg-personal/20 transition-all text-center\">
                                 <i data-lucide=\"heart\" class=\"w-8 h-8 text-personal mx-auto mb-2\"></i>
                                 <p class=\"font-medium text-sm\">Personal</p>
-                            </div>
-                        </label>
-                        <label class=\"cursor-pointer\">
-                            <input type=\"radio\" name=\"contexte\" value=\"help\" class=\"peer hidden\" checked>
-                            <div class=\"p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-primary peer-checked:bg-primary/20 transition-all text-center\">
-                                <i data-lucide=\"help-circle\" class=\"w-8 h-8 text-primary mx-auto mb-2\"></i>
-                                <p class=\"font-medium text-sm\">Entraide</p>
                             </div>
                         </label>
                     </div>
@@ -199,7 +192,7 @@ class __TwigTemplate_75b385c800662d5cd543d5e694dcd6a8 extends Template
                 <!-- Actions -->
                 <div class=\"flex gap-4 pt-4\">
                     <a href=\"";
-        // line 104
+        // line 97
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publications_index");
         yield "\" class=\"flex-1 h-14 bg-secondary border border-white/10 rounded-xl font-medium flex items-center justify-center hover:bg-white/5 transition-colors\">
                         Annuler
@@ -244,7 +237,7 @@ class __TwigTemplate_75b385c800662d5cd543d5e694dcd6a8 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  203 => 104,  109 => 13,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
+        return array (  196 => 97,  109 => 13,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -289,26 +282,19 @@ class __TwigTemplate_75b385c800662d5cd543d5e694dcd6a8 extends Template
                 <!-- Contexte -->
                 <div>
                     <label class=\"block text-sm font-medium mb-3 text-muted-foreground\">Contexte de votre publication</label>
-                    <div class=\"grid grid-cols-3 gap-4\">
+                    <div class=\"grid grid-cols-2 gap-4\">
                         <label class=\"cursor-pointer\">
-                            <input type=\"radio\" name=\"contexte\" value=\"academic\" class=\"peer hidden\">
+                            <input type=\"radio\" name=\"contexte\" value=\"1\" class=\"peer hidden\" checked>
                             <div class=\"p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-academic peer-checked:bg-academic/20 transition-all text-center\">
                                 <i data-lucide=\"graduation-cap\" class=\"w-8 h-8 text-academic mx-auto mb-2\"></i>
                                 <p class=\"font-medium text-sm\">Academic</p>
                             </div>
                         </label>
                         <label class=\"cursor-pointer\">
-                            <input type=\"radio\" name=\"contexte\" value=\"personal\" class=\"peer hidden\">
+                            <input type=\"radio\" name=\"contexte\" value=\"2\" class=\"peer hidden\">
                             <div class=\"p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-personal peer-checked:bg-personal/20 transition-all text-center\">
                                 <i data-lucide=\"heart\" class=\"w-8 h-8 text-personal mx-auto mb-2\"></i>
                                 <p class=\"font-medium text-sm\">Personal</p>
-                            </div>
-                        </label>
-                        <label class=\"cursor-pointer\">
-                            <input type=\"radio\" name=\"contexte\" value=\"help\" class=\"peer hidden\" checked>
-                            <div class=\"p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-primary peer-checked:bg-primary/20 transition-all text-center\">
-                                <i data-lucide=\"help-circle\" class=\"w-8 h-8 text-primary mx-auto mb-2\"></i>
-                                <p class=\"font-medium text-sm\">Entraide</p>
                             </div>
                         </label>
                     </div>
@@ -364,6 +350,6 @@ class __TwigTemplate_75b385c800662d5cd543d5e694dcd6a8 extends Template
         </div>
     </div>
 </div>
-{% endblock %}", "front/publication/nouvelle.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\publication\\nouvelle.html.twig");
+{% endblock %}", "front/publication/nouvelle.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\front\\publication\\nouvelle.html.twig");
     }
 }

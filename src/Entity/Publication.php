@@ -27,7 +27,7 @@ class Publication
     #[ORM\Column]
     private ?int $statut = null;
 
-    #[ORM\Column(type: 'date')]
+    #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $date_creation = null;
 
     #[ORM\Column]
@@ -37,7 +37,7 @@ class Publication
     #[ORM\JoinColumn(name: 'id_auteur', referencedColumnName: 'ID', nullable: false)]
     private ?User $auteur = null;
 
-    #[ORM\OneToMany(mappedBy: 'publication', targetEntity: Commentaire::class)]
+    #[ORM\OneToMany(mappedBy: 'publication', targetEntity: Commentaire::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $commentaires;
 
     public function __construct()

@@ -94,10 +94,17 @@ return [
                     .'|(\\d+)/modifier(*:667)'
                 .')'
                 .'|/publications/([^/]++)/(?'
-                    .'|commenter(*:711)'
-                    .'|signaler(*:727)'
+                    .'|modifier(*:710)'
+                    .'|comment(?'
+                        .'|er(*:730)'
+                        .'|aire/([^/]++)/supprimer(*:761)'
+                    .')'
+                    .'|s(?'
+                        .'|upprimer(*:782)'
+                        .'|ignaler(*:797)'
+                    .')'
                 .')'
-                .'|/reservation/([^/]++)/reserver(*:766)'
+                .'|/reservation/([^/]++)/reserver(*:837)'
             .')/?$}sDu',
     ],
     [ // $dynamicRoutes
@@ -125,9 +132,12 @@ return [
         608 => [[['_route' => 'app_learning_path_detail', '_controller' => 'App\\Controller\\Front\\LearningPathController::detail'], ['id'], null, null, false, false, null]],
         645 => [[['_route' => 'app_marketplace_detail', '_controller' => 'App\\Controller\\Front\\MarketplaceController::detail'], ['id'], null, null, false, true, null]],
         667 => [[['_route' => 'app_marketplace_modifier', '_controller' => 'App\\Controller\\Front\\MarketplaceController::modifier'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        711 => [[['_route' => 'app_publication_commenter', '_controller' => 'App\\Controller\\Front\\PublicationController::commenter'], ['id'], ['POST' => 0], null, false, false, null]],
-        727 => [[['_route' => 'app_publication_signaler', '_controller' => 'App\\Controller\\Front\\PublicationController::signaler'], ['id'], null, null, false, false, null]],
-        766 => [
+        710 => [[['_route' => 'app_publication_modifier', '_controller' => 'App\\Controller\\Front\\PublicationController::modifier'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        730 => [[['_route' => 'app_publication_commenter', '_controller' => 'App\\Controller\\Front\\PublicationController::commenter'], ['id'], ['POST' => 0], null, false, false, null]],
+        761 => [[['_route' => 'app_publication_commentaire_supprimer', '_controller' => 'App\\Controller\\Front\\PublicationController::supprimerCommentaire'], ['id', 'idComment'], ['POST' => 0], null, false, false, null]],
+        782 => [[['_route' => 'app_publication_supprimer', '_controller' => 'App\\Controller\\Front\\PublicationController::supprimerPublication'], ['id'], ['POST' => 0], null, false, false, null]],
+        797 => [[['_route' => 'app_publication_signaler', '_controller' => 'App\\Controller\\Front\\PublicationController::signaler'], ['id'], null, null, false, false, null]],
+        837 => [
             [['_route' => 'app_reservation_reserver', '_controller' => 'App\\Controller\\Front\\ReservationController::reserver'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null],
             [null, null, null, null, false, false, 0],
         ],

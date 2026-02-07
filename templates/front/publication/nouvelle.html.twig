@@ -38,26 +38,19 @@
                 <!-- Contexte -->
                 <div>
                     <label class="block text-sm font-medium mb-3 text-muted-foreground">Contexte de votre publication</label>
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 gap-4">
                         <label class="cursor-pointer">
-                            <input type="radio" name="contexte" value="academic" class="peer hidden">
+                            <input type="radio" name="contexte" value="1" class="peer hidden" checked>
                             <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-academic peer-checked:bg-academic/20 transition-all text-center">
                                 <i data-lucide="graduation-cap" class="w-8 h-8 text-academic mx-auto mb-2"></i>
                                 <p class="font-medium text-sm">Academic</p>
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="contexte" value="personal" class="peer hidden">
+                            <input type="radio" name="contexte" value="2" class="peer hidden">
                             <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-personal peer-checked:bg-personal/20 transition-all text-center">
                                 <i data-lucide="heart" class="w-8 h-8 text-personal mx-auto mb-2"></i>
                                 <p class="font-medium text-sm">Personal</p>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="contexte" value="help" class="peer hidden" checked>
-                            <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-primary peer-checked:bg-primary/20 transition-all text-center">
-                                <i data-lucide="help-circle" class="w-8 h-8 text-primary mx-auto mb-2"></i>
-                                <p class="font-medium text-sm">Entraide</p>
                             </div>
                         </label>
                     </div>

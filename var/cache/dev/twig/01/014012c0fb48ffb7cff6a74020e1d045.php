@@ -691,6 +691,6 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
         <p class=\"text-sm text-muted-foreground\">&copy; 2024 NoVas. Tous droits reserves.</p>
     </div>
 </footer>
-{% endblock %}", "front/home/index.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\home\\index.html.twig");
+{% endblock %}", "front/home/index.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\front\\home\\index.html.twig");
     }
 }
