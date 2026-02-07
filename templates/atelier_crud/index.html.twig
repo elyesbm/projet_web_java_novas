@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<title>Atelier index</title>
+
+{% block body %}
+    <h1>Atelier index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Titre_atelier</th>
+                <th>Description_atelier</th>
+                <th>Type_atelier</th>
+                <th>Date_atelier</th>
+                <th>Capacite</th>
+                <th>Statut_atelier</th>
+                <th>Image_atelier</th>
+                <th>Contexte_atelier</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for atelier in ateliers %}
+            <tr>
+                <td>{{ atelier.id }}</td>
+                <td>{{ atelier.titreAtelier }}</td>
+                <td>{{ atelier.descriptionAtelier }}</td>
+                <td>{{ atelier.typeAtelier }}</td>
+                <td>{{ atelier.dateAtelier ? atelier.dateAtelier|date('Y-m-d') : '' }}</td>
+                <td>{{ atelier.capacite }}</td>
+                <td>{{ atelier.statutAtelier }}</td>
+                <td>{{ atelier.imageAtelier }}</td>
+                <td>{{ atelier.contexteAtelier }}</td>
+                <td>
+                    <a href="{{ path('app_atelier_crud_show', {'id': atelier.id}) }}">show</a>
+                    <a href="{{ path('app_atelier_crud_edit', {'id': atelier.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="10">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_atelier_crud_new') }}">Create new</a>
+{% endblock %}

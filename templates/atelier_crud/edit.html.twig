@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+
+<title>Edit Atelier</title>
+
+{% block body %}
+    <h1>Edit Atelier</h1>
+
+    {{ include('atelier_crud/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_atelier_crud_index') }}">back to list</a>
+
+    {{ include('atelier_crud/_delete_form.html.twig') }}
+{% endblock %}

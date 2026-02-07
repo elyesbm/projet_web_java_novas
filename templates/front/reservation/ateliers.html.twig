@@ -1,0 +1,105 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Ateliers - NoVas{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background">
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
+                <img src="{{ asset('images/logo.png') }}" alt="EduVie" class="h-10 w-auto">
+            </a>
+
+            <div class="flex items-center gap-4">
+                <a href="{{ path('app_reservation_mes') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                    Mes reservations
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="pt-32 pb-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm mb-4">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        Ateliers disponibles
+                    </div>
+                    <h1 class="font-serif text-4xl md:text-5xl font-medium mb-4">
+                        Decouvrez nos <span class="italic text-primary">ateliers</span>
+                    </h1>
+                    <p class="text-muted-foreground max-w-xl">
+                        Reservez votre place dans nos ateliers exclusifs et developpez vos competences en groupe.
+                    </p>
+                </div>
+
+                <div class="flex gap-6">
+                    <div class="glass-card rounded-2xl px-6 py-4 text-center">
+                        <p class="font-serif text-2xl font-bold text-primary">{{ ateliers|length }}</p>
+                        <p class="text-xs text-muted-foreground">Ateliers disponibles</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="px-6 pb-24">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for atelier in ateliers %}
+                <div class="group glass-card rounded-3xl overflow-hidden hover:border-primary/30 transition-all duration-500 hover:-translate-y-2">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="{{ asset('images/' ~ atelier.image) }}" alt="{{ atelier.titre }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent"></div>
+
+                        <div class="absolute top-4 left-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ atelier.type == 'soft' ? 'bg-personal/90 text-white' : 'bg-academic/90 text-white' }}">
+                                {{ atelier.type == 'soft' ? 'Soft Skill' : 'Hard Skill' }}
+                            </span>
+                        </div>
+
+                        <div class="absolute top-4 right-4 glass-card px-3 py-1 rounded-full">
+                            <span class="text-xs font-medium {{ atelier.places_restantes < 5 ? 'text-red-400' : 'text-foreground' }}">
+                                {{ atelier.places_restantes }} places
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-3">{{ atelier.titre }}</h3>
+                        <p class="text-sm text-muted-foreground mb-4 line-clamp-2">{{ atelier.description }}</p>
+
+                        <div class="space-y-2 mb-6">
+                            <div class="flex items-center gap-3 text-sm text-muted-foreground">
+                                <i data-lucide="calendar" class="w-4 h-4 text-primary"></i>
+                                {{ atelier.date }}
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-muted-foreground">
+                                <i data-lucide="clock" class="w-4 h-4 text-primary"></i>
+                                {{ atelier.heure }}
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-muted-foreground">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-primary"></i>
+                                {{ atelier.lieu }}
+                            </div>
+                        </div>
+
+                        <a href="{{ path('app_reservation_reserver', {id: atelier.id}) }}"
+                           class="flex items-center justify-center gap-2 w-full h-12 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all {{ atelier.places_restantes == 0 ? 'opacity-50 pointer-events-none' : '' }}">
+                            {% if atelier.places_restantes == 0 %}
+                                Complet
+                            {% else %}
+                                Reserver ma place
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
