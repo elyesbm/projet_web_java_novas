@@ -6,12 +6,16 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Entity\Reservation;
+use App\Form\ReservationType;
+use App\Repository\AtelierRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\UserRepository;
+
 
 #[Route('/reservation')]
 class ReservationController extends AbstractController
 {
-   
-
     #[Route('/mes-reservations', name: 'app_reservation_mes')]
     public function mesReservations(): Response
     {
@@ -66,33 +70,64 @@ class ReservationController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/reserver', name: 'app_reservation_reserver', methods: ['GET', 'POST'])]
-    public function reserver(Request $request, int $id): Response
+    #[Route(
+        '/{id}/reserver/{userId}',
+        name: 'app_reservation_reserver',
+        requirements: ['id' => '\d+', 'userId' => '\d+'],
+        methods: ['GET', 'POST']
+    )]
+    public function reserver(
+        Request $request,
+        AtelierRepository $atelierRepository,
+        UserRepository $userRepository,
+        EntityManagerInterface $entityManager,
+        int $id,
+        int $userId
+    ): Response
     {
-        // Récupérer l'atelier par ID - exemple statique
-        $atelier = [
-            'id' => $id,
-            'titre' => 'Atelier Prise de Parole en Public',
-            'description' => 'Apprenez à captiver votre audience et à communiquer avec confiance.',
-            'image' => 'workshop.jpg',
-            'date' => '15 Fevrier 2024',
-            'heure' => '14:00 - 17:00',
-            'lieu' => 'Salle A102',
-            'type' => 'soft',
-            'categorie' => 'Communication',
-            'places_total' => 20,
-            'places_restantes' => 5,
-            'formateur' => 'Dr. Marie Dupont',
-        ];
+        // 🔍 Récupération de l'atelier
+        $atelier = $atelierRepository->find($id);
 
-        if ($request->isMethod('POST')) {
-            // Traiter la réservation
-            $this->addFlash('success', 'Votre réservation a été confirmée !');
+        if (!$atelier) {
+            throw $this->createNotFoundException('Atelier introuvable');
+        }
+
+        // 🔍 Récupération du user depuis l'URL
+        $user = $userRepository->find($userId);
+
+        if (!$user) {
+            throw $this->createNotFoundException('Utilisateur introuvable');
+        }
+
+        // 🆕 Nouvelle réservation
+        $reservation = new Reservation();
+
+        // 🧾 Création du formulaire
+        $form = $this->createForm(ReservationType::class, $reservation);
+        $form->handleRequest($request);
+
+        // ✅ Soumission valide
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            // 🔗 Relations métier (CORRECTES)
+            $reservation->setAtelier($atelier);
+            $reservation->setUser($user); // ✅ ICI la correction
+            $reservation->setStatutReservation(0);
+
+            // 💾 Sauvegarde
+            $entityManager->persist($reservation);
+            $entityManager->flush();
+
+            // 🔔 Message succès
+            $this->addFlash('success', 'Votre réservation a été enregistrée avec succès');
+
             return $this->redirectToRoute('app_reservation_mes');
         }
 
+        // 🎨 Affichage du formulaire
         return $this->render('front/reservation/reserver.html.twig', [
             'atelier' => $atelier,
+            'form' => $form->createView(),
         ]);
     }
 }

@@ -100,7 +100,7 @@ return [
                     .'|commenter(*:732)'
                     .'|signaler(*:748)'
                 .')'
-                .'|/reservation/([^/]++)/reserver(*:787)'
+                .'|/reservation/(\\d+)/reserver/(\\d+)(*:790)'
             .')/?$}sDu',
     ],
     [ // $dynamicRoutes
@@ -131,8 +131,8 @@ return [
         688 => [[['_route' => 'app_marketplace_modifier', '_controller' => 'App\\Controller\\Front\\MarketplaceController::modifier'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
         732 => [[['_route' => 'app_publication_commenter', '_controller' => 'App\\Controller\\Front\\PublicationController::commenter'], ['id'], ['POST' => 0], null, false, false, null]],
         748 => [[['_route' => 'app_publication_signaler', '_controller' => 'App\\Controller\\Front\\PublicationController::signaler'], ['id'], null, null, false, false, null]],
-        787 => [
-            [['_route' => 'app_reservation_reserver', '_controller' => 'App\\Controller\\Front\\ReservationController::reserver'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null],
+        790 => [
+            [['_route' => 'app_reservation_reserver', '_controller' => 'App\\Controller\\Front\\ReservationController::reserver'], ['id', 'userId'], ['GET' => 0, 'POST' => 1], null, false, true, null],
             [null, null, null, null, false, false, 0],
         ],
     ],

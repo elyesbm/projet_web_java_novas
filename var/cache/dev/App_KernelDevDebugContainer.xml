@@ -481,6 +481,9 @@
     <service id="App\Form\AtelierType" class="App\Form\AtelierType" autowire="true" autoconfigure="true">
       <tag name="form.type"/>
     </service>
+    <service id="App\Form\ReservationType" class="App\Form\ReservationType" autowire="true" autoconfigure="true">
+      <tag name="form.type"/>
+    </service>
     <service id="App\Repository\ArticleRepository" class="App\Repository\ArticleRepository" autowire="true" autoconfigure="true">
       <tag name="doctrine.repository_service"/>
       <argument type="service" id="doctrine"/>
@@ -552,7 +555,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.JNR_gTU"/>
+      <argument type="service" id=".service_locator.T0abdKW"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -1474,6 +1477,7 @@
       </argument>
       <argument type="collection">
         <argument>App\Form\AtelierType</argument>
+        <argument>App\Form\ReservationType</argument>
         <argument>Symfony\Component\Form\Extension\Core\Type\FormType</argument>
         <argument>Symfony\Component\Form\Extension\Core\Type\ChoiceType</argument>
         <argument>Symfony\Component\Form\Extension\Core\Type\FileType</argument>
@@ -3442,7 +3446,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.JNR_gTU"/>
+      <argument type="service" id=".service_locator.T0abdKW"/>
     </service>
     <service id="debug.log_processor" class="Symfony\Bridge\Monolog\Processor\DebugProcessor">
       <tag name="kernel.reset" method="reset"/>
@@ -3931,7 +3935,7 @@
       <argument type="service" id="form.registry"/>
     </service>
     <service id="form.extension" class="Symfony\Component\Form\Extension\DependencyInjection\DependencyInjectionExtension">
-      <argument type="service" id=".service_locator.bLNq9S8"/>
+      <argument type="service" id=".service_locator.h21bSu8"/>
       <argument type="collection">
         <argument key="Symfony\Component\Form\Extension\Core\Type\FormType" type="iterator">
           <argument type="service" id="form.type_extension.form.transformation_failure_handling"/>
@@ -7262,6 +7266,8 @@
     <service id=".abstract.instanceof.App\Controller\Front\UserController" class="App\Controller\Front\UserController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Component\Form\FormTypeInterface.0.App\Form\AtelierType" class="App\Form\AtelierType" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Form\AtelierType" class="App\Form\AtelierType" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Component\Form\FormTypeInterface.0.App\Form\ReservationType" class="App\Form\ReservationType" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Form\ReservationType" class="App\Form\ReservationType" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\ArticleRepository" class="App\Repository\ArticleRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\ArticleRepository" class="App\Repository\ArticleRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\AtelierRepository" class="App\Repository\AtelierRepository" autowire="true" abstract="true"/>
@@ -7726,13 +7732,23 @@
         <argument key="em" type="service_closure" id="doctrine.orm.default_entity_manager"/>
       </argument>
     </service>
-    <service id=".service_locator.JNR_gTU" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.0NvqsEp" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="atelierRepository" type="service_closure" id="App\Repository\AtelierRepository"/>
+        <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="userRepository" type="service_closure" id="App\Repository\UserRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.T0abdKW" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\Admin\AtelierAdminController::delete" type="service_closure" id=".service_locator._5GUuIH"/>
         <argument key="App\Controller\Admin\AtelierAdminController::edit" type="service_closure" id=".service_locator._5GUuIH"/>
         <argument key="App\Controller\Admin\AtelierAdminController::list" type="service_closure" id=".service_locator.1UhixpL"/>
         <argument key="App\Controller\Admin\AtelierAdminController::new" type="service_closure" id=".service_locator.9kKwU2t"/>
+        <argument key="App\Controller\Front\AtelierController::index" type="service_closure" id=".service_locator.1UhixpL"/>
+        <argument key="App\Controller\Front\ReservationController::reserver" type="service_closure" id=".service_locator.0NvqsEp"/>
         <argument key="App\Kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="App\Kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
@@ -7741,6 +7757,8 @@
         <argument key="App\Controller\Admin\AtelierAdminController:edit" type="service_closure" id=".service_locator._5GUuIH"/>
         <argument key="App\Controller\Admin\AtelierAdminController:list" type="service_closure" id=".service_locator.1UhixpL"/>
         <argument key="App\Controller\Admin\AtelierAdminController:new" type="service_closure" id=".service_locator.9kKwU2t"/>
+        <argument key="App\Controller\Front\AtelierController:index" type="service_closure" id=".service_locator.1UhixpL"/>
+        <argument key="App\Controller\Front\ReservationController:reserver" type="service_closure" id=".service_locator.0NvqsEp"/>
         <argument key="kernel:loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel:registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
       </argument>
@@ -7902,10 +7920,11 @@
       <argument type="service" id="argument_resolver.query_parameter_value_resolver"/>
       <argument type="service" id="debug.stopwatch"/>
     </service>
-    <service id=".service_locator.bLNq9S8" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.h21bSu8" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Form\AtelierType" type="service_closure" id="App\Form\AtelierType"/>
+        <argument key="App\Form\ReservationType" type="service_closure" id="App\Form\ReservationType"/>
         <argument key="Symfony\Bridge\Doctrine\Form\Type\EntityType" type="service_closure" id="form.type.entity"/>
         <argument key="Symfony\Component\Form\Extension\Core\Type\ChoiceType" type="service_closure" id="form.type.choice"/>
         <argument key="Symfony\Component\Form\Extension\Core\Type\ColorType" type="service_closure" id="form.type.color"/>
@@ -10069,7 +10088,7 @@
     <service id="Psr\Log\LoggerInterface" alias="monolog.logger"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.w7.f4fT" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.JNR_gTU"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.T0abdKW"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id=".Psr\Log\LoggerInterface $request.logger" alias="monolog.logger.request"/>
@@ -10107,9 +10126,10 @@
     <service id=".service_locator.80edgLI" alias="messenger.receiver_locator"/>
     <service id=".service_locator.h8Jkkd2" alias="messenger.retry_strategy_locator"/>
     <service id=".service_locator.bJ.4HC5" alias=".service_locator.w7.f4fT"/>
-    <service id=".service_locator.RlP3Y9Z" alias=".service_locator.JNR_gTU"/>
+    <service id=".service_locator.nBCo6lE" alias=".service_locator.0NvqsEp"/>
+    <service id=".service_locator.9C8M3N0" alias=".service_locator.T0abdKW"/>
     <service id=".service_locator.BFrsqsn" alias=".service_locator.F9PKc.7"/>
-    <service id=".service_locator.zR_5gjz" alias=".service_locator.bLNq9S8"/>
+    <service id=".service_locator.i9UxnGz" alias=".service_locator.h21bSu8"/>
     <service id=".service_locator.XtmiKbi" alias=".service_locator.MfxSDRP"/>
     <service id=".service_locator.O24_MAy" alias=".service_locator.yY.p4P7"/>
     <service id=".service_locator.jUv.zyj" alias=".service_locator.O2p6Lk7"/>
@@ -10136,6 +10156,7 @@
     <service id=".service_locator.94UVu1e" alias=".service_locator.1UhixpL"/>
     <service id=".service_locator.gaTSUXr" alias=".service_locator.9kKwU2t"/>
     <service id=".service_locator.0EYD.JV" alias=".service_locator._5GUuIH"/>
+    <service id=".service_locator.xAKfKAA" alias=".service_locator.0NvqsEp"/>
     <service id=".service_locator.Q1z.f9O" alias=".service_locator.O2p6Lk7"/>
     <service id=".service_locator.dGUCsbe" alias=".service_locator.oR77BOj"/>
     <service id=".service_locator._kIAbz1" alias=".service_locator.TpoC7U9"/>

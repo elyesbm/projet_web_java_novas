@@ -42,8 +42,8 @@
                 <!-- Stats -->
                 <div class="flex gap-6">
                     <div class="glass-card rounded-2xl px-6 py-4 text-center">
-                        <p class="font-serif text-2xl font-bold text-primary">6</p>
-                        <p class="text-xs text-muted-foreground">Ateliers ce mois</p>
+                        <p class="font-serif text-2xl font-bold text-primary">{{ ateliers|length }}</p>
+                        <p class="text-xs text-muted-foreground">Ateliers disponibles</p>
                     </div>
                     <div class="glass-card rounded-2xl px-6 py-4 text-center">
                         <p class="font-serif text-2xl font-bold text-accent">3</p>
@@ -84,23 +84,31 @@
         <div class="max-w-7xl mx-auto">
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for atelier in ateliers %}
+                {% set places_restantes = atelier.capacite - atelier.reservations|length %}
+                {% set image_src = (atelier.imageAtelier and (atelier.imageAtelier starts with 'http')) ? atelier.imageAtelier : (atelier.imageAtelier ? asset('images/' ~ atelier.imageAtelier) : '') %}
                 <div class="group glass-card rounded-3xl overflow-hidden hover:border-primary/30 transition-all duration-500 hover:-translate-y-2">
                     <!-- Image -->
                     <div class="relative h-48 overflow-hidden">
-                        <img src="{{ asset('images/' ~ atelier.image) }}" alt="{{ atelier.titre }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        {% if atelier.imageAtelier %}
+                        <img src="{{ image_src }}" alt="{{ atelier.titreAtelier }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        {% else %}
+                        <div class="w-full h-full bg-secondary flex items-center justify-center">
+                            <i data-lucide="calendar-days" class="w-16 h-16 text-muted-foreground"></i>
+                        </div>
+                        {% endif %}
                         <div class="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent"></div>
                         
                         <!-- Badges -->
                         <div class="absolute top-4 left-4 flex gap-2">
-                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ atelier.type == 'soft' ? 'bg-personal/90 text-white' : 'bg-academic/90 text-white' }} backdrop-blur-sm">
-                                {{ atelier.type == 'soft' ? 'Soft Skill' : 'Hard Skill' }}
+                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ atelier.contexteAtelier == 0 ? 'bg-personal/90 text-white' : 'bg-academic/90 text-white' }} backdrop-blur-sm">
+                                {{ atelier.contexteAtelier == 0 ? 'Soft Skill' : 'Hard Skill' }}
                             </span>
                         </div>
                         
                         <!-- Places remaining -->
                         <div class="absolute top-4 right-4 glass-card px-3 py-1 rounded-full">
-                            <span class="text-xs font-medium {{ atelier.places_restantes < 5 ? 'text-red-400' : 'text-foreground' }}">
-                                {{ atelier.places_restantes }} places
+                            <span class="text-xs font-medium {{ places_restantes < 5 ? 'text-red-400' : 'text-foreground' }}">
+                                {{ places_restantes }} places
                             </span>
                         </div>
                     </div>
@@ -109,29 +117,17 @@
                     <div class="p-6">
                         <div class="flex items-center gap-2 text-xs text-muted-foreground mb-3">
                             <i data-lucide="folder" class="w-3 h-3"></i>
-                            {{ atelier.categorie }}
+                            {{ atelier.typeAtelier|capitalize }}
                         </div>
                         
-                        <h3 class="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">{{ atelier.titre }}</h3>
-                        <p class="text-sm text-muted-foreground mb-4 line-clamp-2">{{ atelier.description }}</p>
+                        <h3 class="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">{{ atelier.titreAtelier }}</h3>
+                        <p class="text-sm text-muted-foreground mb-4 line-clamp-2">{{ atelier.descriptionAtelier }}</p>
                         
                         <!-- Details -->
                         <div class="space-y-2 mb-6">
                             <div class="flex items-center gap-3 text-sm text-muted-foreground">
                                 <i data-lucide="calendar" class="w-4 h-4 text-primary"></i>
-                                <span>{{ atelier.date }}</span>
-                            </div>
-                            <div class="flex items-center gap-3 text-sm text-muted-foreground">
-                                <i data-lucide="clock" class="w-4 h-4 text-primary"></i>
-                                <span>{{ atelier.heure }}</span>
-                            </div>
-                            <div class="flex items-center gap-3 text-sm text-muted-foreground">
-                                <i data-lucide="map-pin" class="w-4 h-4 text-primary"></i>
-                                <span>{{ atelier.lieu }}</span>
-                            </div>
-                            <div class="flex items-center gap-3 text-sm text-muted-foreground">
-                                <i data-lucide="user" class="w-4 h-4 text-primary"></i>
-                                <span>{{ atelier.formateur }}</span>
+                                <span>{{ atelier.dateAtelier|date('d F Y') }}</span>
                             </div>
                         </div>
                         
@@ -139,23 +135,25 @@
                         <div class="mb-6">
                             <div class="flex justify-between text-xs mb-2">
                                 <span class="text-muted-foreground">Places reservees</span>
-                                <span class="text-foreground">{{ atelier.places_total - atelier.places_restantes }}/{{ atelier.places_total }}</span>
+                                <span class="text-foreground">{{ atelier.reservations|length }}/{{ atelier.capacite }}</span>
                             </div>
                             <div class="h-2 bg-secondary rounded-full overflow-hidden">
-                                <div class="h-full bg-primary rounded-full transition-all" style="width: {{ ((atelier.places_total - atelier.places_restantes) / atelier.places_total * 100)|round }}%"></div>
+                                <div class="h-full bg-primary rounded-full transition-all" style="width: {{ atelier.capacite > 0 ? ((atelier.reservations|length) / atelier.capacite * 100)|round : 0 }}%"></div>
                             </div>
                         </div>
                         
                         <!-- Action -->
-                        <a href="{{ path('app_reservation_reserver', {id: atelier.id}) }}" class="flex items-center justify-center gap-2 w-full h-12 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 group/btn {{ atelier.places_restantes == 0 ? 'opacity-50 cursor-not-allowed' : '' }}">
-                            {% if atelier.places_restantes == 0 %}
-                                <i data-lucide="x-circle" class="w-5 h-5"></i>
-                                Complet
-                            {% else %}
-                                <span>Reserver ma place</span>
-                                <i data-lucide="arrow-right" class="w-5 h-5 group-hover/btn:translate-x-1 transition-transform"></i>
-                            {% endif %}
+                        {% if places_restantes > 0 %}
+                        <a href="{{ path('app_reservation_reserver', { id: atelier.id }) }}" class="flex items-center justify-center gap-2 w-full h-12 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 group/btn">
+                            <span>Reserver ma place</span>
+                            <i data-lucide="arrow-right" class="w-5 h-5 group-hover/btn:translate-x-1 transition-transform"></i>
                         </a>
+                        {% else %}
+                        <span class="flex items-center justify-center gap-2 w-full h-12 bg-primary/50 text-white rounded-xl font-medium cursor-not-allowed opacity-75">
+                            <i data-lucide="x-circle" class="w-5 h-5"></i>
+                            Complet
+                        </span>
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
