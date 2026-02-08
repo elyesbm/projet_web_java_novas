@@ -44,6 +44,34 @@ class Publication
     {
         $this->commentaires = new ArrayCollection();
     }
+    #[ORM\Column(type: 'integer')]
+private int $likes = 0;
+
+public function getLikes(): int
+{
+    return $this->likes;
+}
+
+public function setLikes(int $likes): static
+{
+    $this->likes = $likes;
+    return $this;
+}
+
+public function incrementLikes(): static
+{
+    $this->likes++;
+    return $this;
+}
+
+public function decrementLikes(): static
+{
+    if ($this->likes > 0) {
+        $this->likes--;
+    }
+    return $this;
+}
+
 
     public function getId(): ?int { return $this->id; }
     public function getTitre(): ?string { return $this->titre; }

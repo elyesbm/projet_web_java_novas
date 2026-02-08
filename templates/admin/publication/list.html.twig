@@ -12,14 +12,16 @@
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
             <div class="flex items-center justify-between mb-4">
                 <div class="p-3 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-600"><i data-lucide="message-square" class="w-6 h-6"></i></div>
-                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">+15%</span>
+                {#<span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">+15%</span>#}
             </div>
-            <p class="text-3xl font-bold text-slate-900 dark:text-white">1,245</p>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ totalPublications }}
+</p>
             <p class="text-sm text-slate-500">Publications</p>
         </div>
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
             <div class="p-3 rounded-xl bg-pink-100 dark:bg-pink-900/30 text-pink-600 mb-4"><i data-lucide="message-circle" class="w-6 h-6"></i></div>
-            <p class="text-3xl font-bold text-slate-900 dark:text-white">3,678</p>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ totalCommentaires }}
+</p>
             <p class="text-sm text-slate-500">Commentaires</p>
         </div>
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
@@ -29,7 +31,8 @@
         </div>
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
             <div class="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 mb-4"><i data-lucide="heart" class="w-6 h-6"></i></div>
-            <p class="text-3xl font-bold text-slate-900 dark:text-white">8.9k</p>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white">    {{ totalLikes }}
+</p>
             <p class="text-sm text-slate-500">Likes</p>
         </div>
     </div>

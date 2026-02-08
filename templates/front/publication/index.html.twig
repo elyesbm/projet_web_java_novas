@@ -134,10 +134,16 @@
                     <div class="px-6 py-4 bg-secondary/30 border-t border-white/5 flex items-center justify-between">
                         <div class="flex items-center gap-6">
                             <!-- Likes -->
-                            <button class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group">
-                                <i data-lucide="heart" class="w-5 h-5 group-hover:fill-primary/20"></i>
-                                <span class="text-sm">{{ pub.likes ?? 0 }}</span>
-                            </button>
+                            <button
+    type="button"
+    onclick="likePublication({{ pub.id }})"
+    class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
+>
+    <i data-lucide="heart" class="w-5 h-5 group-hover:fill-primary/20"></i>
+    <span class="text-sm" id="likes-{{ pub.id }}">
+        {{ pub.likes ?? 0 }}
+    </span>
+</button>
 
                             <!-- Comments Toggle -->
                             <button onclick="toggleComments({{ pub.id }})" class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
@@ -253,27 +259,31 @@
                             </div>
 
                             <!-- Add Comment -->
-<form action="{{ path('app_commentaire_ajouter', {id: pub.id}) }}" method="post" class="flex gap-4">
-                                {% if app.user and app.user.IMAGE %}
-                                    <img src="{{ asset('images/' ~ app.user.IMAGE) }}" alt="Moi" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30">
-                                {% else %}
-                                    <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-primary/30">
-                                        <i data-lucide="user" class="w-5 h-5 text-muted-foreground"></i>
-                                    </div>
-                                {% endif %}
+{% set cform = comment_forms[pub.id] %}
 
-                                <div class="flex-1 relative">
-                                    <input
-                                        type="text"
-                                        name="contenu"
-                                        placeholder="Ecrivez votre commentaire..."
-                                        class="w-full h-12 bg-secondary border border-white/10 rounded-xl pl-4 pr-12 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50"
-                                    >
-                                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors">
-                                        <i data-lucide="send" class="w-4 h-4 text-white"></i>
-                                    </button>
-                                </div>
-                            </form>
+{{ form_start(cform, { attr: { class: 'flex gap-4' } }) }}
+    {% if app.user and app.user.IMAGE %}
+        <img src="{{ asset('images/' ~ app.user.IMAGE) }}" alt="Moi" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30">
+    {% else %}
+        <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-primary/30">
+            <i data-lucide="user" class="w-5 h-5 text-muted-foreground"></i>
+        </div>
+    {% endif %}
+
+    <div class="flex-1 relative">
+        {{ form_widget(cform.contenu, {
+            attr: {
+                placeholder: "Ecrivez votre commentaire...",
+                class: "w-full h-12 bg-secondary border border-white/10 rounded-xl pl-4 pr-12 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50"
+            }
+        }) }}
+
+        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors">
+            <i data-lucide="send" class="w-4 h-4 text-white"></i>
+        </button>
+    </div>
+{{ form_end(cform) }}
+
                         </div>
                     </div>
                 </article>
@@ -294,4 +304,24 @@
         }
     }
 </script>
+<script>
+function likePublication(pubId) {
+    fetch(`/publications/${pubId}/like`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ok) {
+            document.getElementById('likes-' + pubId).innerText = data.likes;
+        }
+    })
+    .catch(() => {
+        alert('Erreur lors du like');
+    });
+}
+</script>
+
 {% endblock %}

@@ -119,7 +119,7 @@ class CommentaireController extends AbstractController
         }
 
         // ⚠️ adapte le nom si ton fichier s'appelle modifier2.html.twig
-        return $this->render('front/commentaire/modifier2.html.twig', [
+        return $this->render('front/publication/modifier2.html.twig', [
             'commentaire' => $comment,
         ]);
     }
@@ -162,7 +162,7 @@ class CommentaireController extends AbstractController
             return $this->redirectToRoute('app_publications_index');
         }
 
-        return $this->render('front/commentaire/nouveau.html.twig', [
+        return $this->render('front/publication/nouveau2.html.twig', [
             'form' => $form->createView(),
             'publication' => $pub,
         ]);

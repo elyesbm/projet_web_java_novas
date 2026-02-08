@@ -154,14 +154,23 @@ class __TwigTemplate_921da7b052108fabb8432339a8bf4d56 extends Template
         <div class=\"bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700\">
             <div class=\"flex items-center justify-between mb-4\">
                 <div class=\"p-3 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-600\"><i data-lucide=\"message-square\" class=\"w-6 h-6\"></i></div>
-                <span class=\"text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full\">+15%</span>
-            </div>
-            <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">1,245</p>
+                ";
+        // line 16
+        yield "            </div>
+            <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">";
+        // line 17
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["totalPublications"]) || array_key_exists("totalPublications", $context) ? $context["totalPublications"] : (function () { throw new RuntimeError('Variable "totalPublications" does not exist.', 17, $this->source); })()), "html", null, true);
+        yield "
+</p>
             <p class=\"text-sm text-slate-500\">Publications</p>
         </div>
         <div class=\"bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700\">
             <div class=\"p-3 rounded-xl bg-pink-100 dark:bg-pink-900/30 text-pink-600 mb-4\"><i data-lucide=\"message-circle\" class=\"w-6 h-6\"></i></div>
-            <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">3,678</p>
+            <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">";
+        // line 23
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["totalCommentaires"]) || array_key_exists("totalCommentaires", $context) ? $context["totalCommentaires"] : (function () { throw new RuntimeError('Variable "totalCommentaires" does not exist.', 23, $this->source); })()), "html", null, true);
+        yield "
+</p>
             <p class=\"text-sm text-slate-500\">Commentaires</p>
         </div>
         <div class=\"bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700\">
@@ -171,13 +180,17 @@ class __TwigTemplate_921da7b052108fabb8432339a8bf4d56 extends Template
         </div>
         <div class=\"bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700\">
             <div class=\"p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 mb-4\"><i data-lucide=\"heart\" class=\"w-6 h-6\"></i></div>
-            <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">8.9k</p>
+            <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">    ";
+        // line 34
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["totalLikes"]) || array_key_exists("totalLikes", $context) ? $context["totalLikes"] : (function () { throw new RuntimeError('Variable "totalLikes" does not exist.', 34, $this->source); })()), "html", null, true);
+        yield "
+</p>
             <p class=\"text-sm text-slate-500\">Likes</p>
         </div>
     </div>
 
     ";
-        // line 38
+        // line 41
         yield "    <div class=\"bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700\">
         <div class=\"border-b border-slate-200 dark:border-slate-700 px-6 flex items-center justify-between\">
             <div class=\"flex gap-6\">
@@ -192,7 +205,7 @@ class __TwigTemplate_921da7b052108fabb8432339a8bf4d56 extends Template
 
         <div class=\"p-6 space-y-6\" id=\"content-publications\">
             ";
-        // line 52
+        // line 55
         yield "            <div class=\"bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 hover-card\">
                 <div class=\"flex items-center gap-3 mb-4\">
                     <img src=\"https://ui-avatars.com/api/?name=Marie+Dubois&background=random\" class=\"w-12 h-12 rounded-full\">
@@ -209,7 +222,7 @@ class __TwigTemplate_921da7b052108fabb8432339a8bf4d56 extends Template
                     <span class=\"flex items-center gap-2\"><i data-lucide=\"message-circle\" class=\"w-4 h-4\"></i>12 commentaires</span>
                     <div class=\"ml-auto flex gap-2\">
                         <a href=\"";
-        // line 67
+        // line 70
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_publications_edit", ["id" => 1]);
         yield "\" class=\"px-3 py-2 rounded-lg bg-violet-50 dark:bg-violet-900/20 text-violet-600 text-sm font-medium hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors\">Modérer</a>
                         <button onclick=\"if(confirm('Supprimer ?')) showToast('Publication supprimée', 'success')\" class=\"p-2 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/30 text-rose-600 transition-colors\"><i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i></button>
@@ -239,7 +252,7 @@ class __TwigTemplate_921da7b052108fabb8432339a8bf4d56 extends Template
                             <button onclick=\"showToast('Publication approuvée', 'success')\" class=\"px-4 py-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 text-sm font-medium hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors\">Approuver</button>
                             <button onclick=\"showToast('Publication masquée', 'warning')\" class=\"px-4 py-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 text-sm font-medium hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors\">Masquer</button>
                             <a href=\"";
-        // line 94
+        // line 97
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_publications_edit", ["id" => 1]);
         yield "\" class=\"px-4 py-2 rounded-lg bg-violet-100 dark:bg-violet-900/30 text-violet-700 text-sm font-medium hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors\">Examiner</a>
                         </div>
@@ -251,7 +264,7 @@ class __TwigTemplate_921da7b052108fabb8432339a8bf4d56 extends Template
 </div>
 
 ";
-        // line 103
+        // line 106
         yield from $this->unwrap()->yieldBlock('javascripts', $context, $blocks);
         
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
@@ -274,7 +287,7 @@ class __TwigTemplate_921da7b052108fabb8432339a8bf4d56 extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
 
-        // line 104
+        // line 107
         yield "<script>
     function switchTab(tab) {
         ['publications', 'commentaires', 'signales'].forEach(t => {
@@ -318,7 +331,7 @@ class __TwigTemplate_921da7b052108fabb8432339a8bf4d56 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  278 => 104,  255 => 103,  243 => 94,  213 => 67,  196 => 52,  181 => 38,  153 => 11,  149 => 8,  136 => 7,  113 => 5,  90 => 4,  67 => 3,  44 => 1,);
+        return array (  291 => 107,  268 => 106,  256 => 97,  226 => 70,  209 => 55,  194 => 41,  185 => 34,  171 => 23,  162 => 17,  159 => 16,  153 => 11,  149 => 8,  136 => 7,  113 => 5,  90 => 4,  67 => 3,  44 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -337,14 +350,16 @@ class __TwigTemplate_921da7b052108fabb8432339a8bf4d56 extends Template
         <div class=\"bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700\">
             <div class=\"flex items-center justify-between mb-4\">
                 <div class=\"p-3 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-600\"><i data-lucide=\"message-square\" class=\"w-6 h-6\"></i></div>
-                <span class=\"text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full\">+15%</span>
+                {#<span class=\"text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full\">+15%</span>#}
             </div>
-            <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">1,245</p>
+            <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">{{ totalPublications }}
+</p>
             <p class=\"text-sm text-slate-500\">Publications</p>
         </div>
         <div class=\"bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700\">
             <div class=\"p-3 rounded-xl bg-pink-100 dark:bg-pink-900/30 text-pink-600 mb-4\"><i data-lucide=\"message-circle\" class=\"w-6 h-6\"></i></div>
-            <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">3,678</p>
+            <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">{{ totalCommentaires }}
+</p>
             <p class=\"text-sm text-slate-500\">Commentaires</p>
         </div>
         <div class=\"bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700\">
@@ -354,7 +369,8 @@ class __TwigTemplate_921da7b052108fabb8432339a8bf4d56 extends Template
         </div>
         <div class=\"bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700\">
             <div class=\"p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 mb-4\"><i data-lucide=\"heart\" class=\"w-6 h-6\"></i></div>
-            <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">8.9k</p>
+            <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">    {{ totalLikes }}
+</p>
             <p class=\"text-sm text-slate-500\">Likes</p>
         </div>
     </div>

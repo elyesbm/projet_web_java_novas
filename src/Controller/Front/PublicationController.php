@@ -163,4 +163,25 @@ public function nouvelle(Request $request, EntityManagerInterface $em, UserRepos
         $this->addFlash('warning', 'La publication a ete signalee aux moderateurs.');
         return $this->redirectToRoute('app_publications_index');
     }
+    #[Route('/{id}/like', name: 'app_publication_like', methods: ['POST'])]
+public function like(
+    int $id,
+    PublicationRepository $repo,
+    EntityManagerInterface $em
+): Response {
+    $pub = $repo->find($id);
+    if (!$pub) {
+        return $this->json(['ok' => false], 404);
+    }
+
+    // simple incrément
+    $pub->incrementLikes();
+    $em->flush();
+
+    return $this->json([
+        'ok' => true,
+        'likes' => $pub->getLikes()
+    ]);
+}
+
 }
