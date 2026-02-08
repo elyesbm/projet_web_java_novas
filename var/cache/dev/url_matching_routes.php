@@ -41,7 +41,6 @@ return [
         '/marketplace/article/ajouter' => [[['_route' => 'app_marketplace_ajouter', '_controller' => 'App\\Controller\\Front\\MarketplaceController::ajouter'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
         '/publications' => [[['_route' => 'app_publications_index', '_controller' => 'App\\Controller\\Front\\PublicationController::index'], null, null, null, true, false, null]],
         '/publications/nouvelle' => [[['_route' => 'app_publication_nouvelle', '_controller' => 'App\\Controller\\Front\\PublicationController::nouvelle'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        '/reservation/mes-reservations' => [[['_route' => 'app_reservation_mes', '_controller' => 'App\\Controller\\Front\\ReservationController::mesReservations'], null, null, null, false, false, null]],
         '/skills' => [[['_route' => 'app_skills_index', '_controller' => 'App\\Controller\\Front\\SkillController::index'], null, null, null, true, false, null]],
         '/skills/mes-skills' => [[['_route' => 'app_skills_mes', '_controller' => 'App\\Controller\\Front\\SkillController::mesSkills'], null, null, null, false, false, null]],
         '/skills/ajouter' => [[['_route' => 'app_skills_ajouter', '_controller' => 'App\\Controller\\Front\\SkillController::ajouter'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
@@ -100,7 +99,11 @@ return [
                     .'|commenter(*:732)'
                     .'|signaler(*:748)'
                 .')'
-                .'|/reservation/(\\d+)/reserver/(\\d+)(*:790)'
+                .'|/reservation/(?'
+                    .'|mes\\-reservations/(\\d+)(*:796)'
+                    .'|(\\d+)/reserver/(\\d+)(*:824)'
+                    .'|annuler/(\\d+)(*:845)'
+                .')'
             .')/?$}sDu',
     ],
     [ // $dynamicRoutes
@@ -131,8 +134,10 @@ return [
         688 => [[['_route' => 'app_marketplace_modifier', '_controller' => 'App\\Controller\\Front\\MarketplaceController::modifier'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
         732 => [[['_route' => 'app_publication_commenter', '_controller' => 'App\\Controller\\Front\\PublicationController::commenter'], ['id'], ['POST' => 0], null, false, false, null]],
         748 => [[['_route' => 'app_publication_signaler', '_controller' => 'App\\Controller\\Front\\PublicationController::signaler'], ['id'], null, null, false, false, null]],
-        790 => [
-            [['_route' => 'app_reservation_reserver', '_controller' => 'App\\Controller\\Front\\ReservationController::reserver'], ['id', 'userId'], ['GET' => 0, 'POST' => 1], null, false, true, null],
+        796 => [[['_route' => 'app_reservation_mes', '_controller' => 'App\\Controller\\Front\\ReservationController::mesReservations'], ['id'], null, null, false, true, null]],
+        824 => [[['_route' => 'app_reservation_reserver', '_controller' => 'App\\Controller\\Front\\ReservationController::reserver'], ['id', 'userId'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
+        845 => [
+            [['_route' => 'app_reservation_annuler', '_controller' => 'App\\Controller\\Front\\ReservationController::annuler'], ['id'], ['POST' => 0], null, false, true, null],
             [null, null, null, null, false, false, 0],
         ],
     ],

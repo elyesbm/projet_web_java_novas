@@ -13,11 +13,12 @@
                 </a>
             
             <div class="flex items-center gap-4">
-                <a href="{{ path('app_reservation_mes') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                {% if app.user is defined and app.user %}
+                <a href="{{ path('app_reservation_mes', { id: app.user.id }) }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                     <i data-lucide="calendar-check" class="w-4 h-4"></i>
                     Mes reservations
                 </a>
-                
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -144,10 +145,17 @@
                         
                         <!-- Action -->
                         {% if places_restantes > 0 %}
-                        <a href="{{ path('app_reservation_reserver', { id: atelier.id }) }}" class="flex items-center justify-center gap-2 w-full h-12 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 group/btn">
+                        {% if app.user is defined and app.user %}
+                        <a href="{{ path('app_reservation_reserver', { id: atelier.id, userId: app.user.id }) }}" class="flex items-center justify-center gap-2 w-full h-12 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 group/btn">
                             <span>Reserver ma place</span>
                             <i data-lucide="arrow-right" class="w-5 h-5 group-hover/btn:translate-x-1 transition-transform"></i>
                         </a>
+                        {% else %}
+                        <span class="flex items-center justify-center gap-2 w-full h-12 bg-secondary text-muted-foreground rounded-xl font-medium cursor-not-allowed">
+                            <i data-lucide="log-in" class="w-5 h-5"></i>
+                            Connectez-vous pour reserver
+                        </span>
+                        {% endif %}
                         {% else %}
                         <span class="flex items-center justify-center gap-2 w-full h-12 bg-primary/50 text-white rounded-xl font-medium cursor-not-allowed opacity-75">
                             <i data-lucide="x-circle" class="w-5 h-5"></i>

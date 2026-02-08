@@ -22,18 +22,20 @@
 
         <!-- Navigation -->
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+            {% set nav_params = (app.user is defined and app.user) ? { id: app.user.id } : {} %}
             {% set navigation = [
                 { name: 'Mon Profil', route: 'app_user_profile', icon: 'user' },
                 { name: 'Mes Competences', route: 'app_skills_mes', icon: 'sparkles' },
                 { name: 'Parcours', route: 'app_learning_paths_index', icon: 'book-open' },
-                { name: 'Ateliers', route: 'app_reservation_ateliers', icon: 'calendar' },
-                { name: 'Mes Reservations', route: 'app_reservation_mes', icon: 'ticket' },
+                { name: 'Ateliers', route: 'app_ateliers', icon: 'calendar' },
+                { name: 'Mes Reservations', route: 'app_reservation_mes', icon: 'ticket', route_params: nav_params },
                 { name: 'Forum', route: 'app_publications_index', icon: 'message-square' },
             ] %}
             
             {% for item in navigation %}
                 {% set isActive = current_route == item.route %}
-                <a href="{{ path(item.route) }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all {{ isActive ? 'active bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-white/5' }}">
+                {% set item_params = item.route_params|default({}) %}
+                <a href="{{ path(item.route, item_params) }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all {{ isActive ? 'active bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-white/5' }}">
                     <i data-lucide="{{ item.icon }}" class="w-5 h-5 {{ isActive ? 'animate-pulse' : '' }}"></i>
                     {{ item.name }}
                 </a>

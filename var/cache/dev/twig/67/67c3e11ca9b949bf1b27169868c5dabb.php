@@ -113,6 +113,12 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
             <div class=\"flex items-center gap-4\">
                 <a href=\"";
         // line 15
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_reservation_mes", ["id" => CoreExtension::getAttribute($this->env, $this->source, (isset($context["user"]) || array_key_exists("user", $context) ? $context["user"] : (function () { throw new RuntimeError('Variable "user" does not exist.', 15, $this->source); })()), "id", [], "any", false, false, false, 15)]), "html", null, true);
+        yield "\" class=\"px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors\">
+                    Mes reservations
+                </a>
+                <a href=\"";
+        // line 18
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_ateliers");
         yield "\" class=\"px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors\">
                     Decouvrir les ateliers
@@ -140,15 +146,15 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
                 <div class=\"flex gap-4\">
                     <div class=\"glass-card rounded-2xl px-6 py-4 text-center\">
                         <p class=\"font-serif text-2xl font-bold text-primary\">";
-        // line 40
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["reservations"]) || array_key_exists("reservations", $context) ? $context["reservations"] : (function () { throw new RuntimeError('Variable "reservations" does not exist.', 40, $this->source); })())), "html", null, true);
+        // line 43
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["reservations"]) || array_key_exists("reservations", $context) ? $context["reservations"] : (function () { throw new RuntimeError('Variable "reservations" does not exist.', 43, $this->source); })())), "html", null, true);
         yield "</p>
                         <p class=\"text-xs text-muted-foreground\">A venir</p>
                     </div>
                     <div class=\"glass-card rounded-2xl px-6 py-4 text-center\">
                         <p class=\"font-serif text-2xl font-bold text-accent\">";
-        // line 44
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["historique"]) || array_key_exists("historique", $context) ? $context["historique"] : (function () { throw new RuntimeError('Variable "historique" does not exist.', 44, $this->source); })())), "html", null, true);
+        // line 47
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["historique"]) || array_key_exists("historique", $context) ? $context["historique"] : (function () { throw new RuntimeError('Variable "historique" does not exist.', 47, $this->source); })())), "html", null, true);
         yield "</p>
                         <p class=\"text-xs text-muted-foreground\">Passes</p>
                     </div>
@@ -157,45 +163,34 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
         </div>
     </section>
 
-    <section class=\"px-6 pb-8\">
-        <div class=\"max-w-7xl mx-auto\">
-            <div class=\"flex gap-2 p-1 bg-secondary/50 rounded-xl w-fit\">
-                <button class=\"px-6 py-2.5 rounded-lg bg-primary text-white text-sm font-medium shadow-lg shadow-primary/25\">
-                    A venir (";
-        // line 56
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["reservations"]) || array_key_exists("reservations", $context) ? $context["reservations"] : (function () { throw new RuntimeError('Variable "reservations" does not exist.', 56, $this->source); })())), "html", null, true);
-        yield ")
-                </button>
-                <button class=\"px-6 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors\">
-                    Historique (";
-        // line 59
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["historique"]) || array_key_exists("historique", $context) ? $context["historique"] : (function () { throw new RuntimeError('Variable "historique" does not exist.', 59, $this->source); })())), "html", null, true);
-        yield ")
-                </button>
-            </div>
-        </div>
-    </section>
-
     <section class=\"px-6 pb-24\">
         <div class=\"max-w-7xl mx-auto space-y-6\">
             ";
-        // line 67
+        // line 57
         $context['_parent'] = $context;
-        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["reservations"]) || array_key_exists("reservations", $context) ? $context["reservations"] : (function () { throw new RuntimeError('Variable "reservations" does not exist.', 67, $this->source); })()));
+        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["reservations"]) || array_key_exists("reservations", $context) ? $context["reservations"] : (function () { throw new RuntimeError('Variable "reservations" does not exist.', 57, $this->source); })()));
         $context['_iterated'] = false;
         foreach ($context['_seq'] as $context["_key"] => $context["reservation"]) {
-            // line 68
+            // line 58
+            yield "            ";
+            $context["atelier"] = CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "atelier", [], "any", false, false, false, 58);
+            // line 59
             yield "            <div class=\"glass-card rounded-3xl p-6 hover:border-primary/30 transition-all\">
                 <div class=\"flex flex-col lg:flex-row gap-6\">
-                    <div class=\"lg:w-48 flex-shrink-0\">
-                        <div class=\"aspect-square bg-white rounded-2xl p-4 flex items-center justify-center\">
-                            <div class=\"text-center\">
-                                <i data-lucide=\"qr-code\" class=\"w-24 h-24 text-foreground mx-auto mb-2\"></i>
-                                <p class=\"text-xs text-muted-foreground font-mono\">";
-            // line 74
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "qr_code", [], "any", false, false, false, 74), "html", null, true);
-            yield "</p>
-                            </div>
+
+                    ";
+            // line 63
+            yield "                    <div class=\"lg:w-48 flex-shrink-0\">
+                        <div class=\"aspect-square rounded-2xl overflow-hidden bg-secondary\">
+                            <img src=\"";
+            // line 65
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 65, $this->source); })()), "imageAtelier", [], "any", false, false, false, 65), "html", null, true);
+            yield "\"
+                                 alt=\"";
+            // line 66
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 66, $this->source); })()), "titreAtelier", [], "any", false, false, false, 66), "html", null, true);
+            yield "\"
+                                 class=\"w-full h-full object-cover\">
                         </div>
                     </div>
 
@@ -204,32 +199,34 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
                             <div>
                                 <div class=\"flex items-center gap-2 mb-2\">
                                     <span class=\"px-3 py-1 rounded-full text-xs font-medium ";
-            // line 83
-            yield (((CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "atelier", [], "any", false, false, false, 83), "type", [], "any", false, false, false, 83) == "soft")) ? ("bg-personal/20 text-personal") : ("bg-academic/20 text-academic"));
+            // line 75
+            yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 75, $this->source); })()), "contexteAtelier", [], "any", false, false, false, 75) == 0)) ? ("bg-personal/20 text-personal") : ("bg-academic/20 text-academic"));
             yield "\">
                                         ";
-            // line 84
-            yield (((CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "atelier", [], "any", false, false, false, 84), "type", [], "any", false, false, false, 84) == "soft")) ? ("Soft Skill") : ("Hard Skill"));
+            // line 76
+            yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 76, $this->source); })()), "contexteAtelier", [], "any", false, false, false, 76) == 0)) ? ("Soft Skill") : ("Hard Skill"));
             yield "
                                     </span>
                                     <span class=\"px-3 py-1 rounded-full text-xs font-medium ";
-            // line 86
-            yield (((CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "statut", [], "any", false, false, false, 86) == "confirmee")) ? ("bg-green-500/20 text-green-400") : ("bg-yellow-500/20 text-yellow-400"));
+            // line 78
+            yield (((CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "statutReservation", [], "any", false, false, false, 78) == 1)) ? ("bg-green-500/20 text-green-400") : ("bg-yellow-500/20 text-yellow-400"));
             yield "\">
                                         ";
-            // line 87
-            yield (((CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "statut", [], "any", false, false, false, 87) == "confirmee")) ? ("Confirmee") : ("En attente"));
+            // line 79
+            yield (((CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "statutReservation", [], "any", false, false, false, 79) == 1)) ? ("Confirmee") : ("En attente"));
             yield "
                                     </span>
                                 </div>
                                 <h3 class=\"text-xl font-semibold\">";
-            // line 90
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "atelier", [], "any", false, false, false, 90), "titre", [], "any", false, false, false, 90), "html", null, true);
+            // line 82
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 82, $this->source); })()), "titreAtelier", [], "any", false, false, false, 82), "html", null, true);
             yield "</h3>
-                                <p class=\"text-sm text-muted-foreground\">Reserve le ";
-            // line 91
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "date_reservation", [], "any", false, false, false, 91), "html", null, true);
-            yield "</p>
+                                <p class=\"text-sm text-muted-foreground\">
+                                    Atelier du ";
+            // line 84
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 84, $this->source); })()), "dateAtelier", [], "any", false, false, false, 84), "d/m/Y"), "html", null, true);
+            yield "
+                                </p>
                             </div>
 
                             <div class=\"flex gap-2\">
@@ -237,128 +234,79 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
                                     <i data-lucide=\"download\" class=\"w-4 h-4\"></i>
                                     QR Code
                                 </button>
-                                <button class=\"px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-2\">
-                                    <i data-lucide=\"x-circle\" class=\"w-4 h-4\"></i>
-                                    Annuler
-                                </button>
+                                <form method=\"post\" action=\"";
+            // line 93
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_reservation_annuler", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "id", [], "any", false, false, false, 93)]), "html", null, true);
+            yield "\" class=\"inline\" onsubmit=\"return confirm('Annuler cette réservation ?');\">
+                                    <input type=\"hidden\" name=\"_token\" value=\"";
+            // line 94
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("annuler" . CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "id", [], "any", false, false, false, 94))), "html", null, true);
+            yield "\">
+                                    <button type=\"submit\" class=\"px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-2\">
+                                        <i data-lucide=\"x-circle\" class=\"w-4 h-4\"></i>
+                                        Annuler
+                                    </button>
+                                </form>
                             </div>
                         </div>
 
-                        <div class=\"grid sm:grid-cols-3 gap-4\">
+                        <div class=\"grid sm:grid-cols-2 gap-4\">
                             <div class=\"flex items-center gap-3 p-3 bg-secondary/50 rounded-xl\">
                                 <i data-lucide=\"calendar\" class=\"w-5 h-5 text-primary\"></i>
                                 <div>
-                                    <p class=\"text-xs text-muted-foreground\">Date</p>
+                                    <p class=\"text-xs text-muted-foreground\">Date atelier</p>
                                     <p class=\"text-sm font-medium\">";
-            // line 111
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "atelier", [], "any", false, false, false, 111), "date", [], "any", false, false, false, 111), "html", null, true);
+            // line 108
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 108, $this->source); })()), "dateAtelier", [], "any", false, false, false, 108), "d F Y"), "html", null, true);
             yield "</p>
                                 </div>
                             </div>
                             <div class=\"flex items-center gap-3 p-3 bg-secondary/50 rounded-xl\">
-                                <i data-lucide=\"clock\" class=\"w-5 h-5 text-primary\"></i>
+                                <i data-lucide=\"tag\" class=\"w-5 h-5 text-primary\"></i>
                                 <div>
-                                    <p class=\"text-xs text-muted-foreground\">Horaire</p>
+                                    <p class=\"text-xs text-muted-foreground\">Type</p>
                                     <p class=\"text-sm font-medium\">";
-            // line 118
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "atelier", [], "any", false, false, false, 118), "heure", [], "any", false, false, false, 118), "html", null, true);
-            yield "</p>
-                                </div>
-                            </div>
-                            <div class=\"flex items-center gap-3 p-3 bg-secondary/50 rounded-xl\">
-                                <i data-lucide=\"map-pin\" class=\"w-5 h-5 text-primary\"></i>
-                                <div>
-                                    <p class=\"text-xs text-muted-foreground\">Lieu</p>
-                                    <p class=\"text-sm font-medium\">";
-            // line 125
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "atelier", [], "any", false, false, false, 125), "lieu", [], "any", false, false, false, 125), "html", null, true);
+            // line 115
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::capitalize($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 115, $this->source); })()), "typeAtelier", [], "any", false, false, false, 115)), "html", null, true);
             yield "</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class=\"flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t border-white/10\">
-                            <i data-lucide=\"user\" class=\"w-4 h-4\"></i>
-                            <span>Formateur : ";
-            // line 132
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "atelier", [], "any", false, false, false, 132), "formateur", [], "any", false, false, false, 132), "html", null, true);
-            yield "</span>
+                        ";
+            // line 120
+            if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "commentaireReservation", [], "any", false, false, false, 120)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+                // line 121
+                yield "                        <div class=\"flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t border-white/10\">
+                            <i data-lucide=\"message-square\" class=\"w-4 h-4\"></i>
+                            <span>";
+                // line 123
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "commentaireReservation", [], "any", false, false, false, 123), "html", null, true);
+                yield "</span>
                         </div>
-                    </div>
+                        ";
+            }
+            // line 126
+            yield "                    </div>
                 </div>
             </div>
             ";
             $context['_iterated'] = true;
         }
-        // line 137
+        // line 129
         if (!$context['_iterated']) {
-            // line 138
+            // line 130
             yield "            <div class=\"glass-card rounded-3xl p-12 text-center\">
-                <div class=\"w-20 h-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4\">
-                    <i data-lucide=\"calendar-x\" class=\"w-10 h-10 text-muted-foreground\"></i>
-                </div>
                 <h3 class=\"text-xl font-medium mb-2\">Aucune reservation</h3>
                 <p class=\"text-muted-foreground mb-6\">Vous n'avez pas encore reserve d'atelier.</p>
-                <a href=\"";
-            // line 144
-            yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_ateliers");
-            yield "\" class=\"inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors\">
-                    <i data-lucide=\"calendar\" class=\"w-5 h-5\"></i>
-                    Decouvrir les ateliers
-                </a>
             </div>
             ";
         }
         $_parent = $context['_parent'];
         unset($context['_seq'], $context['_key'], $context['reservation'], $context['_parent'], $context['_iterated']);
         $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 150
+        // line 135
         yield "        </div>
-    </section>
-
-    <section class=\"px-6 pb-24\">
-        <div class=\"max-w-7xl mx-auto\">
-            <h2 class=\"font-serif text-2xl font-medium mb-6\">Historique</h2>
-
-            <div class=\"space-y-4\">
-                ";
-        // line 158
-        $context['_parent'] = $context;
-        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["historique"]) || array_key_exists("historique", $context) ? $context["historique"] : (function () { throw new RuntimeError('Variable "historique" does not exist.', 158, $this->source); })()));
-        foreach ($context['_seq'] as $context["_key"] => $context["item"]) {
-            // line 159
-            yield "                <div class=\"glass-card rounded-2xl p-4 opacity-60 hover:opacity-100 transition-opacity\">
-                    <div class=\"flex items-center justify-between\">
-                        <div class=\"flex items-center gap-4\">
-                            <div class=\"w-12 h-12 rounded-xl bg-secondary flex items-center justify-center\">
-                                <i data-lucide=\"check-circle\" class=\"w-6 h-6 text-accent\"></i>
-                            </div>
-                            <div>
-                                <h4 class=\"font-medium\">";
-            // line 166
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["item"], "atelier", [], "any", false, false, false, 166), "titre", [], "any", false, false, false, 166), "html", null, true);
-            yield "</h4>
-                                <p class=\"text-sm text-muted-foreground\">";
-            // line 167
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["item"], "atelier", [], "any", false, false, false, 167), "date", [], "any", false, false, false, 167), "html", null, true);
-            yield " • ";
-            yield (((CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["item"], "atelier", [], "any", false, false, false, 167), "type", [], "any", false, false, false, 167) == "soft")) ? ("Soft Skill") : ("Hard Skill"));
-            yield "</p>
-                            </div>
-                        </div>
-                        <span class=\"px-3 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent\">
-                            Termine
-                        </span>
-                    </div>
-                </div>
-                ";
-        }
-        $_parent = $context['_parent'];
-        unset($context['_seq'], $context['_key'], $context['item'], $context['_parent']);
-        $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 176
-        yield "            </div>
-        </div>
     </section>
 </div>
 ";
@@ -392,7 +340,7 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  360 => 176,  343 => 167,  339 => 166,  330 => 159,  326 => 158,  316 => 150,  304 => 144,  296 => 138,  294 => 137,  284 => 132,  274 => 125,  264 => 118,  254 => 111,  231 => 91,  227 => 90,  221 => 87,  217 => 86,  212 => 84,  208 => 83,  196 => 74,  188 => 68,  183 => 67,  172 => 59,  166 => 56,  151 => 44,  144 => 40,  116 => 15,  109 => 11,  105 => 10,  100 => 7,  87 => 6,  64 => 4,  41 => 2,);
+        return array (  309 => 135,  299 => 130,  297 => 129,  290 => 126,  284 => 123,  280 => 121,  278 => 120,  270 => 115,  260 => 108,  243 => 94,  239 => 93,  227 => 84,  222 => 82,  216 => 79,  212 => 78,  207 => 76,  203 => 75,  191 => 66,  187 => 65,  183 => 63,  178 => 59,  175 => 58,  170 => 57,  157 => 47,  150 => 43,  122 => 18,  116 => 15,  109 => 11,  105 => 10,  100 => 7,  87 => 6,  64 => 4,  41 => 2,);
     }
 
     public function getSourceContext(): Source
@@ -411,6 +359,9 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
             </a>
 
             <div class=\"flex items-center gap-4\">
+                <a href=\"{{ path('app_reservation_mes', { id: user.id }) }}\" class=\"px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors\">
+                    Mes reservations
+                </a>
                 <a href=\"{{ path('app_ateliers') }}\" class=\"px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors\">
                     Decouvrir les ateliers
                 </a>
@@ -448,30 +399,19 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
         </div>
     </section>
 
-    <section class=\"px-6 pb-8\">
-        <div class=\"max-w-7xl mx-auto\">
-            <div class=\"flex gap-2 p-1 bg-secondary/50 rounded-xl w-fit\">
-                <button class=\"px-6 py-2.5 rounded-lg bg-primary text-white text-sm font-medium shadow-lg shadow-primary/25\">
-                    A venir ({{ reservations|length }})
-                </button>
-                <button class=\"px-6 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors\">
-                    Historique ({{ historique|length }})
-                </button>
-            </div>
-        </div>
-    </section>
-
     <section class=\"px-6 pb-24\">
         <div class=\"max-w-7xl mx-auto space-y-6\">
             {% for reservation in reservations %}
+            {% set atelier = reservation.atelier %}
             <div class=\"glass-card rounded-3xl p-6 hover:border-primary/30 transition-all\">
                 <div class=\"flex flex-col lg:flex-row gap-6\">
+
+                    {# ==== IMAGE ATELIER VIA URL (CORRECTION ICI) ==== #}
                     <div class=\"lg:w-48 flex-shrink-0\">
-                        <div class=\"aspect-square bg-white rounded-2xl p-4 flex items-center justify-center\">
-                            <div class=\"text-center\">
-                                <i data-lucide=\"qr-code\" class=\"w-24 h-24 text-foreground mx-auto mb-2\"></i>
-                                <p class=\"text-xs text-muted-foreground font-mono\">{{ reservation.qr_code }}</p>
-                            </div>
+                        <div class=\"aspect-square rounded-2xl overflow-hidden bg-secondary\">
+                            <img src=\"{{ atelier.imageAtelier }}\"
+                                 alt=\"{{ atelier.titreAtelier }}\"
+                                 class=\"w-full h-full object-cover\">
                         </div>
                     </div>
 
@@ -479,15 +419,17 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
                         <div class=\"flex flex-wrap items-start justify-between gap-4\">
                             <div>
                                 <div class=\"flex items-center gap-2 mb-2\">
-                                    <span class=\"px-3 py-1 rounded-full text-xs font-medium {{ reservation.atelier.type == 'soft' ? 'bg-personal/20 text-personal' : 'bg-academic/20 text-academic' }}\">
-                                        {{ reservation.atelier.type == 'soft' ? 'Soft Skill' : 'Hard Skill' }}
+                                    <span class=\"px-3 py-1 rounded-full text-xs font-medium {{ atelier.contexteAtelier == 0 ? 'bg-personal/20 text-personal' : 'bg-academic/20 text-academic' }}\">
+                                        {{ atelier.contexteAtelier == 0 ? 'Soft Skill' : 'Hard Skill' }}
                                     </span>
-                                    <span class=\"px-3 py-1 rounded-full text-xs font-medium {{ reservation.statut == 'confirmee' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400' }}\">
-                                        {{ reservation.statut == 'confirmee' ? 'Confirmee' : 'En attente' }}
+                                    <span class=\"px-3 py-1 rounded-full text-xs font-medium {{ reservation.statutReservation == 1 ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400' }}\">
+                                        {{ reservation.statutReservation == 1 ? 'Confirmee' : 'En attente' }}
                                     </span>
                                 </div>
-                                <h3 class=\"text-xl font-semibold\">{{ reservation.atelier.titre }}</h3>
-                                <p class=\"text-sm text-muted-foreground\">Reserve le {{ reservation.date_reservation }}</p>
+                                <h3 class=\"text-xl font-semibold\">{{ atelier.titreAtelier }}</h3>
+                                <p class=\"text-sm text-muted-foreground\">
+                                    Atelier du {{ atelier.dateAtelier|date('d/m/Y') }}
+                                </p>
                             </div>
 
                             <div class=\"flex gap-2\">
@@ -495,88 +437,53 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
                                     <i data-lucide=\"download\" class=\"w-4 h-4\"></i>
                                     QR Code
                                 </button>
-                                <button class=\"px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-2\">
-                                    <i data-lucide=\"x-circle\" class=\"w-4 h-4\"></i>
-                                    Annuler
-                                </button>
+                                <form method=\"post\" action=\"{{ path('app_reservation_annuler', { id: reservation.id }) }}\" class=\"inline\" onsubmit=\"return confirm('Annuler cette réservation ?');\">
+                                    <input type=\"hidden\" name=\"_token\" value=\"{{ csrf_token('annuler' ~ reservation.id) }}\">
+                                    <button type=\"submit\" class=\"px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-2\">
+                                        <i data-lucide=\"x-circle\" class=\"w-4 h-4\"></i>
+                                        Annuler
+                                    </button>
+                                </form>
                             </div>
                         </div>
 
-                        <div class=\"grid sm:grid-cols-3 gap-4\">
+                        <div class=\"grid sm:grid-cols-2 gap-4\">
                             <div class=\"flex items-center gap-3 p-3 bg-secondary/50 rounded-xl\">
                                 <i data-lucide=\"calendar\" class=\"w-5 h-5 text-primary\"></i>
                                 <div>
-                                    <p class=\"text-xs text-muted-foreground\">Date</p>
-                                    <p class=\"text-sm font-medium\">{{ reservation.atelier.date }}</p>
+                                    <p class=\"text-xs text-muted-foreground\">Date atelier</p>
+                                    <p class=\"text-sm font-medium\">{{ atelier.dateAtelier|date('d F Y') }}</p>
                                 </div>
                             </div>
                             <div class=\"flex items-center gap-3 p-3 bg-secondary/50 rounded-xl\">
-                                <i data-lucide=\"clock\" class=\"w-5 h-5 text-primary\"></i>
+                                <i data-lucide=\"tag\" class=\"w-5 h-5 text-primary\"></i>
                                 <div>
-                                    <p class=\"text-xs text-muted-foreground\">Horaire</p>
-                                    <p class=\"text-sm font-medium\">{{ reservation.atelier.heure }}</p>
-                                </div>
-                            </div>
-                            <div class=\"flex items-center gap-3 p-3 bg-secondary/50 rounded-xl\">
-                                <i data-lucide=\"map-pin\" class=\"w-5 h-5 text-primary\"></i>
-                                <div>
-                                    <p class=\"text-xs text-muted-foreground\">Lieu</p>
-                                    <p class=\"text-sm font-medium\">{{ reservation.atelier.lieu }}</p>
+                                    <p class=\"text-xs text-muted-foreground\">Type</p>
+                                    <p class=\"text-sm font-medium\">{{ atelier.typeAtelier|capitalize }}</p>
                                 </div>
                             </div>
                         </div>
 
+                        {% if reservation.commentaireReservation %}
                         <div class=\"flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t border-white/10\">
-                            <i data-lucide=\"user\" class=\"w-4 h-4\"></i>
-                            <span>Formateur : {{ reservation.atelier.formateur }}</span>
+                            <i data-lucide=\"message-square\" class=\"w-4 h-4\"></i>
+                            <span>{{ reservation.commentaireReservation }}</span>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
             {% else %}
             <div class=\"glass-card rounded-3xl p-12 text-center\">
-                <div class=\"w-20 h-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4\">
-                    <i data-lucide=\"calendar-x\" class=\"w-10 h-10 text-muted-foreground\"></i>
-                </div>
                 <h3 class=\"text-xl font-medium mb-2\">Aucune reservation</h3>
                 <p class=\"text-muted-foreground mb-6\">Vous n'avez pas encore reserve d'atelier.</p>
-                <a href=\"{{ path('app_ateliers') }}\" class=\"inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors\">
-                    <i data-lucide=\"calendar\" class=\"w-5 h-5\"></i>
-                    Decouvrir les ateliers
-                </a>
             </div>
             {% endfor %}
         </div>
     </section>
-
-    <section class=\"px-6 pb-24\">
-        <div class=\"max-w-7xl mx-auto\">
-            <h2 class=\"font-serif text-2xl font-medium mb-6\">Historique</h2>
-
-            <div class=\"space-y-4\">
-                {% for item in historique %}
-                <div class=\"glass-card rounded-2xl p-4 opacity-60 hover:opacity-100 transition-opacity\">
-                    <div class=\"flex items-center justify-between\">
-                        <div class=\"flex items-center gap-4\">
-                            <div class=\"w-12 h-12 rounded-xl bg-secondary flex items-center justify-center\">
-                                <i data-lucide=\"check-circle\" class=\"w-6 h-6 text-accent\"></i>
-                            </div>
-                            <div>
-                                <h4 class=\"font-medium\">{{ item.atelier.titre }}</h4>
-                                <p class=\"text-sm text-muted-foreground\">{{ item.atelier.date }} • {{ item.atelier.type == 'soft' ? 'Soft Skill' : 'Hard Skill' }}</p>
-                            </div>
-                        </div>
-                        <span class=\"px-3 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent\">
-                            Termine
-                        </span>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
 </div>
 {% endblock %}
+
 ", "front/reservation/mes_reservations.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\front\\reservation\\mes_reservations.html.twig");
     }
 }
