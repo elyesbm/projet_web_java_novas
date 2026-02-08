@@ -334,15 +334,37 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                                 </td>
 
                                 <td class=\"px-6 py-4 text-right\">
-                                    <span class=\"text-slate-400 italic text-sm\">—</span>
+                                    <div class=\"flex items-center justify-end gap-2\">
+                                        <a href=\"";
+            // line 162
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_ateliers_edit", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "id", [], "any", false, false, false, 162)]), "html", null, true);
+            yield "\"
+                                           class=\"inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors\">
+                                            <i data-lucide=\"pencil\" class=\"w-4 h-4\"></i>
+                                            Modifier
+                                        </a>
+                                        <form method=\"post\" action=\"";
+            // line 167
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_ateliers_delete", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "id", [], "any", false, false, false, 167)]), "html", null, true);
+            yield "\" class=\"inline\"
+                                              onsubmit=\"return confirm('Supprimer cet atelier ?');\">
+                                            <input type=\"hidden\" name=\"_token\" value=\"";
+            // line 169
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("delete" . CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "id", [], "any", false, false, false, 169))), "html", null, true);
+            yield "\">
+                                            <button type=\"submit\" class=\"inline-flex items-center justify-center p-2 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors\" title=\"Supprimer\">
+                                                <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         ";
             $context['_iterated'] = true;
         }
-        // line 164
+        // line 177
         if (!$context['_iterated']) {
-            // line 165
+            // line 178
             yield "                            <tr>
                                 <td colspan=\"4\" class=\"px-6 py-6 text-center text-slate-500\">
                                     Aucun atelier en base
@@ -353,7 +375,7 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
         $_parent = $context['_parent'];
         unset($context['_seq'], $context['_key'], $context['atelier'], $context['_parent'], $context['_iterated']);
         $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 171
+        // line 184
         yield "                        </tbody>
                     </table>
                 </div>
@@ -393,7 +415,7 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  357 => 171,  346 => 165,  344 => 164,  330 => 155,  322 => 150,  312 => 143,  306 => 140,  296 => 132,  291 => 131,  269 => 111,  260 => 108,  257 => 107,  253 => 106,  216 => 72,  158 => 17,  148 => 9,  135 => 8,  112 => 6,  89 => 5,  66 => 4,  43 => 2,);
+        return array (  379 => 184,  368 => 178,  366 => 177,  353 => 169,  348 => 167,  340 => 162,  330 => 155,  322 => 150,  312 => 143,  306 => 140,  296 => 132,  291 => 131,  269 => 111,  260 => 108,  257 => 107,  253 => 106,  216 => 72,  158 => 17,  148 => 9,  135 => 8,  112 => 6,  89 => 5,  66 => 4,  43 => 2,);
     }
 
     public function getSourceContext(): Source
@@ -558,7 +580,20 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                                 </td>
 
                                 <td class=\"px-6 py-4 text-right\">
-                                    <span class=\"text-slate-400 italic text-sm\">—</span>
+                                    <div class=\"flex items-center justify-end gap-2\">
+                                        <a href=\"{{ path('app_admin_ateliers_edit', { id: atelier.id }) }}\"
+                                           class=\"inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors\">
+                                            <i data-lucide=\"pencil\" class=\"w-4 h-4\"></i>
+                                            Modifier
+                                        </a>
+                                        <form method=\"post\" action=\"{{ path('app_admin_ateliers_delete', { id: atelier.id }) }}\" class=\"inline\"
+                                              onsubmit=\"return confirm('Supprimer cet atelier ?');\">
+                                            <input type=\"hidden\" name=\"_token\" value=\"{{ csrf_token('delete' ~ atelier.id) }}\">
+                                            <button type=\"submit\" class=\"inline-flex items-center justify-center p-2 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors\" title=\"Supprimer\">
+                                                <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         {% else %}
