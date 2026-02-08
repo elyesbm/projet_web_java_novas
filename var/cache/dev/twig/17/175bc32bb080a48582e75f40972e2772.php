@@ -197,9 +197,19 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
                 
                 <a href=\"";
         // line 100
+        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_reservations_list");
+        yield "\" class=\"nav-link flex items-center gap-3 px-4 py-3 rounded-xl ";
+        yield (((is_string($_v10 = (isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 100, $this->source); })())) && is_string($_v11 = "app_admin_reservations") && str_starts_with($_v10, $_v11))) ? ("active") : ("text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"));
+        yield "\">
+                    <div class=\"w-10 h-10 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-teal-600\"><i data-lucide=\"ticket\" class=\"w-5 h-5\"></i></div>
+                    <span class=\"font-semibold\">Réservations</span>
+                </a>
+                
+                <a href=\"";
+        // line 105
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_skills_list");
         yield "\" class=\"nav-link flex items-center gap-3 px-4 py-3 rounded-xl ";
-        yield (((is_string($_v10 = (isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 100, $this->source); })())) && is_string($_v11 = "app_admin_skills") && str_starts_with($_v10, $_v11))) ? ("active") : ("text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"));
+        yield (((is_string($_v12 = (isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 105, $this->source); })())) && is_string($_v13 = "app_admin_skills") && str_starts_with($_v12, $_v13))) ? ("active") : ("text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"));
         yield "\">
                     <div class=\"w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center text-cyan-600\"><i data-lucide=\"zap\" class=\"w-5 h-5\"></i></div>
                     <span class=\"font-semibold\">Compétences</span>
@@ -207,10 +217,10 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
                 
                 <div class=\"pt-4 mt-4 border-t border-slate-200 dark:border-slate-700\">
                     <a href=\"";
-        // line 106
+        // line 111
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_settings");
         yield "\" class=\"nav-link flex items-center gap-3 px-4 py-3 rounded-xl ";
-        yield ((((isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 106, $this->source); })()) == "app_admin_settings")) ? ("active") : ("text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"));
+        yield ((((isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 111, $this->source); })()) == "app_admin_settings")) ? ("active") : ("text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"));
         yield "\">
                         <div class=\"w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600\"><i data-lucide=\"settings\" class=\"w-5 h-5\"></i></div>
                         <span class=\"font-semibold\">Paramètres</span>
@@ -219,7 +229,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
             </nav>
             
             ";
-        // line 114
+        // line 119
         yield "            <div class=\"p-4 border-t border-slate-200 dark:border-slate-700\">
                 <div class=\"flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50\">
                     <img src=\"https://ui-avatars.com/api/?name=Admin&background=0ea5e9&color=fff\" class=\"w-10 h-10 rounded-full\">
@@ -236,11 +246,11 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
         </aside>
 
         ";
-        // line 130
+        // line 135
         yield "        <div class=\"flex-1 flex flex-col overflow-hidden\">
             
             ";
-        // line 133
+        // line 138
         yield "            <header class=\"sticky top-0 z-20 glass border-b border-slate-200 dark:border-slate-700 px-8 py-4\">
                 <div class=\"flex items-center justify-between\">
                     <div class=\"flex items-center gap-4\">
@@ -249,11 +259,11 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
                         </button>
                         <div>
                             <h2 class=\"text-2xl font-display font-bold text-slate-800 dark:text-white\">";
-        // line 140
+        // line 145
         yield from $this->unwrap()->yieldBlock('page_title', $context, $blocks);
         yield "</h2>
                             <p class=\"text-sm text-slate-500 hidden sm:block\">";
-        // line 141
+        // line 146
         yield from $this->unwrap()->yieldBlock('page_subtitle', $context, $blocks);
         yield "</p>
                         </div>
@@ -273,18 +283,18 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
             </header>
 
             ";
-        // line 159
+        // line 164
         yield "            <main class=\"flex-1 overflow-y-auto p-8\">
                 ";
-        // line 160
+        // line 165
         yield from $this->unwrap()->yieldBlock('body', $context, $blocks);
-        // line 161
+        // line 166
         yield "            </main>
         </div>
     </div>
 
     ";
-        // line 166
+        // line 171
         yield "    <div id=\"toast-container\" class=\"fixed bottom-6 right-6 z-50 space-y-3\"></div>
 
     <script>
@@ -319,9 +329,9 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
     </script>
     
     ";
-        // line 199
+        // line 204
         yield from $this->unwrap()->yieldBlock('javascripts', $context, $blocks);
-        // line 200
+        // line 205
         yield "</body>
 </html>";
         
@@ -378,7 +388,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
         yield from [];
     }
 
-    // line 140
+    // line 145
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -401,7 +411,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
         yield from [];
     }
 
-    // line 141
+    // line 146
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -424,7 +434,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
         yield from [];
     }
 
-    // line 160
+    // line 165
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -446,7 +456,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
         yield from [];
     }
 
-    // line 199
+    // line 204
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -489,7 +499,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  450 => 199,  428 => 160,  405 => 141,  382 => 140,  360 => 45,  337 => 6,  325 => 200,  323 => 199,  288 => 166,  282 => 161,  280 => 160,  277 => 159,  257 => 141,  253 => 140,  244 => 133,  240 => 130,  223 => 114,  211 => 106,  200 => 100,  190 => 95,  180 => 90,  170 => 85,  160 => 80,  150 => 75,  140 => 70,  137 => 69,  135 => 68,  131 => 66,  119 => 56,  116 => 55,  112 => 52,  105 => 46,  103 => 45,  61 => 6,  54 => 1,);
+        return array (  460 => 204,  438 => 165,  415 => 146,  392 => 145,  370 => 45,  347 => 6,  335 => 205,  333 => 204,  298 => 171,  292 => 166,  290 => 165,  287 => 164,  267 => 146,  263 => 145,  254 => 138,  250 => 135,  233 => 119,  221 => 111,  210 => 105,  200 => 100,  190 => 95,  180 => 90,  170 => 85,  160 => 80,  150 => 75,  140 => 70,  137 => 69,  135 => 68,  131 => 66,  119 => 56,  116 => 55,  112 => 52,  105 => 46,  103 => 45,  61 => 6,  54 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -591,6 +601,11 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
                 <a href=\"{{ path('app_admin_ateliers_list') }}\" class=\"nav-link flex items-center gap-3 px-4 py-3 rounded-xl {{ current_route starts with 'app_admin_ateliers' ? 'active' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}\">
                     <div class=\"w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600\"><i data-lucide=\"calendar-days\" class=\"w-5 h-5\"></i></div>
                     <span class=\"font-semibold\">Ateliers</span>
+                </a>
+                
+                <a href=\"{{ path('app_admin_reservations_list') }}\" class=\"nav-link flex items-center gap-3 px-4 py-3 rounded-xl {{ current_route starts with 'app_admin_reservations' ? 'active' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}\">
+                    <div class=\"w-10 h-10 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-teal-600\"><i data-lucide=\"ticket\" class=\"w-5 h-5\"></i></div>
+                    <span class=\"font-semibold\">Réservations</span>
                 </a>
                 
                 <a href=\"{{ path('app_admin_skills_list') }}\" class=\"nav-link flex items-center gap-3 px-4 py-3 rounded-xl {{ current_route starts with 'app_admin_skills' ? 'active' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}\">

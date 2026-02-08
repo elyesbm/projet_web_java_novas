@@ -22,6 +22,7 @@ return [
         '/admin/marketplace' => [[['_route' => 'app_admin_marketplace_list', '_controller' => 'App\\Controller\\Admin\\MarketplaceAdminController::list'], null, null, null, true, false, null]],
         '/admin/marketplace/new' => [[['_route' => 'app_admin_marketplace_new', '_controller' => 'App\\Controller\\Admin\\MarketplaceAdminController::new'], null, null, null, false, false, null]],
         '/admin/publications' => [[['_route' => 'app_admin_publications_list', '_controller' => 'App\\Controller\\Admin\\PublicationAdminController::list'], null, null, null, true, false, null]],
+        '/admin/reservations' => [[['_route' => 'app_admin_reservations_list', '_controller' => 'App\\Controller\\Admin\\ReservationAdminController::list'], null, null, null, true, false, null]],
         '/admin/settings' => [[['_route' => 'app_admin_settings', '_controller' => 'App\\Controller\\Admin\\SettingsController'], null, null, null, false, false, null]],
         '/admin/skills' => [[['_route' => 'app_admin_skills_list', '_controller' => 'App\\Controller\\Admin\\SkillAdminController::list'], null, null, null, true, false, null]],
         '/admin/skills/new' => [[['_route' => 'app_admin_skills_new', '_controller' => 'App\\Controller\\Admin\\SkillAdminController::new'], null, null, null, false, false, null]],
@@ -74,35 +75,36 @@ return [
                     .'|jobs/([^/]++)/edit(*:281)'
                     .'|marketplace/([^/]++)/edit(*:314)'
                     .'|publications/([^/]++)/edit(*:348)'
-                    .'|skills/([^/]++)/edit(*:376)'
-                    .'|users/([^/]++)/edit(*:403)'
+                    .'|reservations/(\\d+)/edit(*:379)'
+                    .'|skills/([^/]++)/edit(*:407)'
+                    .'|users/([^/]++)/edit(*:434)'
                 .')'
                 .'|/jobs/(?'
                     .'|offre/(?'
-                        .'|(\\d+)(*:435)'
-                        .'|(\\d+)/postuler(*:457)'
-                        .'|(\\d+)/modifier(*:479)'
-                        .'|(\\d+)/supprimer(*:502)'
-                        .'|(\\d+)/candidatures(*:528)'
+                        .'|(\\d+)(*:466)'
+                        .'|(\\d+)/postuler(*:488)'
+                        .'|(\\d+)/modifier(*:510)'
+                        .'|(\\d+)/supprimer(*:533)'
+                        .'|(\\d+)/candidatures(*:559)'
                     .')'
                     .'|candidature/(?'
-                        .'|(\\d+)/accepter(*:566)'
-                        .'|(\\d+)/refuser(*:587)'
+                        .'|(\\d+)/accepter(*:597)'
+                        .'|(\\d+)/refuser(*:618)'
                     .')'
                 .')'
-                .'|/learning\\-paths/([^/]++)/detail(*:629)'
+                .'|/learning\\-paths/([^/]++)/detail(*:660)'
                 .'|/marketplace/article/(?'
-                    .'|(\\d+)(*:666)'
-                    .'|(\\d+)/modifier(*:688)'
+                    .'|(\\d+)(*:697)'
+                    .'|(\\d+)/modifier(*:719)'
                 .')'
                 .'|/publications/([^/]++)/(?'
-                    .'|commenter(*:732)'
-                    .'|signaler(*:748)'
+                    .'|commenter(*:763)'
+                    .'|signaler(*:779)'
                 .')'
                 .'|/reservation/(?'
-                    .'|mes\\-reservations/(\\d+)(*:796)'
-                    .'|(\\d+)/reserver/(\\d+)(*:824)'
-                    .'|annuler/(\\d+)(*:845)'
+                    .'|mes\\-reservations/(\\d+)(*:827)'
+                    .'|(\\d+)/reserver/(\\d+)(*:855)'
+                    .'|annuler/(\\d+)(*:876)'
                 .')'
             .')/?$}sDu',
     ],
@@ -120,23 +122,24 @@ return [
         281 => [[['_route' => 'app_admin_jobs_edit', '_controller' => 'App\\Controller\\Admin\\JobsAdminController::edit'], ['id'], null, null, false, false, null]],
         314 => [[['_route' => 'app_admin_marketplace_edit', '_controller' => 'App\\Controller\\Admin\\MarketplaceAdminController::edit'], ['id'], null, null, false, false, null]],
         348 => [[['_route' => 'app_admin_publications_edit', '_controller' => 'App\\Controller\\Admin\\PublicationAdminController::edit'], ['id'], null, null, false, false, null]],
-        376 => [[['_route' => 'app_admin_skills_edit', '_controller' => 'App\\Controller\\Admin\\SkillAdminController::edit'], ['id'], null, null, false, false, null]],
-        403 => [[['_route' => 'app_admin_users_edit', '_controller' => 'App\\Controller\\Admin\\UserAdminController::edit'], ['id'], null, null, false, false, null]],
-        435 => [[['_route' => 'app_jobs_detail', '_controller' => 'App\\Controller\\Front\\JobsController::detail'], ['id'], null, null, false, true, null]],
-        457 => [[['_route' => 'app_jobs_postuler', '_controller' => 'App\\Controller\\Front\\JobsController::postuler'], ['id'], ['POST' => 0], null, false, false, null]],
-        479 => [[['_route' => 'app_jobs_modifier', '_controller' => 'App\\Controller\\Front\\JobsController::modifier'], ['id'], null, null, false, false, null]],
-        502 => [[['_route' => 'app_jobs_supprimer', '_controller' => 'App\\Controller\\Front\\JobsController::supprimer'], ['id'], null, null, false, false, null]],
-        528 => [[['_route' => 'app_jobs_candidatures', '_controller' => 'App\\Controller\\Front\\JobsController::candidatures'], ['id'], null, null, false, false, null]],
-        566 => [[['_route' => 'app_jobs_accepter_candidature', '_controller' => 'App\\Controller\\Front\\JobsController::accepterCandidature'], ['id'], ['POST' => 0], null, false, false, null]],
-        587 => [[['_route' => 'app_jobs_refuser_candidature', '_controller' => 'App\\Controller\\Front\\JobsController::refuserCandidature'], ['id'], ['POST' => 0], null, false, false, null]],
-        629 => [[['_route' => 'app_learning_path_detail', '_controller' => 'App\\Controller\\Front\\LearningPathController::detail'], ['id'], null, null, false, false, null]],
-        666 => [[['_route' => 'app_marketplace_detail', '_controller' => 'App\\Controller\\Front\\MarketplaceController::detail'], ['id'], null, null, false, true, null]],
-        688 => [[['_route' => 'app_marketplace_modifier', '_controller' => 'App\\Controller\\Front\\MarketplaceController::modifier'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        732 => [[['_route' => 'app_publication_commenter', '_controller' => 'App\\Controller\\Front\\PublicationController::commenter'], ['id'], ['POST' => 0], null, false, false, null]],
-        748 => [[['_route' => 'app_publication_signaler', '_controller' => 'App\\Controller\\Front\\PublicationController::signaler'], ['id'], null, null, false, false, null]],
-        796 => [[['_route' => 'app_reservation_mes', '_controller' => 'App\\Controller\\Front\\ReservationController::mesReservations'], ['id'], null, null, false, true, null]],
-        824 => [[['_route' => 'app_reservation_reserver', '_controller' => 'App\\Controller\\Front\\ReservationController::reserver'], ['id', 'userId'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
-        845 => [
+        379 => [[['_route' => 'app_admin_reservations_edit', '_controller' => 'App\\Controller\\Admin\\ReservationAdminController::edit'], ['id'], null, null, false, false, null]],
+        407 => [[['_route' => 'app_admin_skills_edit', '_controller' => 'App\\Controller\\Admin\\SkillAdminController::edit'], ['id'], null, null, false, false, null]],
+        434 => [[['_route' => 'app_admin_users_edit', '_controller' => 'App\\Controller\\Admin\\UserAdminController::edit'], ['id'], null, null, false, false, null]],
+        466 => [[['_route' => 'app_jobs_detail', '_controller' => 'App\\Controller\\Front\\JobsController::detail'], ['id'], null, null, false, true, null]],
+        488 => [[['_route' => 'app_jobs_postuler', '_controller' => 'App\\Controller\\Front\\JobsController::postuler'], ['id'], ['POST' => 0], null, false, false, null]],
+        510 => [[['_route' => 'app_jobs_modifier', '_controller' => 'App\\Controller\\Front\\JobsController::modifier'], ['id'], null, null, false, false, null]],
+        533 => [[['_route' => 'app_jobs_supprimer', '_controller' => 'App\\Controller\\Front\\JobsController::supprimer'], ['id'], null, null, false, false, null]],
+        559 => [[['_route' => 'app_jobs_candidatures', '_controller' => 'App\\Controller\\Front\\JobsController::candidatures'], ['id'], null, null, false, false, null]],
+        597 => [[['_route' => 'app_jobs_accepter_candidature', '_controller' => 'App\\Controller\\Front\\JobsController::accepterCandidature'], ['id'], ['POST' => 0], null, false, false, null]],
+        618 => [[['_route' => 'app_jobs_refuser_candidature', '_controller' => 'App\\Controller\\Front\\JobsController::refuserCandidature'], ['id'], ['POST' => 0], null, false, false, null]],
+        660 => [[['_route' => 'app_learning_path_detail', '_controller' => 'App\\Controller\\Front\\LearningPathController::detail'], ['id'], null, null, false, false, null]],
+        697 => [[['_route' => 'app_marketplace_detail', '_controller' => 'App\\Controller\\Front\\MarketplaceController::detail'], ['id'], null, null, false, true, null]],
+        719 => [[['_route' => 'app_marketplace_modifier', '_controller' => 'App\\Controller\\Front\\MarketplaceController::modifier'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        763 => [[['_route' => 'app_publication_commenter', '_controller' => 'App\\Controller\\Front\\PublicationController::commenter'], ['id'], ['POST' => 0], null, false, false, null]],
+        779 => [[['_route' => 'app_publication_signaler', '_controller' => 'App\\Controller\\Front\\PublicationController::signaler'], ['id'], null, null, false, false, null]],
+        827 => [[['_route' => 'app_reservation_mes', '_controller' => 'App\\Controller\\Front\\ReservationController::mesReservations'], ['id'], null, null, false, true, null]],
+        855 => [[['_route' => 'app_reservation_reserver', '_controller' => 'App\\Controller\\Front\\ReservationController::reserver'], ['id', 'userId'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
+        876 => [
             [['_route' => 'app_reservation_annuler', '_controller' => 'App\\Controller\\Front\\ReservationController::annuler'], ['id'], ['POST' => 0], null, false, true, null],
             [null, null, null, null, false, false, 0],
         ],
