@@ -375,6 +375,6 @@ class __TwigTemplate_a505aedcf757d2f6f374bd4d862c1149 extends Template
         </div>
     </div>
 </div>
-{% endblock %}", "admin/dashboard.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\admin\\dashboard.html.twig");
+{% endblock %}", "admin/dashboard.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\admin\\dashboard.html.twig");
     }
 }

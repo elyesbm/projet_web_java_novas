@@ -1,208 +1,180 @@
+
 {% extends 'front/base_home.html.twig' %}
 
-{% block title %}Reserver - {{ atelier.titre }} - NoVas{% endblock %}
+{% block title %}Mes Reservations - NoVas{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-background relative overflow-hidden">
-    <!-- Background Effects -->
-    <div class="absolute inset-0 gradient-orb"></div>
-    <div class="absolute top-1/4 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]"></div>
-    <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[100px]"></div>
-
-    <!-- Navigation -->
+<div class="min-h-screen bg-background">
     <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="{{ path('app_reservation_ateliers') }}" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                <span class="text-sm">Retour aux ateliers</span>
+            <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
+                <img src="{{ asset('images/logo.png') }}" alt="EduVie" class="h-10 w-auto">
             </a>
-            
-            <div class="flex items-center gap-2">
-                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
-                </div>
+
+            <div class="flex items-center gap-4">
+                <a href="{{ path('app_ateliers') }}" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Decouvrir les ateliers
+                </a>
             </div>
         </div>
     </nav>
 
-    <!-- Content -->
-    <div class="pt-32 pb-24 px-6">
-        <div class="max-w-6xl mx-auto">
-            <div class="grid lg:grid-cols-2 gap-12">
-                <!-- Left - Atelier Info -->
-                <div class="space-y-6">
-                    <div class="glass-card rounded-3xl overflow-hidden">
-                        <div class="relative h-64">
-                            <img src="{{ asset('images/' ~ atelier.image) }}" alt="{{ atelier.titre }}" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
-                            <div class="absolute top-4 left-4">
-                                <span class="px-3 py-1 rounded-full text-xs font-medium {{ atelier.type == 'soft' ? 'bg-personal/90 text-white' : 'bg-academic/90 text-white' }} backdrop-blur-sm">
-                                    {{ atelier.type == 'soft' ? 'Soft Skill' : 'Hard Skill' }}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <div class="p-6">
-                            <div class="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-                                <i data-lucide="folder" class="w-3 h-3"></i>
-                                {{ atelier.categorie }}
-                            </div>
-                            
-                            <h1 class="font-serif text-2xl font-medium mb-4">{{ atelier.titre }}</h1>
-                            <p class="text-muted-foreground mb-6">{{ atelier.description }}</p>
-                            
-                            <div class="space-y-3">
-                                <div class="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl">
-                                    <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                                        <i data-lucide="calendar" class="w-5 h-5 text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-muted-foreground">Date</p>
-                                        <p class="font-medium">{{ atelier.date }}</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl">
-                                    <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                                        <i data-lucide="clock" class="w-5 h-5 text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-muted-foreground">Horaire</p>
-                                        <p class="font-medium">{{ atelier.heure }}</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl">
-                                    <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                                        <i data-lucide="map-pin" class="w-5 h-5 text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-muted-foreground">Lieu</p>
-                                        <p class="font-medium">{{ atelier.lieu }}</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl">
-                                    <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                                        <i data-lucide="user" class="w-5 h-5 text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-muted-foreground">Formateur</p>
-                                        <p class="font-medium">{{ atelier.formateur }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    <section class="pt-32 pb-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm mb-4">
+                        <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                        Mes reservations
                     </div>
-                    
-                    <!-- Alert -->
-                    <div class="glass-card rounded-2xl p-4 border border-yellow-500/30 bg-yellow-500/10">
-                        <div class="flex items-start gap-3">
-                            <i data-lucide="alert-circle" class="w-5 h-5 text-yellow-500 mt-0.5"></i>
-                            <div>
-                                <p class="text-sm font-medium text-yellow-500">Places limitees</p>
-                                <p class="text-xs text-muted-foreground mt-1">Il reste seulement {{ atelier.places_restantes }} places disponibles pour cet atelier.</p>
-                            </div>
-                        </div>
-                    </div>
+                    <h1 class="font-serif text-4xl md:text-5xl font-medium mb-4">
+                        Vos <span class="italic text-primary">ateliers</span> reserves
+                    </h1>
+                    <p class="text-muted-foreground max-w-xl">
+                        Retrouvez tous vos ateliers et telechargez vos QR codes d'acces.
+                    </p>
                 </div>
 
-                <!-- Right - Reservation Form -->
-                <div>
-                    <div class="glass-card rounded-3xl p-8 sticky top-32">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                                <i data-lucide="ticket" class="w-6 h-6 text-primary"></i>
-                            </div>
-                            <div>
-                                <h2 class="font-serif text-xl font-medium">Formulaire de reservation</h2>
-                                <p class="text-sm text-muted-foreground">Completez vos informations</p>
-                            </div>
-                        </div>
-                        
-                        <form method="post" class="space-y-5">
-                            <!-- Personal Info -->
-                            <div class="space-y-4">
-                                <h3 class="text-sm font-medium text-muted-foreground uppercase tracking-wider">Informations personnelles</h3>
-                                
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium mb-2">Prenom</label>
-                                        <input type="text" name="prenom" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 text-sm focus:outline-none focus:border-primary transition-all" value="Sarah">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium mb-2">Nom</label>
-                                        <input type="text" name="nom" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 text-sm focus:outline-none focus:border-primary transition-all" value="Martin">
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium mb-2">Email universitaire</label>
-                                    <input type="email" name="email" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 text-sm focus:outline-none focus:border-primary transition-all" value="sarah.martin@univ.fr">
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium mb-2">Numero etudiant</label>
-                                    <input type="text" name="numero_etudiant" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 text-sm focus:outline-none focus:border-primary transition-all" placeholder="EX: 2024001234">
-                                </div>
-                            </div>
-                            
-                            <!-- Reservation Details -->
-                            <div class="space-y-4 pt-4 border-t border-white/10">
-                                <h3 class="text-sm font-medium text-muted-foreground uppercase tracking-wider">Details de la reservation</h3>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium mb-2">Nombre de places</label>
-                                    <div class="flex items-center gap-4">
-                                        <button type="button" onclick="updatePlaces(-1)" class="w-12 h-12 rounded-xl bg-secondary border border-white/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
-                                            <i data-lucide="minus" class="w-5 h-5"></i>
-                                        </button>
-                                        <input type="number" name="places" id="places" value="1" min="1" max="{{ atelier.places_restantes }}" readonly class="w-20 h-12 bg-transparent text-center text-xl font-bold">
-                                        <button type="button" onclick="updatePlaces(1)" class="w-12 h-12 rounded-xl bg-secondary border border-white/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
-                                            <i data-lucide="plus" class="w-5 h-5"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium mb-2">Motivations (optionnel)</label>
-                                    <textarea name="motivations" rows="3" class="w-full bg-secondary border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:border-primary transition-all resize-none" placeholder="Pourquoi souhaitez-vous participer a cet atelier ?"></textarea>
-                                </div>
-                            </div>
-                            
-                            <!-- Conditions -->
-                            <label class="flex items-start gap-3 cursor-pointer group">
-                                <input type="checkbox" required class="mt-1 w-5 h-5 rounded border-white/10 bg-secondary text-primary focus:ring-primary focus:ring-offset-0">
-                                <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                                    Je m'engage a etre present a l'atelier ou a prevenir en cas d'empechement. J'ai lu le <a href="#" class="text-primary hover:underline">reglement des ateliers</a>.
-                                </span>
-                            </label>
-                            
-                            <!-- Submit -->
-                            <button type="submit" class="w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 group">
-                                <span>Confirmer ma reservation</span>
-                                <i data-lucide="check-circle" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                            </button>
-                            
-                            <p class="text-center text-xs text-muted-foreground">
-                                Vous recevrez un email de confirmation avec votre QR code d'acces.
-                            </p>
-                        </form>
+                <div class="flex gap-4">
+                    <div class="glass-card rounded-2xl px-6 py-4 text-center">
+                        <p class="font-serif text-2xl font-bold text-primary">{{ reservations|length }}</p>
+                        <p class="text-xs text-muted-foreground">A venir</p>
+                    </div>
+                    <div class="glass-card rounded-2xl px-6 py-4 text-center">
+                        <p class="font-serif text-2xl font-bold text-accent">{{ historique|length }}</p>
+                        <p class="text-xs text-muted-foreground">Passes</p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </section>
 
-<script>
-    function updatePlaces(delta) {
-        const input = document.getElementById('places');
-        const max = parseInt(input.max);
-        let value = parseInt(input.value) + delta;
-        if (value < 1) value = 1;
-        if (value > max) value = max;
-        input.value = value;
-    }
-</script>
+    <section class="px-6 pb-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex gap-2 p-1 bg-secondary/50 rounded-xl w-fit">
+                <button class="px-6 py-2.5 rounded-lg bg-primary text-white text-sm font-medium shadow-lg shadow-primary/25">
+                    A venir ({{ reservations|length }})
+                </button>
+                <button class="px-6 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors">
+                    Historique ({{ historique|length }})
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="px-6 pb-24">
+        <div class="max-w-7xl mx-auto space-y-6">
+            {% for reservation in reservations %}
+            <div class="glass-card rounded-3xl p-6 hover:border-primary/30 transition-all">
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <div class="lg:w-48 flex-shrink-0">
+                        <div class="aspect-square bg-white rounded-2xl p-4 flex items-center justify-center">
+                            <div class="text-center">
+                                <i data-lucide="qr-code" class="w-24 h-24 text-foreground mx-auto mb-2"></i>
+                                <p class="text-xs text-muted-foreground font-mono">{{ reservation.qr_code }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 space-y-4">
+                        <div class="flex flex-wrap items-start justify-between gap-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium {{ reservation.atelier.type == 'soft' ? 'bg-personal/20 text-personal' : 'bg-academic/20 text-academic' }}">
+                                        {{ reservation.atelier.type == 'soft' ? 'Soft Skill' : 'Hard Skill' }}
+                                    </span>
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium {{ reservation.statut == 'confirmee' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400' }}">
+                                        {{ reservation.statut == 'confirmee' ? 'Confirmee' : 'En attente' }}
+                                    </span>
+                                </div>
+                                <h3 class="text-xl font-semibold">{{ reservation.atelier.titre }}</h3>
+                                <p class="text-sm text-muted-foreground">Reserve le {{ reservation.date_reservation }}</p>
+                            </div>
+
+                            <div class="flex gap-2">
+                                <button class="px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2">
+                                    <i data-lucide="download" class="w-4 h-4"></i>
+                                    QR Code
+                                </button>
+                                <button class="px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-2">
+                                    <i data-lucide="x-circle" class="w-4 h-4"></i>
+                                    Annuler
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid sm:grid-cols-3 gap-4">
+                            <div class="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl">
+                                <i data-lucide="calendar" class="w-5 h-5 text-primary"></i>
+                                <div>
+                                    <p class="text-xs text-muted-foreground">Date</p>
+                                    <p class="text-sm font-medium">{{ reservation.atelier.date }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl">
+                                <i data-lucide="clock" class="w-5 h-5 text-primary"></i>
+                                <div>
+                                    <p class="text-xs text-muted-foreground">Horaire</p>
+                                    <p class="text-sm font-medium">{{ reservation.atelier.heure }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl">
+                                <i data-lucide="map-pin" class="w-5 h-5 text-primary"></i>
+                                <div>
+                                    <p class="text-xs text-muted-foreground">Lieu</p>
+                                    <p class="text-sm font-medium">{{ reservation.atelier.lieu }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t border-white/10">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                            <span>Formateur : {{ reservation.atelier.formateur }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="glass-card rounded-3xl p-12 text-center">
+                <div class="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="calendar-x" class="w-10 h-10 text-muted-foreground"></i>
+                </div>
+                <h3 class="text-xl font-medium mb-2">Aucune reservation</h3>
+                <p class="text-muted-foreground mb-6">Vous n'avez pas encore reserve d'atelier.</p>
+                <a href="{{ path('app_ateliers') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors">
+                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                    Decouvrir les ateliers
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="px-6 pb-24">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="font-serif text-2xl font-medium mb-6">Historique</h2>
+
+            <div class="space-y-4">
+                {% for item in historique %}
+                <div class="glass-card rounded-2xl p-4 opacity-60 hover:opacity-100 transition-opacity">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+                                <i data-lucide="check-circle" class="w-6 h-6 text-accent"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium">{{ item.atelier.titre }}</h4>
+                                <p class="text-sm text-muted-foreground">{{ item.atelier.date }} • {{ item.atelier.type == 'soft' ? 'Soft Skill' : 'Hard Skill' }}</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent">
+                            Termine
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
 {% endblock %}

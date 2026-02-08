@@ -5,15 +5,27 @@ namespace App\Controller\Admin;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Entity\Atelier;
+use App\Repository\AtelierRepository;
+use App\Form\AtelierType;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
+
 
 #[Route('/admin/ateliers', name: 'app_admin_ateliers_')]
 class AtelierAdminController extends AbstractController
 {
-    #[Route('/', name: 'list')]
-    public function list(): Response
-    {
-        return $this->render('admin/atelier/list.html.twig');
+   #[Route('/', name: 'list')]
+   public function list(AtelierRepository $atelierRepository): Response
+   {
+    $ateliers = $atelierRepository->findAll();
+
+    return $this->render('admin/atelier/list.html.twig', [
+        'ateliers' => $ateliers,
+    ]);
     }
+
+
 
     #[Route('/new', name: 'new')]
     public function new(): Response

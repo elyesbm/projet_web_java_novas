@@ -1104,3 +1104,10 @@ ea49fc,127.0.0.1,GET,http://127.0.0.1:8000/login,1770340489,,200,request
 c37c73,127.0.0.1,GET,http://127.0.0.1:8000/admin/users/,1770340789,,200,request
 bbe788,127.0.0.1,GET,http://127.0.0.1:8000/register,1770341197,,200,request
 681ce8,127.0.0.1,GET,http://127.0.0.1:8000/home,1770341213,,200,request
+fa278f,127.0.0.1,GET,http://127.0.0.1:8000/,1770544586,,404,request
+82e86c,127.0.0.1,GET,http://127.0.0.1:8000/admin,1770544591,,301,request
+269bfc,127.0.0.1,GET,http://127.0.0.1:8000/admin/,1770544592,,200,request
+cbb919,127.0.0.1,GET,http://127.0.0.1:8000/favicon.ico,1770544593,dfdecd,404,request
+dfdecd,127.0.0.1,GET,http://127.0.0.1:8000/favicon.ico,1770544593,,404,request
+ff208d,127.0.0.1,GET,http://127.0.0.1:8000/admin/ateliers/,1770544595,,200,request
+d5452d,127.0.0.1,GET,http://127.0.0.1:8000/admin/ateliers/,1770544721,,200,request

@@ -694,6 +694,6 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
     
     {% block javascripts %}{% endblock %}
 </body>
-</html>", "admin/base_admin.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\admin\\base_admin.html.twig");
+</html>", "admin/base_admin.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\admin\\base_admin.html.twig");
     }
 }
