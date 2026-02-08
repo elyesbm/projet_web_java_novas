@@ -378,6 +378,6 @@ class __TwigTemplate_b2140c60c83b3927a55b727cb667b0a6 extends Template
         </div>
     </div>
 </div>
-{% endblock %}", "front/marketplace/ajouter.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\marketplace\\ajouter.html.twig");
+{% endblock %}", "front/marketplace/ajouter.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\front\\marketplace\\ajouter.html.twig");
     }
 }

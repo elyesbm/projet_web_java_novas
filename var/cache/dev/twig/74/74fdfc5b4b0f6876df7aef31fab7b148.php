@@ -428,6 +428,6 @@ class __TwigTemplate_c7e078c813ed909917d27b5679257786 extends Template
         </div>
     </div>
 </div>
-{% endblock %}", "admin/atelier/form.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\admin\\atelier\\form.html.twig");
+{% endblock %}", "admin/atelier/form.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\admin\\atelier\\form.html.twig");
     }
 }

@@ -110,7 +110,7 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
                 </div>
                 <span class=\"text-xl font-bold tracking-tight\">Edu<span class=\"text-primary\">Vie</span></span>
             </a>
-            
+
             <div class=\"flex items-center gap-4\">
                 <a href=\"";
         // line 18
@@ -119,7 +119,6 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
                     <i data-lucide=\"plus\" class=\"w-4 h-4\"></i>
                     Nouvelle publication
                 </a>
-                
             </div>
         </div>
     </nav>
@@ -127,7 +126,7 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
     <!-- Header -->
     <section class=\"pt-32 pb-8 px-6 relative overflow-hidden\">
         <div class=\"absolute inset-0 gradient-orb\"></div>
-        
+
         <div class=\"max-w-4xl mx-auto relative\">
             <div class=\"text-center mb-8\">
                 <div class=\"inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm mb-4\">
@@ -141,42 +140,42 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
                     Partagez vos experiences, posez vos questions et entraidez-vous avec d'autres etudiants.
                 </p>
             </div>
-            
+
             <!-- Mobile New Post Button -->
             <div class=\"sm:hidden mb-6\">
                 <a href=\"";
-        // line 47
+        // line 46
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publication_nouvelle");
         yield "\" class=\"flex items-center justify-center gap-2 w-full h-12 bg-primary text-white rounded-xl font-medium\">
                     <i data-lucide=\"plus\" class=\"w-5 h-5\"></i>
                     Nouvelle publication
                 </a>
             </div>
-            
+
             <!-- Filters -->
             <div class=\"glass-card rounded-2xl p-2 flex flex-wrap gap-2 justify-center\">
                 <a href=\"";
-        // line 55
+        // line 54
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publications_index");
         yield "\" class=\"px-6 py-2.5 rounded-xl text-sm font-medium transition-colors ";
-        yield (((null === (isset($context["contexte_filter"]) || array_key_exists("contexte_filter", $context) ? $context["contexte_filter"] : (function () { throw new RuntimeError('Variable "contexte_filter" does not exist.', 55, $this->source); })()))) ? ("bg-primary text-white") : ("bg-secondary border border-white/10 text-muted-foreground hover:text-foreground"));
+        yield (((null === (isset($context["contexte_filter"]) || array_key_exists("contexte_filter", $context) ? $context["contexte_filter"] : (function () { throw new RuntimeError('Variable "contexte_filter" does not exist.', 54, $this->source); })()))) ? ("bg-primary text-white") : ("bg-secondary border border-white/10 text-muted-foreground hover:text-foreground"));
         yield "\">
                     Toutes
                 </a>
                 <a href=\"";
-        // line 58
+        // line 57
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publications_index", ["contexte" => 1]);
         yield "\" class=\"px-6 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 ";
-        yield ((((isset($context["contexte_filter"]) || array_key_exists("contexte_filter", $context) ? $context["contexte_filter"] : (function () { throw new RuntimeError('Variable "contexte_filter" does not exist.', 58, $this->source); })()) == 1)) ? ("bg-academic/20 text-academic border border-academic/50") : ("bg-secondary border border-white/10 text-muted-foreground hover:text-foreground"));
+        yield ((((isset($context["contexte_filter"]) || array_key_exists("contexte_filter", $context) ? $context["contexte_filter"] : (function () { throw new RuntimeError('Variable "contexte_filter" does not exist.', 57, $this->source); })()) == 1)) ? ("bg-academic/20 text-academic border border-academic/50") : ("bg-secondary border border-white/10 text-muted-foreground hover:text-foreground"));
         yield "\">
                     <span class=\"w-2 h-2 rounded-full bg-academic\"></span>
                     Academic
                 </a>
                 <a href=\"";
-        // line 62
+        // line 61
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publications_index", ["contexte" => 2]);
         yield "\" class=\"px-6 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 ";
-        yield ((((isset($context["contexte_filter"]) || array_key_exists("contexte_filter", $context) ? $context["contexte_filter"] : (function () { throw new RuntimeError('Variable "contexte_filter" does not exist.', 62, $this->source); })()) == 2)) ? ("bg-personal/20 text-personal border border-personal/50") : ("bg-secondary border border-white/10 text-muted-foreground hover:text-foreground"));
+        yield ((((isset($context["contexte_filter"]) || array_key_exists("contexte_filter", $context) ? $context["contexte_filter"] : (function () { throw new RuntimeError('Variable "contexte_filter" does not exist.', 61, $this->source); })()) == 2)) ? ("bg-personal/20 text-personal border border-personal/50") : ("bg-secondary border border-white/10 text-muted-foreground hover:text-foreground"));
         yield "\">
                     <span class=\"w-2 h-2 rounded-full bg-personal\"></span>
                     Personal
@@ -189,283 +188,372 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
     <section class=\"px-6 pb-24\">
         <div class=\"max-w-4xl mx-auto space-y-6\">
             ";
-        // line 73
+        // line 72
         $context['_parent'] = $context;
-        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["publications"]) || array_key_exists("publications", $context) ? $context["publications"] : (function () { throw new RuntimeError('Variable "publications" does not exist.', 73, $this->source); })()));
+        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["publications"]) || array_key_exists("publications", $context) ? $context["publications"] : (function () { throw new RuntimeError('Variable "publications" does not exist.', 72, $this->source); })()));
         foreach ($context['_seq'] as $context["_key"] => $context["pub"]) {
+            // line 73
+            yield "                ";
+            $context["isAnonymous"] = Twig\Extension\CoreExtension::testEmpty(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "imageAuteur", [], "any", false, false, false, 73));
             // line 74
-            yield "            ";
-            $context["contextMap"] = [1 => "academic", 2 => "personal", 3 => "help"];
+            yield "
+                ";
             // line 75
-            yield "            ";
-            $context["contexte"] = (((CoreExtension::getAttribute($this->env, $this->source, ($context["contextMap"] ?? null), CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "contexte", [], "any", false, false, false, 75), [], "array", true, true, false, 75) &&  !(null === CoreExtension::getAttribute($this->env, $this->source, (isset($context["contextMap"]) || array_key_exists("contextMap", $context) ? $context["contextMap"] : (function () { throw new RuntimeError('Variable "contextMap" does not exist.', 75, $this->source); })()), CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "contexte", [], "any", false, false, false, 75), [], "array", false, false, false, 75)))) ? (CoreExtension::getAttribute($this->env, $this->source, (isset($context["contextMap"]) || array_key_exists("contextMap", $context) ? $context["contextMap"] : (function () { throw new RuntimeError('Variable "contextMap" does not exist.', 75, $this->source); })()), CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "contexte", [], "any", false, false, false, 75), [], "array", false, false, false, 75)) : ("help"));
+            $context["contextMap"] = [1 => "academic", 2 => "personal", 3 => "help"];
             // line 76
-            yield "            <article class=\"glass-card rounded-3xl overflow-hidden hover:border-primary/30 transition-all\" id=\"pub-";
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 76), "html", null, true);
+            yield "                ";
+            $context["contexte"] = (((CoreExtension::getAttribute($this->env, $this->source, ($context["contextMap"] ?? null), CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "contexte", [], "any", false, false, false, 76), [], "array", true, true, false, 76) &&  !(null === CoreExtension::getAttribute($this->env, $this->source, (isset($context["contextMap"]) || array_key_exists("contextMap", $context) ? $context["contextMap"] : (function () { throw new RuntimeError('Variable "contextMap" does not exist.', 76, $this->source); })()), CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "contexte", [], "any", false, false, false, 76), [], "array", false, false, false, 76)))) ? (CoreExtension::getAttribute($this->env, $this->source, (isset($context["contextMap"]) || array_key_exists("contextMap", $context) ? $context["contextMap"] : (function () { throw new RuntimeError('Variable "contextMap" does not exist.', 76, $this->source); })()), CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "contexte", [], "any", false, false, false, 76), [], "array", false, false, false, 76)) : ("help"));
+            // line 77
+            yield "
+                <article class=\"glass-card rounded-3xl overflow-hidden hover:border-primary/30 transition-all\" id=\"pub-";
+            // line 78
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 78), "html", null, true);
             yield "\">
-                <!-- Header -->
-                <div class=\"p-6 pb-4\">
-                    <div class=\"flex items-start justify-between\">
-                        <div class=\"flex items-center gap-4\">
-                            <!-- Avatar -->
-                            ";
-            // line 82
-            if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 82), "IMAGE", [], "any", false, false, false, 82)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
-                // line 83
-                yield "                            <img src=\"";
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl(("images/" . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 83), "IMAGE", [], "any", false, false, false, 83))), "html", null, true);
-                yield "\" alt=\"";
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 83), "PRENOM", [], "any", false, false, false, 83) . " ") . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 83), "NOM", [], "any", false, false, false, 83)), "html", null, true);
-                yield "\" class=\"w-14 h-14 rounded-full object-cover ring-2 ring-primary/30\">
-                            ";
-            } else {
+                    <!-- Header -->
+                    <div class=\"p-6 pb-4\">
+                        <div class=\"flex items-start justify-between\">
+                            <div class=\"flex items-center gap-4\">
+                                <!-- Avatar -->
+                                ";
+            // line 84
+            if ((($tmp = (isset($context["isAnonymous"]) || array_key_exists("isAnonymous", $context) ? $context["isAnonymous"] : (function () { throw new RuntimeError('Variable "isAnonymous" does not exist.', 84, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
                 // line 85
-                yield "                            <div class=\"w-14 h-14 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/10\">
-                                <i data-lucide=\"user\" class=\"w-7 h-7 text-muted-foreground\"></i>
-                            </div>
-                            ";
-            }
-            // line 89
-            yield "                            
-                            <!-- Info -->
-                            <div>
-                                <h3 class=\"font-semibold text-lg\">";
-            // line 92
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 92), "PRENOM", [], "any", false, false, false, 92) . " ") . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 92), "NOM", [], "any", false, false, false, 92)), "html", null, true);
-            yield "</h3>
-                                ";
-            // line 93
-            if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 93), "ROLE", [], "any", false, false, false, 93)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
-                // line 94
-                yield "                                <p class=\"text-sm text-muted-foreground\">";
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 94), "ROLE", [], "any", false, false, false, 94), "html", null, true);
-                yield "</p>
-                                ";
-            }
-            // line 96
-            yield "                                <p class=\"text-xs text-muted-foreground mt-0.5\">";
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "dateCreation", [], "any", false, false, false, 96), "d M Y à H:i"), "html", null, true);
-            yield "</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Context Badge -->
-                        <span class=\"px-3 py-1.5 rounded-full text-xs font-medium 
-                            ";
-            // line 102
-            yield ((((isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 102, $this->source); })()) == "academic")) ? ("bg-academic/20 text-academic") : ((((            // line 103
-(isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 103, $this->source); })()) == "personal")) ? ("bg-personal/20 text-personal") : ("bg-primary/20 text-primary"))));
-            // line 104
-            yield "\">
-                            ";
-            // line 105
-            yield ((((isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 105, $this->source); })()) == "academic")) ? ("Academic") : ((((            // line 106
-(isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 106, $this->source); })()) == "personal")) ? ("Personal") : ("Entraide"))));
-            yield "
-                        </span>
-                    </div>
-                </div>
-                
-                <!-- Content -->
-                <div class=\"px-6 pb-4\">
-                    <h2 class=\"font-serif text-xl md:text-2xl font-medium mb-3 text-primary\">";
-            // line 113
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "titre", [], "any", false, false, false, 113), "html", null, true);
-            yield "</h2>
-                    <p class=\"text-foreground leading-relaxed\">";
-            // line 114
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "contenu", [], "any", false, false, false, 114), "html", null, true);
-            yield "</p>
-                </div>
-                
-                <!-- Actions Bar -->
-                <div class=\"px-6 py-4 bg-secondary/30 border-t border-white/5 flex items-center justify-between\">
-                    <div class=\"flex items-center gap-6\">
-                        <!-- Likes -->
-                        <button class=\"flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group\">
-                            <i data-lucide=\"heart\" class=\"w-5 h-5 group-hover:fill-primary/20\"></i>
-                            <span class=\"text-sm\">";
-            // line 123
-            yield (((CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "likes", [], "any", true, true, false, 123) &&  !(null === CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "likes", [], "any", false, false, false, 123)))) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "likes", [], "any", false, false, false, 123), "html", null, true)) : (0));
-            yield "</span>
-                        </button>
-                        
-                        <!-- Comments Toggle -->
-                        <button onclick=\"toggleComments(";
-            // line 127
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 127), "html", null, true);
-            yield ")\" class=\"flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors\">
-                            <i data-lucide=\"message-circle\" class=\"w-5 h-5\"></i>
-                            <span class=\"text-sm\">";
-            // line 129
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "commentaires", [], "any", false, false, false, 129)), "html", null, true);
-            yield " commentaires</span>
-                        </button>
-                    </div>
-                    
-                    <div class=\"flex items-center gap-3\">
-                        <!-- Status -->
-                        <span class=\"px-2 py-1 rounded-lg text-xs bg-green-500/20 text-green-400 flex items-center gap-1\">
-                            <span class=\"w-1.5 h-1.5 rounded-full bg-green-400\"></span>
-                            ";
-            // line 137
-            yield (((CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "statut", [], "any", false, false, false, 137) == 1)) ? ("actif") : ("inactif"));
-            yield "
-                        </span>
-
-                        <!-- Modifier -->
-                        <a href=\"";
-            // line 141
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publication_modifier", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 141)]), "html", null, true);
-            yield "\" class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-colors\" title=\"Modifier la publication\">
-                            <i data-lucide=\"pencil\" class=\"w-4 h-4\"></i>
-                            <span>Modifier</span>
-                        </a>
-
-                        <!-- Supprimer (le contrôleur n'autorise que l'auteur) -->
-                        <form action=\"";
-            // line 147
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publication_supprimer", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 147)]), "html", null, true);
-            yield "\" method=\"post\" class=\"inline\" onsubmit=\"return confirm('Supprimer cette publication ?');\">
-                            <input type=\"hidden\" name=\"_token\" value=\"";
-            // line 148
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("delete_publication_" . CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 148))), "html", null, true);
-            yield "\">
-                            <button type=\"submit\" class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors\" title=\"Supprimer la publication\">
-                                <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
-                                <span>Supprimer</span>
-                            </button>
-                        </form>
-                        
-                        <!-- Signaler -->
-                        <a href=\"";
-            // line 156
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publication_signaler", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 156)]), "html", null, true);
-            yield "\" class=\"text-muted-foreground hover:text-red-400 transition-colors\" title=\"Signaler\">
-                            <i data-lucide=\"flag\" class=\"w-5 h-5\"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Comments Section (Hidden by default) -->
-                <div id=\"comments-";
-            // line 163
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 163), "html", null, true);
-            yield "\" class=\"hidden border-t border-white/5\">
-                    <div class=\"p-6 bg-secondary/20\">
-                        <!-- Comments List -->
-                        <div class=\"space-y-4 mb-6\">
-                            ";
-            // line 167
-            if ((Twig\Extension\CoreExtension::length($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "commentaires", [], "any", false, false, false, 167)) > 0)) {
-                // line 168
-                yield "                                ";
-                $context['_parent'] = $context;
-                $context['_seq'] = CoreExtension::ensureTraversable(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "commentaires", [], "any", false, false, false, 168));
-                foreach ($context['_seq'] as $context["_key"] => $context["comment"]) {
-                    // line 169
-                    yield "                                <div class=\"flex gap-4\">
-                                    ";
-                    // line 170
-                    if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 170), "IMAGE", [], "any", false, false, false, 170)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
-                        // line 171
-                        yield "                                    <img src=\"";
-                        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl(("images/" . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 171), "IMAGE", [], "any", false, false, false, 171))), "html", null, true);
-                        yield "\" alt=\"";
-                        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 171), "PRENOM", [], "any", false, false, false, 171) . " ") . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 171), "NOM", [], "any", false, false, false, 171)), "html", null, true);
-                        yield "\" class=\"w-10 h-10 rounded-full object-cover ring-2 ring-white/5\">
-                                    ";
-                    } else {
-                        // line 173
-                        yield "                                    <div class=\"w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/5\">
-                                        <i data-lucide=\"user\" class=\"w-5 h-5 text-muted-foreground\"></i>
+                yield "                                    <div class=\"w-14 h-14 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/10\">
+                                        <i data-lucide=\"user\" class=\"w-7 h-7 text-muted-foreground\"></i>
                                     </div>
+                                ";
+            } else {
+                // line 89
+                yield "                                    ";
+                if ((CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 89) && CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 89), "IMAGE", [], "any", false, false, false, 89))) {
+                    // line 90
+                    yield "                                        <img src=\"";
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl(("images/" . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 90), "IMAGE", [], "any", false, false, false, 90))), "html", null, true);
+                    yield "\" alt=\"";
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 90), "PRENOM", [], "any", false, false, false, 90) . " ") . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 90), "NOM", [], "any", false, false, false, 90)), "html", null, true);
+                    yield "\" class=\"w-14 h-14 rounded-full object-cover ring-2 ring-primary/30\">
                                     ";
-                    }
-                    // line 177
-                    yield "                                    <div class=\"flex-1\">
-                                        <div class=\"glass-card rounded-2xl rounded-tl-none p-4\">
-                                            <div class=\"flex items-center justify-between mb-2\">
-                                                <div class=\"flex items-center gap-2\">
-                                                    <h4 class=\"font-medium text-sm\">";
-                    // line 181
-                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 181), "PRENOM", [], "any", false, false, false, 181) . " ") . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 181), "NOM", [], "any", false, false, false, 181)), "html", null, true);
-                    yield "</h4>
-                                                    <span class=\"text-xs text-muted-foreground\">";
-                    // line 182
-                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "dateCreation", [], "any", false, false, false, 182), "d M H:i"), "html", null, true);
-                    yield "</span>
-                                                </div>
-                                                <form action=\"";
-                    // line 184
-                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publication_commentaire_supprimer", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 184), "idComment" => CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "id", [], "any", false, false, false, 184)]), "html", null, true);
-                    yield "\" method=\"post\" class=\"inline\" onsubmit=\"return confirm('Supprimer ce commentaire ?');\">
-                                                    <input type=\"hidden\" name=\"_token\" value=\"";
-                    // line 185
-                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("delete_comment_" . CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "id", [], "any", false, false, false, 185))), "html", null, true);
-                    yield "\">
-                                                    <button type=\"submit\" class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors\" title=\"Supprimer le commentaire\">
-                                                        <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
-                                                        <span>Supprimer</span>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                            <p class=\"text-sm text-foreground\">";
-                    // line 192
-                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "contenu", [], "any", false, false, false, 192), "html", null, true);
-                    yield "</p>
+                } else {
+                    // line 92
+                    yield "                                        <div class=\"w-14 h-14 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/10\">
+                                            <i data-lucide=\"user\" class=\"w-7 h-7 text-muted-foreground\"></i>
                                         </div>
-                                    </div>
+                                    ";
+                }
+                // line 96
+                yield "                                ";
+            }
+            // line 97
+            yield "
+                                <!-- Info -->
+                                <div>
+                                    ";
+            // line 100
+            if ((($tmp = (isset($context["isAnonymous"]) || array_key_exists("isAnonymous", $context) ? $context["isAnonymous"] : (function () { throw new RuntimeError('Variable "isAnonymous" does not exist.', 100, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+                // line 101
+                yield "                                        <h3 class=\"font-semibold text-lg\">Anonyme</h3>
+                                    ";
+            } else {
+                // line 103
+                yield "                                        <h3 class=\"font-semibold text-lg\">
+                                            ";
+                // line 104
+                yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 104)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 104), "PRENOM", [], "any", false, false, false, 104) . " ") . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 104), "NOM", [], "any", false, false, false, 104)), "html", null, true)) : ("Utilisateur"));
+                yield "
+                                        </h3>
+                                    ";
+            }
+            // line 107
+            yield "
+                                    ";
+            // line 108
+            if ((( !(isset($context["isAnonymous"]) || array_key_exists("isAnonymous", $context) ? $context["isAnonymous"] : (function () { throw new RuntimeError('Variable "isAnonymous" does not exist.', 108, $this->source); })()) && CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 108)) && CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 108), "ROLE", [], "any", false, false, false, 108))) {
+                // line 109
+                yield "                                        <p class=\"text-sm text-muted-foreground\">";
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "auteur", [], "any", false, false, false, 109), "ROLE", [], "any", false, false, false, 109), "html", null, true);
+                yield "</p>
+                                    ";
+            }
+            // line 111
+            yield "
+                                    <p class=\"text-xs text-muted-foreground mt-0.5\">";
+            // line 112
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "dateCreation", [], "any", false, false, false, 112), "d M Y à H:i"), "html", null, true);
+            yield "</p>
                                 </div>
+                            </div>
+
+                            <!-- Context Badge -->
+                            <span class=\"px-3 py-1.5 rounded-full text-xs font-medium
                                 ";
+            // line 118
+            yield ((((isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 118, $this->source); })()) == "academic")) ? ("bg-academic/20 text-academic") : ((((            // line 119
+(isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 119, $this->source); })()) == "personal")) ? ("bg-personal/20 text-personal") : ("bg-primary/20 text-primary"))));
+            // line 120
+            yield "\">
+                                ";
+            // line 121
+            yield ((((isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 121, $this->source); })()) == "academic")) ? ("Academic") : ((((            // line 122
+(isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 122, $this->source); })()) == "personal")) ? ("Personal") : ("Entraide"))));
+            yield "
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class=\"px-6 pb-4\">
+                        <h2 class=\"font-serif text-xl md:text-2xl font-medium mb-3 text-primary\">";
+            // line 129
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "titre", [], "any", false, false, false, 129), "html", null, true);
+            yield "</h2>
+                        <p class=\"text-foreground leading-relaxed\">";
+            // line 130
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "contenu", [], "any", false, false, false, 130), "html", null, true);
+            yield "</p>
+                    </div>
+
+                    <!-- Actions Bar -->
+                    <div class=\"px-6 py-4 bg-secondary/30 border-t border-white/5 flex items-center justify-between\">
+                        <div class=\"flex items-center gap-6\">
+                            <!-- Likes -->
+                            <button class=\"flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group\">
+                                <i data-lucide=\"heart\" class=\"w-5 h-5 group-hover:fill-primary/20\"></i>
+                                <span class=\"text-sm\">";
+            // line 139
+            yield (((CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "likes", [], "any", true, true, false, 139) &&  !(null === CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "likes", [], "any", false, false, false, 139)))) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "likes", [], "any", false, false, false, 139), "html", null, true)) : (0));
+            yield "</span>
+                            </button>
+
+                            <!-- Comments Toggle -->
+                            <button onclick=\"toggleComments(";
+            // line 143
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 143), "html", null, true);
+            yield ")\" class=\"flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors\">
+                                <i data-lucide=\"message-circle\" class=\"w-5 h-5\"></i>
+                                <span class=\"text-sm\">";
+            // line 145
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "commentaires", [], "any", false, false, false, 145)), "html", null, true);
+            yield " commentaires</span>
+                            </button>
+                        </div>
+
+                        <div class=\"flex items-center gap-3\">
+                            <!-- Status -->
+                            <span class=\"px-2 py-1 rounded-lg text-xs flex items-center gap-1
+    ";
+            // line 152
+            yield (((CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "statut", [], "any", false, false, false, 152) == 1)) ? ("bg-green-500/20 text-green-400") : ("bg-red-500/20 text-red-400"));
+            // line 154
+            yield "\">
+        
+    <span class=\"w-1.5 h-1.5 rounded-full 
+        ";
+            // line 157
+            yield (((CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "statut", [], "any", false, false, false, 157) == 1)) ? ("bg-green-400") : ("bg-red-400"));
+            yield "\"></span>
+
+    ";
+            // line 159
+            yield (((CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "statut", [], "any", false, false, false, 159) == 1)) ? ("actif") : ("inactif"));
+            yield "
+</span>
+
+
+                            <!-- Modifier -->
+                            <a href=\"";
+            // line 164
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publication_modifier", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 164)]), "html", null, true);
+            yield "\" class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-colors\" title=\"Modifier la publication\">
+                                <i data-lucide=\"pencil\" class=\"w-4 h-4\"></i>
+                                <span>Modifier</span>
+                            </a>
+
+                            <!-- Supprimer -->
+                            <form action=\"";
+            // line 170
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publication_supprimer", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 170)]), "html", null, true);
+            yield "\" method=\"post\" class=\"inline\" onsubmit=\"return confirm('Supprimer cette publication ?');\">
+                                <input type=\"hidden\" name=\"_token\" value=\"";
+            // line 171
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("delete_publication_" . CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 171))), "html", null, true);
+            yield "\">
+                                <button type=\"submit\" class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors\" title=\"Supprimer la publication\">
+                                    <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
+                                    <span>Supprimer</span>
+                                </button>
+                            </form>
+
+                            <!-- Signaler -->
+                            <a href=\"";
+            // line 179
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publication_signaler", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 179)]), "html", null, true);
+            yield "\" class=\"text-muted-foreground hover:text-red-400 transition-colors\" title=\"Signaler\">
+                                <i data-lucide=\"flag\" class=\"w-5 h-5\"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Comments Section (Hidden by default) -->
+                    <div id=\"comments-";
+            // line 186
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 186), "html", null, true);
+            yield "\" class=\"hidden border-t border-white/5\">
+                        <div class=\"p-6 bg-secondary/20\">
+                            <!-- Comments List -->
+                            <div class=\"space-y-4 mb-6\">
+                                ";
+            // line 190
+            if ((Twig\Extension\CoreExtension::length($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "commentaires", [], "any", false, false, false, 190)) > 0)) {
+                // line 191
+                yield "                                    ";
+                $context['_parent'] = $context;
+                $context['_seq'] = CoreExtension::ensureTraversable(CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "commentaires", [], "any", false, false, false, 191));
+                foreach ($context['_seq'] as $context["_key"] => $context["comment"]) {
+                    // line 192
+                    yield "                                        <div class=\"flex gap-4\">
+                                            ";
+                    // line 193
+                    if ((CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 193) && CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 193), "IMAGE", [], "any", false, false, false, 193))) {
+                        // line 194
+                        yield "                                                <img src=\"";
+                        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl(("images/" . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 194), "IMAGE", [], "any", false, false, false, 194))), "html", null, true);
+                        yield "\" alt=\"";
+                        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 194), "PRENOM", [], "any", false, false, false, 194) . " ") . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 194), "NOM", [], "any", false, false, false, 194)), "html", null, true);
+                        yield "\" class=\"w-10 h-10 rounded-full object-cover ring-2 ring-white/5\">
+                                            ";
+                    } else {
+                        // line 196
+                        yield "                                                <div class=\"w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/5\">
+                                                    <i data-lucide=\"user\" class=\"w-5 h-5 text-muted-foreground\"></i>
+                                                </div>
+                                            ";
+                    }
+                    // line 200
+                    yield "
+                                            <div class=\"flex-1\">
+                                                <div class=\"glass-card rounded-2xl rounded-tl-none p-4\">
+                                                    <div class=\"flex items-center justify-between mb-2\">
+                                                        <div class=\"flex items-center gap-2\">
+                                                            <h4 class=\"font-medium text-sm\">";
+                    // line 205
+                    yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 205)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 205), "PRENOM", [], "any", false, false, false, 205) . " ") . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "auteur", [], "any", false, false, false, 205), "NOM", [], "any", false, false, false, 205)), "html", null, true)) : ("Utilisateur"));
+                    yield "</h4>
+                                                            <span class=\"text-xs text-muted-foreground\">";
+                    // line 206
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "dateCreation", [], "any", false, false, false, 206), "d M H:i"), "html", null, true);
+                    yield "</span>
+                                                        </div>
+
+                                                        <!-- Supprimer commentaire -->
+<div class=\"flex items-center gap-2\">
+
+    <!-- Modifier commentaire -->
+    <a href=\"";
+                    // line 213
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_commentaire_modifier", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "id", [], "any", false, false, false, 213)]), "html", null, true);
+                    yield "\"
+       class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
+       text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent
+       hover:border-primary/30 transition-colors\"
+       title=\"Modifier le commentaire\">
+        <i data-lucide=\"pencil\" class=\"w-4 h-4\"></i>
+        <span>Modifier</span>
+    </a>
+
+    <!-- Supprimer commentaire -->
+    <form action=\"";
+                    // line 223
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_commentaire_supprimer", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "id", [], "any", false, false, false, 223)]), "html", null, true);
+                    yield "\"
+          method=\"post\"
+          onsubmit=\"return confirm('Supprimer ce commentaire ?');\">
+        <input type=\"hidden\" name=\"_token\" value=\"";
+                    // line 226
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("delete_comment_" . CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "id", [], "any", false, false, false, 226))), "html", null, true);
+                    yield "\">
+        <button type=\"submit\"
+                class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
+                text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent
+                hover:border-red-500/30 transition-colors\">
+            <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
+            <span>Supprimer</span>
+        </button>
+    </form>
+
+</div>
+
+
+                                                    </div>
+
+                                                    <p class=\"text-sm text-foreground\">";
+                    // line 241
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["comment"], "contenu", [], "any", false, false, false, 241), "html", null, true);
+                    yield "</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ";
                 }
                 $_parent = $context['_parent'];
                 unset($context['_seq'], $context['_key'], $context['comment'], $context['_parent']);
                 $context = array_intersect_key($context, $_parent) + $_parent;
-                // line 197
-                yield "                            ";
+                // line 246
+                yield "                                ";
             } else {
-                // line 198
-                yield "                                <div class=\"text-center py-8\">
-                                    <i data-lucide=\"message-square\" class=\"w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50\"></i>
-                                    <p class=\"text-muted-foreground text-sm\">Aucun commentaire pour le moment.</p>
-                                    <p class=\"text-xs text-muted-foreground mt-1\">Soyez le premier a repondre !</p>
-                                </div>
-                            ";
+                // line 247
+                yield "                                    <div class=\"text-center py-8\">
+                                        <i data-lucide=\"message-square\" class=\"w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50\"></i>
+                                        <p class=\"text-muted-foreground text-sm\">Aucun commentaire pour le moment.</p>
+                                        <p class=\"text-xs text-muted-foreground mt-1\">Soyez le premier a repondre !</p>
+                                    </div>
+                                ";
             }
-            // line 204
-            yield "                        </div>
-                        
-                        <!-- Add Comment -->
-                        <form action=\"";
-            // line 207
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_publication_commenter", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 207)]), "html", null, true);
+            // line 253
+            yield "                            </div>
+
+                            <!-- Add Comment -->
+<form action=\"";
+            // line 256
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_commentaire_ajouter", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["pub"], "id", [], "any", false, false, false, 256)]), "html", null, true);
             yield "\" method=\"post\" class=\"flex gap-4\">
-                            <img src=\"";
-            // line 208
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl("images/student-avatar.jpg"), "html", null, true);
-            yield "\" alt=\"Moi\" class=\"w-10 h-10 rounded-full object-cover ring-2 ring-primary/30\">
-                            <div class=\"flex-1 relative\">
-                                <input 
-                                    type=\"text\" 
-                                    name=\"contenu\" 
-                                    placeholder=\"Ecrivez votre commentaire...\" 
-                                    class=\"w-full h-12 bg-secondary border border-white/10 rounded-xl pl-4 pr-12 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50\"
-                                >
-                                <button type=\"submit\" class=\"absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors\">
-                                    <i data-lucide=\"send\" class=\"w-4 h-4 text-white\"></i>
-                                </button>
-                            </div>
-                        </form>
+                                ";
+            // line 257
+            if ((CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 257, $this->source); })()), "user", [], "any", false, false, false, 257) && CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 257, $this->source); })()), "user", [], "any", false, false, false, 257), "IMAGE", [], "any", false, false, false, 257))) {
+                // line 258
+                yield "                                    <img src=\"";
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl(("images/" . CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 258, $this->source); })()), "user", [], "any", false, false, false, 258), "IMAGE", [], "any", false, false, false, 258))), "html", null, true);
+                yield "\" alt=\"Moi\" class=\"w-10 h-10 rounded-full object-cover ring-2 ring-primary/30\">
+                                ";
+            } else {
+                // line 260
+                yield "                                    <div class=\"w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-primary/30\">
+                                        <i data-lucide=\"user\" class=\"w-5 h-5 text-muted-foreground\"></i>
+                                    </div>
+                                ";
+            }
+            // line 264
+            yield "
+                                <div class=\"flex-1 relative\">
+                                    <input
+                                        type=\"text\"
+                                        name=\"contenu\"
+                                        placeholder=\"Ecrivez votre commentaire...\"
+                                        class=\"w-full h-12 bg-secondary border border-white/10 rounded-xl pl-4 pr-12 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50\"
+                                    >
+                                    <button type=\"submit\" class=\"absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors\">
+                                        <i data-lucide=\"send\" class=\"w-4 h-4 text-white\"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            </article>
+                </article>
             ";
         }
         $_parent = $context['_parent'];
         unset($context['_seq'], $context['_key'], $context['pub'], $context['_parent']);
         $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 225
+        // line 281
         yield "        </div>
     </section>
 </div>
@@ -474,8 +562,7 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
     function toggleComments(pubId) {
         const commentsSection = document.getElementById('comments-' + pubId);
         commentsSection.classList.toggle('hidden');
-        
-        // Scroll to comments if opening
+
         if (!commentsSection.classList.contains('hidden')) {
             setTimeout(() => {
                 commentsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -514,7 +601,7 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  469 => 225,  446 => 208,  442 => 207,  437 => 204,  429 => 198,  426 => 197,  415 => 192,  405 => 185,  401 => 184,  396 => 182,  392 => 181,  386 => 177,  380 => 173,  372 => 171,  370 => 170,  367 => 169,  362 => 168,  360 => 167,  353 => 163,  343 => 156,  332 => 148,  328 => 147,  319 => 141,  312 => 137,  301 => 129,  296 => 127,  289 => 123,  277 => 114,  273 => 113,  263 => 106,  262 => 105,  259 => 104,  257 => 103,  256 => 102,  246 => 96,  240 => 94,  238 => 93,  234 => 92,  229 => 89,  223 => 85,  215 => 83,  213 => 82,  203 => 76,  200 => 75,  197 => 74,  193 => 73,  177 => 62,  168 => 58,  160 => 55,  149 => 47,  117 => 18,  106 => 10,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
+        return array (  557 => 281,  535 => 264,  529 => 260,  523 => 258,  521 => 257,  517 => 256,  512 => 253,  504 => 247,  501 => 246,  490 => 241,  472 => 226,  466 => 223,  453 => 213,  443 => 206,  439 => 205,  432 => 200,  426 => 196,  418 => 194,  416 => 193,  413 => 192,  408 => 191,  406 => 190,  399 => 186,  389 => 179,  378 => 171,  374 => 170,  365 => 164,  357 => 159,  352 => 157,  347 => 154,  345 => 152,  335 => 145,  330 => 143,  323 => 139,  311 => 130,  307 => 129,  297 => 122,  296 => 121,  293 => 120,  291 => 119,  290 => 118,  281 => 112,  278 => 111,  272 => 109,  270 => 108,  267 => 107,  261 => 104,  258 => 103,  254 => 101,  252 => 100,  247 => 97,  244 => 96,  238 => 92,  230 => 90,  227 => 89,  221 => 85,  219 => 84,  210 => 78,  207 => 77,  204 => 76,  202 => 75,  199 => 74,  196 => 73,  192 => 72,  176 => 61,  167 => 57,  159 => 54,  148 => 46,  117 => 18,  106 => 10,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -534,13 +621,12 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
                 </div>
                 <span class=\"text-xl font-bold tracking-tight\">Edu<span class=\"text-primary\">Vie</span></span>
             </a>
-            
+
             <div class=\"flex items-center gap-4\">
                 <a href=\"{{ path('app_publication_nouvelle') }}\" class=\"hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25\">
                     <i data-lucide=\"plus\" class=\"w-4 h-4\"></i>
                     Nouvelle publication
                 </a>
-                
             </div>
         </div>
     </nav>
@@ -548,7 +634,7 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
     <!-- Header -->
     <section class=\"pt-32 pb-8 px-6 relative overflow-hidden\">
         <div class=\"absolute inset-0 gradient-orb\"></div>
-        
+
         <div class=\"max-w-4xl mx-auto relative\">
             <div class=\"text-center mb-8\">
                 <div class=\"inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm mb-4\">
@@ -562,7 +648,7 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
                     Partagez vos experiences, posez vos questions et entraidez-vous avec d'autres etudiants.
                 </p>
             </div>
-            
+
             <!-- Mobile New Post Button -->
             <div class=\"sm:hidden mb-6\">
                 <a href=\"{{ path('app_publication_nouvelle') }}\" class=\"flex items-center justify-center gap-2 w-full h-12 bg-primary text-white rounded-xl font-medium\">
@@ -570,7 +656,7 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
                     Nouvelle publication
                 </a>
             </div>
-            
+
             <!-- Filters -->
             <div class=\"glass-card rounded-2xl p-2 flex flex-wrap gap-2 justify-center\">
                 <a href=\"{{ path('app_publications_index') }}\" class=\"px-6 py-2.5 rounded-xl text-sm font-medium transition-colors {{ contexte_filter is null ? 'bg-primary text-white' : 'bg-secondary border border-white/10 text-muted-foreground hover:text-foreground' }}\">
@@ -592,156 +678,213 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
     <section class=\"px-6 pb-24\">
         <div class=\"max-w-4xl mx-auto space-y-6\">
             {% for pub in publications %}
-            {% set contextMap = { 1: 'academic', 2: 'personal', 3: 'help' } %}
-            {% set contexte = contextMap[pub.contexte] ?? 'help' %}
-            <article class=\"glass-card rounded-3xl overflow-hidden hover:border-primary/30 transition-all\" id=\"pub-{{ pub.id }}\">
-                <!-- Header -->
-                <div class=\"p-6 pb-4\">
-                    <div class=\"flex items-start justify-between\">
-                        <div class=\"flex items-center gap-4\">
-                            <!-- Avatar -->
-                            {% if pub.auteur.IMAGE %}
-                            <img src=\"{{ asset('images/' ~ pub.auteur.IMAGE) }}\" alt=\"{{ pub.auteur.PRENOM ~ ' ' ~ pub.auteur.NOM }}\" class=\"w-14 h-14 rounded-full object-cover ring-2 ring-primary/30\">
-                            {% else %}
-                            <div class=\"w-14 h-14 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/10\">
-                                <i data-lucide=\"user\" class=\"w-7 h-7 text-muted-foreground\"></i>
-                            </div>
-                            {% endif %}
-                            
-                            <!-- Info -->
-                            <div>
-                                <h3 class=\"font-semibold text-lg\">{{ pub.auteur.PRENOM ~ ' ' ~ pub.auteur.NOM }}</h3>
-                                {% if pub.auteur.ROLE %}
-                                <p class=\"text-sm text-muted-foreground\">{{ pub.auteur.ROLE }}</p>
-                                {% endif %}
-                                <p class=\"text-xs text-muted-foreground mt-0.5\">{{ pub.dateCreation|date('d M Y à H:i') }}</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Context Badge -->
-                        <span class=\"px-3 py-1.5 rounded-full text-xs font-medium 
-                            {{ contexte == 'academic' ? 'bg-academic/20 text-academic' : 
-                               contexte == 'personal' ? 'bg-personal/20 text-personal' : 
-                               'bg-primary/20 text-primary' }}\">
-                            {{ contexte == 'academic' ? 'Academic' : 
-                               contexte == 'personal' ? 'Personal' : 'Entraide' }}
-                        </span>
-                    </div>
-                </div>
-                
-                <!-- Content -->
-                <div class=\"px-6 pb-4\">
-                    <h2 class=\"font-serif text-xl md:text-2xl font-medium mb-3 text-primary\">{{ pub.titre }}</h2>
-                    <p class=\"text-foreground leading-relaxed\">{{ pub.contenu }}</p>
-                </div>
-                
-                <!-- Actions Bar -->
-                <div class=\"px-6 py-4 bg-secondary/30 border-t border-white/5 flex items-center justify-between\">
-                    <div class=\"flex items-center gap-6\">
-                        <!-- Likes -->
-                        <button class=\"flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group\">
-                            <i data-lucide=\"heart\" class=\"w-5 h-5 group-hover:fill-primary/20\"></i>
-                            <span class=\"text-sm\">{{ pub.likes ?? 0 }}</span>
-                        </button>
-                        
-                        <!-- Comments Toggle -->
-                        <button onclick=\"toggleComments({{ pub.id }})\" class=\"flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors\">
-                            <i data-lucide=\"message-circle\" class=\"w-5 h-5\"></i>
-                            <span class=\"text-sm\">{{ pub.commentaires|length }} commentaires</span>
-                        </button>
-                    </div>
-                    
-                    <div class=\"flex items-center gap-3\">
-                        <!-- Status -->
-                        <span class=\"px-2 py-1 rounded-lg text-xs bg-green-500/20 text-green-400 flex items-center gap-1\">
-                            <span class=\"w-1.5 h-1.5 rounded-full bg-green-400\"></span>
-                            {{ pub.statut == 1 ? 'actif' : 'inactif' }}
-                        </span>
+                {% set isAnonymous = (pub.imageAuteur is empty) %}
 
-                        <!-- Modifier -->
-                        <a href=\"{{ path('app_publication_modifier', { id: pub.id }) }}\" class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-colors\" title=\"Modifier la publication\">
-                            <i data-lucide=\"pencil\" class=\"w-4 h-4\"></i>
-                            <span>Modifier</span>
-                        </a>
+                {% set contextMap = { 1: 'academic', 2: 'personal', 3: 'help' } %}
+                {% set contexte = contextMap[pub.contexte] ?? 'help' %}
 
-                        <!-- Supprimer (le contrôleur n'autorise que l'auteur) -->
-                        <form action=\"{{ path('app_publication_supprimer', { id: pub.id }) }}\" method=\"post\" class=\"inline\" onsubmit=\"return confirm('Supprimer cette publication ?');\">
-                            <input type=\"hidden\" name=\"_token\" value=\"{{ csrf_token('delete_publication_' ~ pub.id) }}\">
-                            <button type=\"submit\" class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors\" title=\"Supprimer la publication\">
-                                <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
-                                <span>Supprimer</span>
-                            </button>
-                        </form>
-                        
-                        <!-- Signaler -->
-                        <a href=\"{{ path('app_publication_signaler', {id: pub.id}) }}\" class=\"text-muted-foreground hover:text-red-400 transition-colors\" title=\"Signaler\">
-                            <i data-lucide=\"flag\" class=\"w-5 h-5\"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Comments Section (Hidden by default) -->
-                <div id=\"comments-{{ pub.id }}\" class=\"hidden border-t border-white/5\">
-                    <div class=\"p-6 bg-secondary/20\">
-                        <!-- Comments List -->
-                        <div class=\"space-y-4 mb-6\">
-                            {% if pub.commentaires|length > 0 %}
-                                {% for comment in pub.commentaires %}
-                                <div class=\"flex gap-4\">
-                                    {% if comment.auteur.IMAGE %}
-                                    <img src=\"{{ asset('images/' ~ comment.auteur.IMAGE) }}\" alt=\"{{ comment.auteur.PRENOM ~ ' ' ~ comment.auteur.NOM }}\" class=\"w-10 h-10 rounded-full object-cover ring-2 ring-white/5\">
+                <article class=\"glass-card rounded-3xl overflow-hidden hover:border-primary/30 transition-all\" id=\"pub-{{ pub.id }}\">
+                    <!-- Header -->
+                    <div class=\"p-6 pb-4\">
+                        <div class=\"flex items-start justify-between\">
+                            <div class=\"flex items-center gap-4\">
+                                <!-- Avatar -->
+                                {% if isAnonymous %}
+                                    <div class=\"w-14 h-14 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/10\">
+                                        <i data-lucide=\"user\" class=\"w-7 h-7 text-muted-foreground\"></i>
+                                    </div>
+                                {% else %}
+                                    {% if pub.auteur and pub.auteur.IMAGE %}
+                                        <img src=\"{{ asset('images/' ~ pub.auteur.IMAGE) }}\" alt=\"{{ pub.auteur.PRENOM ~ ' ' ~ pub.auteur.NOM }}\" class=\"w-14 h-14 rounded-full object-cover ring-2 ring-primary/30\">
                                     {% else %}
-                                    <div class=\"w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/5\">
+                                        <div class=\"w-14 h-14 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/10\">
+                                            <i data-lucide=\"user\" class=\"w-7 h-7 text-muted-foreground\"></i>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+
+                                <!-- Info -->
+                                <div>
+                                    {% if isAnonymous %}
+                                        <h3 class=\"font-semibold text-lg\">Anonyme</h3>
+                                    {% else %}
+                                        <h3 class=\"font-semibold text-lg\">
+                                            {{ pub.auteur ? (pub.auteur.PRENOM ~ ' ' ~ pub.auteur.NOM) : 'Utilisateur' }}
+                                        </h3>
+                                    {% endif %}
+
+                                    {% if not isAnonymous and pub.auteur and pub.auteur.ROLE %}
+                                        <p class=\"text-sm text-muted-foreground\">{{ pub.auteur.ROLE }}</p>
+                                    {% endif %}
+
+                                    <p class=\"text-xs text-muted-foreground mt-0.5\">{{ pub.dateCreation|date('d M Y à H:i') }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Context Badge -->
+                            <span class=\"px-3 py-1.5 rounded-full text-xs font-medium
+                                {{ contexte == 'academic' ? 'bg-academic/20 text-academic' :
+                                   contexte == 'personal' ? 'bg-personal/20 text-personal' :
+                                   'bg-primary/20 text-primary' }}\">
+                                {{ contexte == 'academic' ? 'Academic' :
+                                   contexte == 'personal' ? 'Personal' : 'Entraide' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class=\"px-6 pb-4\">
+                        <h2 class=\"font-serif text-xl md:text-2xl font-medium mb-3 text-primary\">{{ pub.titre }}</h2>
+                        <p class=\"text-foreground leading-relaxed\">{{ pub.contenu }}</p>
+                    </div>
+
+                    <!-- Actions Bar -->
+                    <div class=\"px-6 py-4 bg-secondary/30 border-t border-white/5 flex items-center justify-between\">
+                        <div class=\"flex items-center gap-6\">
+                            <!-- Likes -->
+                            <button class=\"flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group\">
+                                <i data-lucide=\"heart\" class=\"w-5 h-5 group-hover:fill-primary/20\"></i>
+                                <span class=\"text-sm\">{{ pub.likes ?? 0 }}</span>
+                            </button>
+
+                            <!-- Comments Toggle -->
+                            <button onclick=\"toggleComments({{ pub.id }})\" class=\"flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors\">
+                                <i data-lucide=\"message-circle\" class=\"w-5 h-5\"></i>
+                                <span class=\"text-sm\">{{ pub.commentaires|length }} commentaires</span>
+                            </button>
+                        </div>
+
+                        <div class=\"flex items-center gap-3\">
+                            <!-- Status -->
+                            <span class=\"px-2 py-1 rounded-lg text-xs flex items-center gap-1
+    {{ pub.statut == 1 
+        ? 'bg-green-500/20 text-green-400' 
+        : 'bg-red-500/20 text-red-400' }}\">
+        
+    <span class=\"w-1.5 h-1.5 rounded-full 
+        {{ pub.statut == 1 ? 'bg-green-400' : 'bg-red-400' }}\"></span>
+
+    {{ pub.statut == 1 ? 'actif' : 'inactif' }}
+</span>
+
+
+                            <!-- Modifier -->
+                            <a href=\"{{ path('app_publication_modifier', { id: pub.id }) }}\" class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-colors\" title=\"Modifier la publication\">
+                                <i data-lucide=\"pencil\" class=\"w-4 h-4\"></i>
+                                <span>Modifier</span>
+                            </a>
+
+                            <!-- Supprimer -->
+                            <form action=\"{{ path('app_publication_supprimer', { id: pub.id }) }}\" method=\"post\" class=\"inline\" onsubmit=\"return confirm('Supprimer cette publication ?');\">
+                                <input type=\"hidden\" name=\"_token\" value=\"{{ csrf_token('delete_publication_' ~ pub.id) }}\">
+                                <button type=\"submit\" class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors\" title=\"Supprimer la publication\">
+                                    <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
+                                    <span>Supprimer</span>
+                                </button>
+                            </form>
+
+                            <!-- Signaler -->
+                            <a href=\"{{ path('app_publication_signaler', {id: pub.id}) }}\" class=\"text-muted-foreground hover:text-red-400 transition-colors\" title=\"Signaler\">
+                                <i data-lucide=\"flag\" class=\"w-5 h-5\"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Comments Section (Hidden by default) -->
+                    <div id=\"comments-{{ pub.id }}\" class=\"hidden border-t border-white/5\">
+                        <div class=\"p-6 bg-secondary/20\">
+                            <!-- Comments List -->
+                            <div class=\"space-y-4 mb-6\">
+                                {% if pub.commentaires|length > 0 %}
+                                    {% for comment in pub.commentaires %}
+                                        <div class=\"flex gap-4\">
+                                            {% if comment.auteur and comment.auteur.IMAGE %}
+                                                <img src=\"{{ asset('images/' ~ comment.auteur.IMAGE) }}\" alt=\"{{ comment.auteur.PRENOM ~ ' ' ~ comment.auteur.NOM }}\" class=\"w-10 h-10 rounded-full object-cover ring-2 ring-white/5\">
+                                            {% else %}
+                                                <div class=\"w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/5\">
+                                                    <i data-lucide=\"user\" class=\"w-5 h-5 text-muted-foreground\"></i>
+                                                </div>
+                                            {% endif %}
+
+                                            <div class=\"flex-1\">
+                                                <div class=\"glass-card rounded-2xl rounded-tl-none p-4\">
+                                                    <div class=\"flex items-center justify-between mb-2\">
+                                                        <div class=\"flex items-center gap-2\">
+                                                            <h4 class=\"font-medium text-sm\">{{ comment.auteur ? (comment.auteur.PRENOM ~ ' ' ~ comment.auteur.NOM) : 'Utilisateur' }}</h4>
+                                                            <span class=\"text-xs text-muted-foreground\">{{ comment.dateCreation|date('d M H:i') }}</span>
+                                                        </div>
+
+                                                        <!-- Supprimer commentaire -->
+<div class=\"flex items-center gap-2\">
+
+    <!-- Modifier commentaire -->
+    <a href=\"{{ path('app_commentaire_modifier', { id: comment.id }) }}\"
+       class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
+       text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent
+       hover:border-primary/30 transition-colors\"
+       title=\"Modifier le commentaire\">
+        <i data-lucide=\"pencil\" class=\"w-4 h-4\"></i>
+        <span>Modifier</span>
+    </a>
+
+    <!-- Supprimer commentaire -->
+    <form action=\"{{ path('app_commentaire_supprimer', { id: comment.id }) }}\"
+          method=\"post\"
+          onsubmit=\"return confirm('Supprimer ce commentaire ?');\">
+        <input type=\"hidden\" name=\"_token\" value=\"{{ csrf_token('delete_comment_' ~ comment.id) }}\">
+        <button type=\"submit\"
+                class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
+                text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent
+                hover:border-red-500/30 transition-colors\">
+            <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
+            <span>Supprimer</span>
+        </button>
+    </form>
+
+</div>
+
+
+                                                    </div>
+
+                                                    <p class=\"text-sm text-foreground\">{{ comment.contenu }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class=\"text-center py-8\">
+                                        <i data-lucide=\"message-square\" class=\"w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50\"></i>
+                                        <p class=\"text-muted-foreground text-sm\">Aucun commentaire pour le moment.</p>
+                                        <p class=\"text-xs text-muted-foreground mt-1\">Soyez le premier a repondre !</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Add Comment -->
+<form action=\"{{ path('app_commentaire_ajouter', {id: pub.id}) }}\" method=\"post\" class=\"flex gap-4\">
+                                {% if app.user and app.user.IMAGE %}
+                                    <img src=\"{{ asset('images/' ~ app.user.IMAGE) }}\" alt=\"Moi\" class=\"w-10 h-10 rounded-full object-cover ring-2 ring-primary/30\">
+                                {% else %}
+                                    <div class=\"w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-primary/30\">
                                         <i data-lucide=\"user\" class=\"w-5 h-5 text-muted-foreground\"></i>
                                     </div>
-                                    {% endif %}
-                                    <div class=\"flex-1\">
-                                        <div class=\"glass-card rounded-2xl rounded-tl-none p-4\">
-                                            <div class=\"flex items-center justify-between mb-2\">
-                                                <div class=\"flex items-center gap-2\">
-                                                    <h4 class=\"font-medium text-sm\">{{ comment.auteur.PRENOM ~ ' ' ~ comment.auteur.NOM }}</h4>
-                                                    <span class=\"text-xs text-muted-foreground\">{{ comment.dateCreation|date('d M H:i') }}</span>
-                                                </div>
-                                                <form action=\"{{ path('app_publication_commentaire_supprimer', { id: pub.id, idComment: comment.id }) }}\" method=\"post\" class=\"inline\" onsubmit=\"return confirm('Supprimer ce commentaire ?');\">
-                                                    <input type=\"hidden\" name=\"_token\" value=\"{{ csrf_token('delete_comment_' ~ comment.id) }}\">
-                                                    <button type=\"submit\" class=\"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors\" title=\"Supprimer le commentaire\">
-                                                        <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
-                                                        <span>Supprimer</span>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                            <p class=\"text-sm text-foreground\">{{ comment.contenu }}</p>
-                                        </div>
-                                    </div>
+                                {% endif %}
+
+                                <div class=\"flex-1 relative\">
+                                    <input
+                                        type=\"text\"
+                                        name=\"contenu\"
+                                        placeholder=\"Ecrivez votre commentaire...\"
+                                        class=\"w-full h-12 bg-secondary border border-white/10 rounded-xl pl-4 pr-12 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50\"
+                                    >
+                                    <button type=\"submit\" class=\"absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors\">
+                                        <i data-lucide=\"send\" class=\"w-4 h-4 text-white\"></i>
+                                    </button>
                                 </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class=\"text-center py-8\">
-                                    <i data-lucide=\"message-square\" class=\"w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50\"></i>
-                                    <p class=\"text-muted-foreground text-sm\">Aucun commentaire pour le moment.</p>
-                                    <p class=\"text-xs text-muted-foreground mt-1\">Soyez le premier a repondre !</p>
-                                </div>
-                            {% endif %}
+                            </form>
                         </div>
-                        
-                        <!-- Add Comment -->
-                        <form action=\"{{ path('app_publication_commenter', {id: pub.id}) }}\" method=\"post\" class=\"flex gap-4\">
-                            <img src=\"{{ asset('images/student-avatar.jpg') }}\" alt=\"Moi\" class=\"w-10 h-10 rounded-full object-cover ring-2 ring-primary/30\">
-                            <div class=\"flex-1 relative\">
-                                <input 
-                                    type=\"text\" 
-                                    name=\"contenu\" 
-                                    placeholder=\"Ecrivez votre commentaire...\" 
-                                    class=\"w-full h-12 bg-secondary border border-white/10 rounded-xl pl-4 pr-12 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50\"
-                                >
-                                <button type=\"submit\" class=\"absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors\">
-                                    <i data-lucide=\"send\" class=\"w-4 h-4 text-white\"></i>
-                                </button>
-                            </div>
-                        </form>
                     </div>
-                </div>
-            </article>
+                </article>
             {% endfor %}
         </div>
     </section>
@@ -751,8 +894,7 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
     function toggleComments(pubId) {
         const commentsSection = document.getElementById('comments-' + pubId);
         commentsSection.classList.toggle('hidden');
-        
-        // Scroll to comments if opening
+
         if (!commentsSection.classList.contains('hidden')) {
             setTimeout(() => {
                 commentsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -760,6 +902,7 @@ class __TwigTemplate_9d5f666d17b6421b5c686913acf1b8dc extends Template
         }
     }
 </script>
-{% endblock %}", "front/publication/index.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\front\\publication\\index.html.twig");
+{% endblock %}
+", "front/publication/index.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\front\\publication\\index.html.twig");
     }
 }

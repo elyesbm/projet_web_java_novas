@@ -14,26 +14,24 @@ declare(strict_types=1);
 namespace phpDocumentor\Reflection\DocBlock\Tags;
 
 use InvalidArgumentException;
-
 use function filter_var;
 use function preg_match;
 use function trim;
-
 use const FILTER_VALIDATE_EMAIL;
 
 /**
  * Reflection class for an {@}author tag in a Docblock.
  */
-final class Author extends BaseTag
+final class Author extends BaseTag implements Factory\StaticMethod
 {
     /** @var string register that this is the author tag. */
-    protected string $name = 'author';
+    protected $name = 'author';
 
     /** @var string The name of the author */
-    private string $authorName;
+    private $authorName;
 
     /** @var string The email of the author */
-    private string $authorEmail;
+    private $authorEmail;
 
     /**
      * Initializes this tag with the author name and e-mail.
@@ -53,7 +51,7 @@ final class Author extends BaseTag
      *
      * @return string The author's name.
      */
-    public function getAuthorName(): string
+    public function getAuthorName() : string
     {
         return $this->authorName;
     }
@@ -63,7 +61,7 @@ final class Author extends BaseTag
      *
      * @return string The author's email.
      */
-    public function getEmail(): string
+    public function getEmail() : string
     {
         return $this->authorEmail;
     }
@@ -71,23 +69,15 @@ final class Author extends BaseTag
     /**
      * Returns this tag in string form.
      */
-    public function __toString(): string
+    public function __toString() : string
     {
-        if ($this->authorEmail) {
-            $authorEmail = '<' . $this->authorEmail . '>';
-        } else {
-            $authorEmail = '';
-        }
-
-        $authorName = $this->authorName;
-
-        return $authorName . ($authorEmail !== '' ? ($authorName !== '' ? ' ' : '') . $authorEmail : '');
+        return $this->authorName . ($this->authorEmail !== '' ? ' <' . $this->authorEmail . '>' : '');
     }
 
     /**
-     * Attempts to create a new Author object based on the tag body.
+     * Attempts to create a new Author object based on †he tag body.
      */
-    public static function create(string $body): ?self
+    public static function create(string $body) : ?self
     {
         $splitTagContent = preg_match('/^([^\<]*)(?:\<([^\>]*)\>)?$/u', $body, $matches);
         if (!$splitTagContent) {

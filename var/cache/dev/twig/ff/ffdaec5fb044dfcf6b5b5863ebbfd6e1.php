@@ -540,6 +540,6 @@ class __TwigTemplate_ed31ce4275c288a5cd5a412016348b1f extends Template
         </button>
     </div>
 </div>
-{% endblock %}", "admin/settings.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\admin\\settings.html.twig");
+{% endblock %}", "admin/settings.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\admin\\settings.html.twig");
     }
 }

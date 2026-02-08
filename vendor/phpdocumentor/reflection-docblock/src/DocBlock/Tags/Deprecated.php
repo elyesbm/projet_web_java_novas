@@ -17,15 +17,15 @@ use phpDocumentor\Reflection\DocBlock\Description;
 use phpDocumentor\Reflection\DocBlock\DescriptionFactory;
 use phpDocumentor\Reflection\Types\Context as TypeContext;
 use Webmozart\Assert\Assert;
-
 use function preg_match;
 
 /**
  * Reflection class for a {@}deprecated tag in a Docblock.
  */
-final class Deprecated extends BaseTag
+final class Deprecated extends BaseTag implements Factory\StaticMethod
 {
-    protected string $name = 'deprecated';
+    /** @var string */
+    protected $name = 'deprecated';
 
     /**
      * PCRE regular expression matching a version vector.
@@ -44,7 +44,7 @@ final class Deprecated extends BaseTag
     )';
 
     /** @var string|null The version vector. */
-    private ?string $version = null;
+    private $version;
 
     public function __construct(?string $version = null, ?Description $description = null)
     {
@@ -61,8 +61,8 @@ final class Deprecated extends BaseTag
         ?string $body,
         ?DescriptionFactory $descriptionFactory = null,
         ?TypeContext $context = null
-    ): self {
-        if ($body === null || $body === '') {
+    ) : self {
+        if (empty($body)) {
             return new static();
         }
 
@@ -85,7 +85,7 @@ final class Deprecated extends BaseTag
     /**
      * Gets the version section of the tag.
      */
-    public function getVersion(): ?string
+    public function getVersion() : ?string
     {
         return $this->version;
     }
@@ -93,16 +93,8 @@ final class Deprecated extends BaseTag
     /**
      * Returns a string representation for this tag.
      */
-    public function __toString(): string
+    public function __toString() : string
     {
-        if ($this->description) {
-            $description = $this->description->render();
-        } else {
-            $description = '';
-        }
-
-        $version = (string) $this->version;
-
-        return $version . ($description !== '' ? ($version !== '' ? ' ' : '') . $description : '');
+        return ($this->version ?? '') . ($this->description ? ' ' . $this->description->render() : '');
     }
 }

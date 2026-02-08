@@ -565,6 +565,6 @@ class __TwigTemplate_83864aa4977e28cae8cb2f4ab79d93e1 extends Template
         </div>
     </section>
 </div>
-{% endblock %}", "front/reservation/ateliers.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\reservation\\ateliers.html.twig");
+{% endblock %}", "front/reservation/ateliers.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\front\\reservation\\ateliers.html.twig");
     }
 }

@@ -1,0 +1,33 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Modifier commentaire{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background pt-32 px-6">
+    <div class="max-w-2xl mx-auto">
+        <div class="glass-card rounded-2xl p-6">
+            <h1 class="text-xl font-semibold mb-4">Modifier le commentaire</h1>
+
+            <form method="post">
+                <textarea
+                    name="contenu"
+                    required
+                    class="w-full min-h-[140px] bg-secondary border border-white/10 rounded-xl p-4 focus:outline-none focus:border-primary transition-all"
+                >{{ commentaire.contenu }}</textarea>
+
+                <div class="flex justify-end gap-3 mt-4">
+                    <a href="{{ path('app_publications_index') }}"
+                       class="px-4 py-2 rounded-lg bg-secondary border border-white/10 hover:bg-white/5 transition">
+                        Annuler
+                    </a>
+
+                    <button type="submit"
+                            class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition">
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

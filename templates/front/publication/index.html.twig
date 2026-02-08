@@ -13,13 +13,12 @@
                 </div>
                 <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
             </a>
-            
+
             <div class="flex items-center gap-4">
                 <a href="{{ path('app_publication_nouvelle') }}" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     Nouvelle publication
                 </a>
-                
             </div>
         </div>
     </nav>
@@ -27,7 +26,7 @@
     <!-- Header -->
     <section class="pt-32 pb-8 px-6 relative overflow-hidden">
         <div class="absolute inset-0 gradient-orb"></div>
-        
+
         <div class="max-w-4xl mx-auto relative">
             <div class="text-center mb-8">
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm mb-4">
@@ -41,7 +40,7 @@
                     Partagez vos experiences, posez vos questions et entraidez-vous avec d'autres etudiants.
                 </p>
             </div>
-            
+
             <!-- Mobile New Post Button -->
             <div class="sm:hidden mb-6">
                 <a href="{{ path('app_publication_nouvelle') }}" class="flex items-center justify-center gap-2 w-full h-12 bg-primary text-white rounded-xl font-medium">
@@ -49,7 +48,7 @@
                     Nouvelle publication
                 </a>
             </div>
-            
+
             <!-- Filters -->
             <div class="glass-card rounded-2xl p-2 flex flex-wrap gap-2 justify-center">
                 <a href="{{ path('app_publications_index') }}" class="px-6 py-2.5 rounded-xl text-sm font-medium transition-colors {{ contexte_filter is null ? 'bg-primary text-white' : 'bg-secondary border border-white/10 text-muted-foreground hover:text-foreground' }}">
@@ -71,156 +70,213 @@
     <section class="px-6 pb-24">
         <div class="max-w-4xl mx-auto space-y-6">
             {% for pub in publications %}
-            {% set contextMap = { 1: 'academic', 2: 'personal', 3: 'help' } %}
-            {% set contexte = contextMap[pub.contexte] ?? 'help' %}
-            <article class="glass-card rounded-3xl overflow-hidden hover:border-primary/30 transition-all" id="pub-{{ pub.id }}">
-                <!-- Header -->
-                <div class="p-6 pb-4">
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-center gap-4">
-                            <!-- Avatar -->
-                            {% if pub.auteur.IMAGE %}
-                            <img src="{{ asset('images/' ~ pub.auteur.IMAGE) }}" alt="{{ pub.auteur.PRENOM ~ ' ' ~ pub.auteur.NOM }}" class="w-14 h-14 rounded-full object-cover ring-2 ring-primary/30">
-                            {% else %}
-                            <div class="w-14 h-14 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/10">
-                                <i data-lucide="user" class="w-7 h-7 text-muted-foreground"></i>
-                            </div>
-                            {% endif %}
-                            
-                            <!-- Info -->
-                            <div>
-                                <h3 class="font-semibold text-lg">{{ pub.auteur.PRENOM ~ ' ' ~ pub.auteur.NOM }}</h3>
-                                {% if pub.auteur.ROLE %}
-                                <p class="text-sm text-muted-foreground">{{ pub.auteur.ROLE }}</p>
-                                {% endif %}
-                                <p class="text-xs text-muted-foreground mt-0.5">{{ pub.dateCreation|date('d M Y à H:i') }}</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Context Badge -->
-                        <span class="px-3 py-1.5 rounded-full text-xs font-medium 
-                            {{ contexte == 'academic' ? 'bg-academic/20 text-academic' : 
-                               contexte == 'personal' ? 'bg-personal/20 text-personal' : 
-                               'bg-primary/20 text-primary' }}">
-                            {{ contexte == 'academic' ? 'Academic' : 
-                               contexte == 'personal' ? 'Personal' : 'Entraide' }}
-                        </span>
-                    </div>
-                </div>
-                
-                <!-- Content -->
-                <div class="px-6 pb-4">
-                    <h2 class="font-serif text-xl md:text-2xl font-medium mb-3 text-primary">{{ pub.titre }}</h2>
-                    <p class="text-foreground leading-relaxed">{{ pub.contenu }}</p>
-                </div>
-                
-                <!-- Actions Bar -->
-                <div class="px-6 py-4 bg-secondary/30 border-t border-white/5 flex items-center justify-between">
-                    <div class="flex items-center gap-6">
-                        <!-- Likes -->
-                        <button class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group">
-                            <i data-lucide="heart" class="w-5 h-5 group-hover:fill-primary/20"></i>
-                            <span class="text-sm">{{ pub.likes ?? 0 }}</span>
-                        </button>
-                        
-                        <!-- Comments Toggle -->
-                        <button onclick="toggleComments({{ pub.id }})" class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
-                            <i data-lucide="message-circle" class="w-5 h-5"></i>
-                            <span class="text-sm">{{ pub.commentaires|length }} commentaires</span>
-                        </button>
-                    </div>
-                    
-                    <div class="flex items-center gap-3">
-                        <!-- Status -->
-                        <span class="px-2 py-1 rounded-lg text-xs bg-green-500/20 text-green-400 flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                            {{ pub.statut == 1 ? 'actif' : 'inactif' }}
-                        </span>
+                {% set isAnonymous = (pub.imageAuteur is empty) %}
 
-                        <!-- Modifier -->
-                        <a href="{{ path('app_publication_modifier', { id: pub.id }) }}" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-colors" title="Modifier la publication">
-                            <i data-lucide="pencil" class="w-4 h-4"></i>
-                            <span>Modifier</span>
-                        </a>
+                {% set contextMap = { 1: 'academic', 2: 'personal', 3: 'help' } %}
+                {% set contexte = contextMap[pub.contexte] ?? 'help' %}
 
-                        <!-- Supprimer (le contrôleur n'autorise que l'auteur) -->
-                        <form action="{{ path('app_publication_supprimer', { id: pub.id }) }}" method="post" class="inline" onsubmit="return confirm('Supprimer cette publication ?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete_publication_' ~ pub.id) }}">
-                            <button type="submit" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors" title="Supprimer la publication">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                <span>Supprimer</span>
-                            </button>
-                        </form>
-                        
-                        <!-- Signaler -->
-                        <a href="{{ path('app_publication_signaler', {id: pub.id}) }}" class="text-muted-foreground hover:text-red-400 transition-colors" title="Signaler">
-                            <i data-lucide="flag" class="w-5 h-5"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Comments Section (Hidden by default) -->
-                <div id="comments-{{ pub.id }}" class="hidden border-t border-white/5">
-                    <div class="p-6 bg-secondary/20">
-                        <!-- Comments List -->
-                        <div class="space-y-4 mb-6">
-                            {% if pub.commentaires|length > 0 %}
-                                {% for comment in pub.commentaires %}
-                                <div class="flex gap-4">
-                                    {% if comment.auteur.IMAGE %}
-                                    <img src="{{ asset('images/' ~ comment.auteur.IMAGE) }}" alt="{{ comment.auteur.PRENOM ~ ' ' ~ comment.auteur.NOM }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/5">
+                <article class="glass-card rounded-3xl overflow-hidden hover:border-primary/30 transition-all" id="pub-{{ pub.id }}">
+                    <!-- Header -->
+                    <div class="p-6 pb-4">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-4">
+                                <!-- Avatar -->
+                                {% if isAnonymous %}
+                                    <div class="w-14 h-14 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/10">
+                                        <i data-lucide="user" class="w-7 h-7 text-muted-foreground"></i>
+                                    </div>
+                                {% else %}
+                                    {% if pub.auteur and pub.auteur.IMAGE %}
+                                        <img src="{{ asset('images/' ~ pub.auteur.IMAGE) }}" alt="{{ pub.auteur.PRENOM ~ ' ' ~ pub.auteur.NOM }}" class="w-14 h-14 rounded-full object-cover ring-2 ring-primary/30">
                                     {% else %}
-                                    <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/5">
+                                        <div class="w-14 h-14 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/10">
+                                            <i data-lucide="user" class="w-7 h-7 text-muted-foreground"></i>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+
+                                <!-- Info -->
+                                <div>
+                                    {% if isAnonymous %}
+                                        <h3 class="font-semibold text-lg">Anonyme</h3>
+                                    {% else %}
+                                        <h3 class="font-semibold text-lg">
+                                            {{ pub.auteur ? (pub.auteur.PRENOM ~ ' ' ~ pub.auteur.NOM) : 'Utilisateur' }}
+                                        </h3>
+                                    {% endif %}
+
+                                    {% if not isAnonymous and pub.auteur and pub.auteur.ROLE %}
+                                        <p class="text-sm text-muted-foreground">{{ pub.auteur.ROLE }}</p>
+                                    {% endif %}
+
+                                    <p class="text-xs text-muted-foreground mt-0.5">{{ pub.dateCreation|date('d M Y à H:i') }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Context Badge -->
+                            <span class="px-3 py-1.5 rounded-full text-xs font-medium
+                                {{ contexte == 'academic' ? 'bg-academic/20 text-academic' :
+                                   contexte == 'personal' ? 'bg-personal/20 text-personal' :
+                                   'bg-primary/20 text-primary' }}">
+                                {{ contexte == 'academic' ? 'Academic' :
+                                   contexte == 'personal' ? 'Personal' : 'Entraide' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="px-6 pb-4">
+                        <h2 class="font-serif text-xl md:text-2xl font-medium mb-3 text-primary">{{ pub.titre }}</h2>
+                        <p class="text-foreground leading-relaxed">{{ pub.contenu }}</p>
+                    </div>
+
+                    <!-- Actions Bar -->
+                    <div class="px-6 py-4 bg-secondary/30 border-t border-white/5 flex items-center justify-between">
+                        <div class="flex items-center gap-6">
+                            <!-- Likes -->
+                            <button class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group">
+                                <i data-lucide="heart" class="w-5 h-5 group-hover:fill-primary/20"></i>
+                                <span class="text-sm">{{ pub.likes ?? 0 }}</span>
+                            </button>
+
+                            <!-- Comments Toggle -->
+                            <button onclick="toggleComments({{ pub.id }})" class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                                <i data-lucide="message-circle" class="w-5 h-5"></i>
+                                <span class="text-sm">{{ pub.commentaires|length }} commentaires</span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <!-- Status -->
+                            <span class="px-2 py-1 rounded-lg text-xs flex items-center gap-1
+    {{ pub.statut == 1 
+        ? 'bg-green-500/20 text-green-400' 
+        : 'bg-red-500/20 text-red-400' }}">
+        
+    <span class="w-1.5 h-1.5 rounded-full 
+        {{ pub.statut == 1 ? 'bg-green-400' : 'bg-red-400' }}"></span>
+
+    {{ pub.statut == 1 ? 'actif' : 'inactif' }}
+</span>
+
+
+                            <!-- Modifier -->
+                            <a href="{{ path('app_publication_modifier', { id: pub.id }) }}" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-colors" title="Modifier la publication">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                                <span>Modifier</span>
+                            </a>
+
+                            <!-- Supprimer -->
+                            <form action="{{ path('app_publication_supprimer', { id: pub.id }) }}" method="post" class="inline" onsubmit="return confirm('Supprimer cette publication ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_publication_' ~ pub.id) }}">
+                                <button type="submit" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors" title="Supprimer la publication">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    <span>Supprimer</span>
+                                </button>
+                            </form>
+
+                            <!-- Signaler -->
+                            <a href="{{ path('app_publication_signaler', {id: pub.id}) }}" class="text-muted-foreground hover:text-red-400 transition-colors" title="Signaler">
+                                <i data-lucide="flag" class="w-5 h-5"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Comments Section (Hidden by default) -->
+                    <div id="comments-{{ pub.id }}" class="hidden border-t border-white/5">
+                        <div class="p-6 bg-secondary/20">
+                            <!-- Comments List -->
+                            <div class="space-y-4 mb-6">
+                                {% if pub.commentaires|length > 0 %}
+                                    {% for comment in pub.commentaires %}
+                                        <div class="flex gap-4">
+                                            {% if comment.auteur and comment.auteur.IMAGE %}
+                                                <img src="{{ asset('images/' ~ comment.auteur.IMAGE) }}" alt="{{ comment.auteur.PRENOM ~ ' ' ~ comment.auteur.NOM }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/5">
+                                            {% else %}
+                                                <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/5">
+                                                    <i data-lucide="user" class="w-5 h-5 text-muted-foreground"></i>
+                                                </div>
+                                            {% endif %}
+
+                                            <div class="flex-1">
+                                                <div class="glass-card rounded-2xl rounded-tl-none p-4">
+                                                    <div class="flex items-center justify-between mb-2">
+                                                        <div class="flex items-center gap-2">
+                                                            <h4 class="font-medium text-sm">{{ comment.auteur ? (comment.auteur.PRENOM ~ ' ' ~ comment.auteur.NOM) : 'Utilisateur' }}</h4>
+                                                            <span class="text-xs text-muted-foreground">{{ comment.dateCreation|date('d M H:i') }}</span>
+                                                        </div>
+
+                                                        <!-- Supprimer commentaire -->
+<div class="flex items-center gap-2">
+
+    <!-- Modifier commentaire -->
+    <a href="{{ path('app_commentaire_modifier', { id: comment.id }) }}"
+       class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
+       text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent
+       hover:border-primary/30 transition-colors"
+       title="Modifier le commentaire">
+        <i data-lucide="pencil" class="w-4 h-4"></i>
+        <span>Modifier</span>
+    </a>
+
+    <!-- Supprimer commentaire -->
+    <form action="{{ path('app_commentaire_supprimer', { id: comment.id }) }}"
+          method="post"
+          onsubmit="return confirm('Supprimer ce commentaire ?');">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
+        <button type="submit"
+                class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
+                text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent
+                hover:border-red-500/30 transition-colors">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <span>Supprimer</span>
+        </button>
+    </form>
+
+</div>
+
+
+                                                    </div>
+
+                                                    <p class="text-sm text-foreground">{{ comment.contenu }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center py-8">
+                                        <i data-lucide="message-square" class="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50"></i>
+                                        <p class="text-muted-foreground text-sm">Aucun commentaire pour le moment.</p>
+                                        <p class="text-xs text-muted-foreground mt-1">Soyez le premier a repondre !</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Add Comment -->
+<form action="{{ path('app_commentaire_ajouter', {id: pub.id}) }}" method="post" class="flex gap-4">
+                                {% if app.user and app.user.IMAGE %}
+                                    <img src="{{ asset('images/' ~ app.user.IMAGE) }}" alt="Moi" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30">
+                                {% else %}
+                                    <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-primary/30">
                                         <i data-lucide="user" class="w-5 h-5 text-muted-foreground"></i>
                                     </div>
-                                    {% endif %}
-                                    <div class="flex-1">
-                                        <div class="glass-card rounded-2xl rounded-tl-none p-4">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <div class="flex items-center gap-2">
-                                                    <h4 class="font-medium text-sm">{{ comment.auteur.PRENOM ~ ' ' ~ comment.auteur.NOM }}</h4>
-                                                    <span class="text-xs text-muted-foreground">{{ comment.dateCreation|date('d M H:i') }}</span>
-                                                </div>
-                                                <form action="{{ path('app_publication_commentaire_supprimer', { id: pub.id, idComment: comment.id }) }}" method="post" class="inline" onsubmit="return confirm('Supprimer ce commentaire ?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
-                                                    <button type="submit" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors" title="Supprimer le commentaire">
-                                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                        <span>Supprimer</span>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                            <p class="text-sm text-foreground">{{ comment.contenu }}</p>
-                                        </div>
-                                    </div>
+                                {% endif %}
+
+                                <div class="flex-1 relative">
+                                    <input
+                                        type="text"
+                                        name="contenu"
+                                        placeholder="Ecrivez votre commentaire..."
+                                        class="w-full h-12 bg-secondary border border-white/10 rounded-xl pl-4 pr-12 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50"
+                                    >
+                                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors">
+                                        <i data-lucide="send" class="w-4 h-4 text-white"></i>
+                                    </button>
                                 </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="text-center py-8">
-                                    <i data-lucide="message-square" class="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50"></i>
-                                    <p class="text-muted-foreground text-sm">Aucun commentaire pour le moment.</p>
-                                    <p class="text-xs text-muted-foreground mt-1">Soyez le premier a repondre !</p>
-                                </div>
-                            {% endif %}
+                            </form>
                         </div>
-                        
-                        <!-- Add Comment -->
-                        <form action="{{ path('app_publication_commenter', {id: pub.id}) }}" method="post" class="flex gap-4">
-                            <img src="{{ asset('images/student-avatar.jpg') }}" alt="Moi" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30">
-                            <div class="flex-1 relative">
-                                <input 
-                                    type="text" 
-                                    name="contenu" 
-                                    placeholder="Ecrivez votre commentaire..." 
-                                    class="w-full h-12 bg-secondary border border-white/10 rounded-xl pl-4 pr-12 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50"
-                                >
-                                <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors">
-                                    <i data-lucide="send" class="w-4 h-4 text-white"></i>
-                                </button>
-                            </div>
-                        </form>
                     </div>
-                </div>
-            </article>
+                </article>
             {% endfor %}
         </div>
     </section>
@@ -230,8 +286,7 @@
     function toggleComments(pubId) {
         const commentsSection = document.getElementById('comments-' + pubId);
         commentsSection.classList.toggle('hidden');
-        
-        // Scroll to comments if opening
+
         if (!commentsSection.classList.contains('hidden')) {
             setTimeout(() => {
                 commentsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

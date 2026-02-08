@@ -396,6 +396,6 @@ class __TwigTemplate_d95d27aa25a480bb36ffb18052b2826b extends Template
     }
 </script>
 {% endblock %}
-{% endblock %}", "admin/skill/list.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\admin\\skill\\list.html.twig");
+{% endblock %}", "admin/skill/list.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\admin\\skill\\list.html.twig");
     }
 }

@@ -17,15 +17,15 @@ use phpDocumentor\Reflection\DocBlock\Description;
 use phpDocumentor\Reflection\DocBlock\DescriptionFactory;
 use phpDocumentor\Reflection\Types\Context as TypeContext;
 use Webmozart\Assert\Assert;
-
 use function preg_match;
 
 /**
  * Reflection class for a {@}since tag in a Docblock.
  */
-final class Since extends BaseTag
+final class Since extends BaseTag implements Factory\StaticMethod
 {
-    protected string $name = 'since';
+    /** @var string */
+    protected $name = 'since';
 
     /**
      * PCRE regular expression matching a version vector.
@@ -44,7 +44,7 @@ final class Since extends BaseTag
     )';
 
     /** @var string|null The version vector. */
-    private ?string $version = null;
+    private $version;
 
     public function __construct(?string $version = null, ?Description $description = null)
     {
@@ -58,8 +58,8 @@ final class Since extends BaseTag
         ?string $body,
         ?DescriptionFactory $descriptionFactory = null,
         ?TypeContext $context = null
-    ): ?self {
-        if ($body === null || $body === '') {
+    ) : ?self {
+        if (empty($body)) {
             return new static();
         }
 
@@ -79,7 +79,7 @@ final class Since extends BaseTag
     /**
      * Gets the version section of the tag.
      */
-    public function getVersion(): ?string
+    public function getVersion() : ?string
     {
         return $this->version;
     }
@@ -87,16 +87,8 @@ final class Since extends BaseTag
     /**
      * Returns a string representation for this tag.
      */
-    public function __toString(): string
+    public function __toString() : string
     {
-        if ($this->description !== null) {
-            $description = $this->description->render();
-        } else {
-            $description = '';
-        }
-
-        $version = (string) $this->version;
-
-        return $version . ($description !== '' ? ($version !== '' ? ' ' : '') . $description : '');
+        return (string) $this->version . ($this->description ? ' ' . (string) $this->description : '');
     }
 }

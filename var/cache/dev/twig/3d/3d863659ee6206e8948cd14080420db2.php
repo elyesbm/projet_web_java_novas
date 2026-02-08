@@ -472,6 +472,6 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
         </div>
     </div>
 </div>
-{% endblock %}", "admin/atelier/list.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\admin\\atelier\\list.html.twig");
+{% endblock %}", "admin/atelier/list.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\admin\\atelier\\list.html.twig");
     }
 }

@@ -423,6 +423,6 @@ class __TwigTemplate_9c2af318b4d8e6e747184db86b5968d2 extends Template
     }
 </script>
 {% endblock %}
-{% endblock %}", "admin/marketplace/list.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\admin\\marketplace\\list.html.twig");
+{% endblock %}", "admin/marketplace/list.html.twig", "D:\\pi\\projet_web_java_novas\\templates\\admin\\marketplace\\list.html.twig");
     }
 }
