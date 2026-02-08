@@ -1,0 +1,120 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Mes candidatures - NoVas Jobs{% endblock %}
+
+{% block body %}
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center glow-primary">
+                <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+            </div>
+            <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
+        </a>
+        
+        <div class="hidden md:flex items-center gap-8">
+            <a href="{{ path('app_jobs_index') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Jobs</a>
+            <a href="{{ path('app_jobs_mes_candidatures') }}" class="text-sm text-primary font-medium">Mes candidatures</a>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <a href="{{ path('app_jobs_index') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
+                Trouver une offre
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- Content -->
+<section class="relative pt-32 pb-16 min-h-screen">
+    <div class="absolute inset-0 gradient-orb"></div>
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]"></div>
+    
+    <div class="relative max-w-5xl mx-auto px-6">
+        <div class="mb-8">
+            <h1 class="font-serif text-3xl font-medium mb-2">Mes <span class="italic text-primary">candidatures</span></h1>
+            <p class="text-muted-foreground">Suivez l'état de vos demandes.</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass-card rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold">{{ stats.total }}</p>
+                <p class="text-xs text-muted-foreground">Total</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold text-yellow-500">{{ stats.enAttente }}</p>
+                <p class="text-xs text-muted-foreground">En attente</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold text-accent">{{ stats.acceptees }}</p>
+                <p class="text-xs text-muted-foreground">Acceptées</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold text-red-400">{{ stats.refusees }}</p>
+                <p class="text-xs text-muted-foreground">Refusées</p>
+            </div>
+        </div>
+
+        <!-- Candidatures List -->
+        <div class="space-y-4">
+            {% for candidature in candidatures %}
+            <div class="glass-card rounded-2xl p-6 {% if candidature.statut == 'acceptee' %}border-l-4 border-accent{% elseif candidature.statut == 'refusee' %}border-l-4 border-red-500 opacity-60{% else %}border-l-4 border-yellow-500{% endif %}">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Job Info -->
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between mb-2">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium 
+                                {% if candidature.statut == 'en_attente' %}bg-yellow-500/20 text-yellow-500
+                                {% elseif candidature.statut == 'acceptee' %}bg-accent/20 text-accent
+                                {% else %}bg-red-500/20 text-red-400{% endif %}">
+                                {% if candidature.statut == 'en_attente' %}En attente
+                                {% elseif candidature.statut == 'acceptee' %}Acceptée
+                                {% else %}Refusée{% endif %}
+                            </span>
+                            <span class="text-xs text-muted-foreground">{{ candidature.date|date('d/m/Y') }}</span>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold mb-2">{{ candidature.job.titre }}</h3>
+                        <p class="text-sm text-muted-foreground mb-3">{{ candidature.job.createur.nom }} • {{ candidature.job.localisation }}</p>
+                        
+                        <div class="flex items-center gap-4 text-sm">
+                            <span class="text-primary font-semibold">{{ candidature.job.remuneration }}€/heure</span>
+                            <span class="text-muted-foreground">{{ candidature.job.duree }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex md:flex-col gap-2 md:justify-center">
+                        <a href="{{ path('app_jobs_detail', {'id': candidature.job.id}) }}" 
+                           class="px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition text-sm font-medium text-center">
+                            Voir l'offre
+                        </a>
+                        {% if candidature.statut == 'acceptee' %}
+                        <a href="mailto:{{ candidature.job.createur.email }}" 
+                           class="px-4 py-2 rounded-xl bg-accent text-white hover:bg-accent/90 transition text-sm font-medium text-center flex items-center justify-center gap-2">
+                            <i data-lucide="mail" class="w-4 h-4"></i>
+                            Contacter
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-16 glass-card rounded-2xl">
+                <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="search" class="w-8 h-8 text-primary"></i>
+                </div>
+                <h3 class="font-semibold mb-2">Aucune candidature</h3>
+                <p class="text-muted-foreground mb-6">Commencez à postuler aux offres qui vous intéressent.</p>
+                <a href="{{ path('app_jobs_index') }}" class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-medium hover:bg-primary/90 transition">
+                    <i data-lucide="briefcase" class="w-5 h-5"></i>
+                    Parcourir les offres
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

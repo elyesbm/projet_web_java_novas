@@ -1,0 +1,121 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Mes Skills - NoVas{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
+                <img src="{{ asset('images/logo.png') }}" alt="NoVas" class="h-10 w-auto">
+            </a>
+            
+            <div class="flex items-center gap-4">
+                <a href="{{ path('app_skills_index') }}" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Découvrir les skills
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="pt-32 pb-12 px-6 relative overflow-hidden">
+        <div class="absolute inset-0 gradient-orb"></div>
+        
+        <div class="max-w-7xl mx-auto relative">
+            <div class="glass-card rounded-3xl p-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px]"></div>
+                
+                <div class="relative flex flex-col md:flex-row items-center gap-8">
+                    <div class="relative">
+                        <div class="w-32 h-32 rounded-full border-4 border-primary/30 flex items-center justify-center">
+                            <div class="text-center">
+                                <p class="font-serif text-4xl font-bold text-primary">{{ mesSkills|length }}</p>
+                                <p class="text-xs text-muted-foreground">Skills</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 text-center md:text-left">
+                        <h1 class="font-serif text-3xl font-medium mb-2">Mes Compétences</h1>
+                        <p class="text-muted-foreground mb-4">Les talents que vous avez ajoutés à votre profil</p>
+                        
+                        {% set hardCount = mesSkills|filter(s => s.contexteSkill == 'hard')|length %}
+                        {% set softCount = mesSkills|filter(s => s.contexteSkill == 'soft')|length %}
+                        <div class="flex flex-wrap justify-center md:justify-start gap-3">
+                            <span class="px-4 py-2 bg-academic/20 text-academic rounded-full text-sm">{{ hardCount }} Hard Skills</span>
+                            <span class="px-4 py-2 bg-personal/20 text-personal rounded-full text-sm">{{ softCount }} Soft Skills</span>
+                        </div>
+                    </div>
+                    
+                    <a href="{{ path('app_skills_ajouter') }}" class="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center gap-2">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        Ajouter un skill
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- My Skills Grid -->
+    <section class="px-6 pb-24">
+        <div class="max-w-7xl mx-auto">
+            {% if mesSkills is empty %}
+            <div class="glass-card rounded-3xl p-12 text-center">
+                <i data-lucide="sparkles" class="w-16 h-16 text-primary mx-auto mb-4 opacity-50"></i>
+                <p class="text-muted-foreground mb-6">Vous n'avez pas encore ajouté de skill. Ajoutez votre premier talent !</p>
+                <a href="{{ path('app_skills_ajouter') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    Ajouter un skill
+                </a>
+            </div>
+            {% else %}
+            <div class="grid md:grid-cols-2 gap-6">
+                {% for skill in mesSkills %}
+                {% set typeSkill = skill.contexteSkill == 'hard' ? 'hard' : 'soft' %}
+                {% set iconSkill = skill.contexteSkill == 'hard' ? 'code' : 'heart' %}
+                <div class="glass-card rounded-3xl p-6 hover:border-primary/30 transition-all group">
+                    <div class="flex items-start gap-4">
+                        <div class="w-16 h-16 rounded-2xl {{ typeSkill == 'hard' ? 'bg-academic/20' : 'bg-personal/20' }} flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="{{ iconSkill }}" class="w-8 h-8 {{ typeSkill == 'hard' ? 'text-academic' : 'text-personal' }}"></i>
+                        </div>
+                        
+                        <div class="flex-1">
+                            <div class="flex items-start justify-between mb-2">
+                                <div>
+                                    <h3 class="text-xl font-semibold group-hover:text-primary transition-colors">{{ skill.nomSkill }}</h3>
+                                    <p class="text-sm text-muted-foreground">{{ skill.categorie }}</p>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-xs font-medium {{ typeSkill == 'hard' ? 'bg-academic/20 text-academic' : 'bg-personal/20 text-personal' }}">
+                                    {{ typeSkill == 'hard' ? 'Hard' : 'Soft' }}
+                                </span>
+                            </div>
+                            {% if skill.descriptionSkill %}
+                            <p class="text-sm text-muted-foreground mb-4 line-clamp-2">{{ skill.descriptionSkill }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Actions: Modifier / Supprimer -->
+                    <div class="flex gap-3 mt-6 pt-6 border-t border-white/5">
+                        <a href="{{ path('app_skills_modifier', { id: skill.id }) }}" class="flex-1 h-12 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+                            <i data-lucide="pencil" class="w-4 h-4"></i>
+                            Modifier
+                        </a>
+                        <form method="post" action="{{ path('app_skills_supprimer', { id: skill.id }) }}" class="inline" onsubmit="return confirm('Supprimer ce skill ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_skill_' ~ skill.id) }}">
+                            <button type="submit" class="h-12 px-4 bg-secondary border border-white/10 rounded-xl text-muted-foreground hover:bg-rose-500/20 hover:border-rose-500/30 hover:text-rose-500 transition-colors flex items-center justify-center gap-2">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}
