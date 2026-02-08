@@ -481,6 +481,6 @@ $context["article"], "statut", [], "any", false, false, false, 114) == "reserve"
         </div>
     </div>
 </div>
-{% endblock %}", "front/marketplace/mes_articles.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\marketplace\\mes_articles.html.twig");
+{% endblock %}", "front/marketplace/mes_articles.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\front\\marketplace\\mes_articles.html.twig");
     }
 }

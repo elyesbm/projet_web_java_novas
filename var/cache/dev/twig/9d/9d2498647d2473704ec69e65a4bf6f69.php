@@ -426,6 +426,6 @@ class __TwigTemplate_028223cef87c63860598d25c7700db05 extends Template
         </div>
     </div>
 </div>
-{% endblock %}", "front/skill/ajouter.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\skill\\ajouter.html.twig");
+{% endblock %}", "front/skill/ajouter.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\front\\skill\\ajouter.html.twig");
     }
 }

@@ -518,6 +518,6 @@ class __TwigTemplate_eb7c8361ac3e87aa9b89d1307a32e329 extends Template
         </div>
     </section>
 </div>
-{% endblock %}", "front/marketplace/index.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\marketplace\\index.html.twig");
+{% endblock %}", "front/marketplace/index.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\front\\marketplace\\index.html.twig");
     }
 }

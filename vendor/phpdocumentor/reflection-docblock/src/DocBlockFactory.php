@@ -19,9 +19,7 @@ use phpDocumentor\Reflection\DocBlock\DescriptionFactory;
 use phpDocumentor\Reflection\DocBlock\StandardTagFactory;
 use phpDocumentor\Reflection\DocBlock\Tag;
 use phpDocumentor\Reflection\DocBlock\TagFactory;
-use phpDocumentor\Reflection\DocBlock\Tags\Factory\Factory;
 use Webmozart\Assert\Assert;
-
 use function array_shift;
 use function count;
 use function explode;
@@ -36,9 +34,11 @@ use function trim;
 
 final class DocBlockFactory implements DocBlockFactoryInterface
 {
-    private DocBlock\DescriptionFactory $descriptionFactory;
+    /** @var DocBlock\DescriptionFactory */
+    private $descriptionFactory;
 
-    private TagFactory $tagFactory;
+    /** @var DocBlock\TagFactory */
+    private $tagFactory;
 
     /**
      * Initializes this factory with the required subcontractors.
@@ -46,19 +46,22 @@ final class DocBlockFactory implements DocBlockFactoryInterface
     public function __construct(DescriptionFactory $descriptionFactory, TagFactory $tagFactory)
     {
         $this->descriptionFactory = $descriptionFactory;
-        $this->tagFactory = $tagFactory;
+        $this->tagFactory         = $tagFactory;
     }
 
     /**
      * Factory method for easy instantiation.
      *
-     * @param array<string, class-string<Tag>|Factory> $additionalTags
+     * @param array<string, class-string<Tag>> $additionalTags
      */
-    public static function createInstance(array $additionalTags = []): DocBlockFactoryInterface
+    public static function createInstance(array $additionalTags = []) : self
     {
-        $fqsenResolver = new FqsenResolver();
-        $tagFactory = StandardTagFactory::createInstance($fqsenResolver);
+        $fqsenResolver      = new FqsenResolver();
+        $tagFactory         = new StandardTagFactory($fqsenResolver);
         $descriptionFactory = new DescriptionFactory($tagFactory);
+
+        $tagFactory->addService($descriptionFactory);
+        $tagFactory->addService(new TypeResolver($fqsenResolver));
 
         $docBlockFactory = new self($descriptionFactory, $tagFactory);
         foreach ($additionalTags as $tagName => $tagHandler) {
@@ -72,7 +75,7 @@ final class DocBlockFactory implements DocBlockFactoryInterface
      * @param object|string $docblock A string containing the DocBlock to parse or an object supporting the
      *                                getDocComment method (such as a ReflectionClass object).
      */
-    public function create($docblock, ?Types\Context $context = null, ?Location $location = null): DocBlock
+    public function create($docblock, ?Types\Context $context = null, ?Location $location = null) : DocBlock
     {
         if (is_object($docblock)) {
             if (!method_exists($docblock, 'getDocComment')) {
@@ -107,9 +110,9 @@ final class DocBlockFactory implements DocBlockFactoryInterface
     }
 
     /**
-     * @param class-string<Tag>|Factory $handler
+     * @param class-string<Tag> $handler
      */
-    public function registerTagHandler(string $tagName, $handler): void
+    public function registerTagHandler(string $tagName, string $handler) : void
     {
         $this->tagFactory->registerTagHandler($tagName, $handler);
     }
@@ -119,7 +122,7 @@ final class DocBlockFactory implements DocBlockFactoryInterface
      *
      * @param string $comment String containing the comment text.
      */
-    private function stripDocComment(string $comment): string
+    private function stripDocComment(string $comment) : string
     {
         $comment = preg_replace('#[ \t]*(?:\/\*\*|\*\/|\*)?[ \t]?(.*)?#u', '$1', $comment);
         Assert::string($comment);
@@ -134,7 +137,6 @@ final class DocBlockFactory implements DocBlockFactoryInterface
     }
 
     // phpcs:disable
-
     /**
      * Splits the DocBlock into a template marker, summary, description and block of tags.
      *
@@ -146,7 +148,7 @@ final class DocBlockFactory implements DocBlockFactoryInterface
      *
      * @author Richard van Velzen (@_richardJ) Special thanks to Richard for the regex responsible for the split.
      */
-    private function splitDocBlock(string $comment): array
+    private function splitDocBlock(string $comment) : array
     {
         // phpcs:enable
         // Performance improvement cheat: if the first character is an @ then only tags are in this DocBlock. This
@@ -224,12 +226,12 @@ final class DocBlockFactory implements DocBlockFactoryInterface
     /**
      * Creates the tag objects.
      *
-     * @param string $tags Tag block to parse.
+     * @param string        $tags    Tag block to parse.
      * @param Types\Context $context Context of the parsed Tag
      *
      * @return DocBlock\Tag[]
      */
-    private function parseTagBlock(string $tags, Types\Context $context): array
+    private function parseTagBlock(string $tags, Types\Context $context) : array
     {
         $tags = $this->filterTagBlock($tags);
         if ($tags === null) {
@@ -237,7 +239,7 @@ final class DocBlockFactory implements DocBlockFactoryInterface
         }
 
         $result = [];
-        $lines = $this->splitTagBlockIntoTagLines($tags);
+        $lines  = $this->splitTagBlockIntoTagLines($tags);
         foreach ($lines as $key => $tagLine) {
             $result[$key] = $this->tagFactory->create(trim($tagLine), $context);
         }
@@ -248,7 +250,7 @@ final class DocBlockFactory implements DocBlockFactoryInterface
     /**
      * @return string[]
      */
-    private function splitTagBlockIntoTagLines(string $tags): array
+    private function splitTagBlockIntoTagLines(string $tags) : array
     {
         $result = [];
         foreach (explode("\n", $tags) as $tagLine) {
@@ -262,7 +264,7 @@ final class DocBlockFactory implements DocBlockFactoryInterface
         return $result;
     }
 
-    private function filterTagBlock(string $tags): ?string
+    private function filterTagBlock(string $tags) : ?string
     {
         $tags = trim($tags);
         if (!$tags) {

@@ -27,13 +27,28 @@ class AtelierAdminController extends AbstractController
 
 
 
-    #[Route('/new', name: 'new')]
-    public function new(): Response
-    {
-        return $this->render('admin/atelier/form.html.twig', [
-            'mode' => 'create'
-        ]);
+   #[Route('/new', name: 'new')]
+   public function new(Request $request, EntityManagerInterface $em): Response
+   {
+    $atelier = new Atelier();
+
+    $form = $this->createForm(AtelierType::class, $atelier);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $em->persist($atelier);
+        $em->flush();
+
+        return $this->redirectToRoute('app_admin_ateliers_list');
     }
+
+    return $this->render('admin/atelier/form.html.twig', [
+        'mode' => 'create',
+        'form' => $form,
+    ]);
+    }
+
+
 
     #[Route('/{id}/edit', name: 'edit')]
     public function edit(int $id): Response

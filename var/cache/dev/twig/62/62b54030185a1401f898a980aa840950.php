@@ -466,6 +466,6 @@ $context["candidature"], "statut", [], "any", false, false, false, 73) == "accep
         </div>
     </div>
 </section>
-{% endblock %}", "front/jobs/mes_candidatures.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\jobs\\mes_candidatures.html.twig");
+{% endblock %}", "front/jobs/mes_candidatures.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\front\\jobs\\mes_candidatures.html.twig");
     }
 }

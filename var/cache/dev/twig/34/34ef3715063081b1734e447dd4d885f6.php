@@ -38,7 +38,7 @@ class __TwigTemplate_3b8ceb327f158d431115a15857408a0a extends Template
     protected function doGetParent(array $context): bool|string|Template|TemplateWrapper
     {
         // line 2
-        return "base_home.html.twig";
+        return "front/base_home.html.twig";
     }
 
     protected function doDisplay(array $context, array $blocks = []): iterable
@@ -50,7 +50,7 @@ class __TwigTemplate_3b8ceb327f158d431115a15857408a0a extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "template", "front/user/profile.html.twig"));
 
-        $this->parent = $this->load("base_home.html.twig", 2);
+        $this->parent = $this->load("front/base_home.html.twig", 2);
         yield from $this->parent->unwrap()->yield($context, array_merge($this->blocks, $blocks));
         
         $__internal_5a27a8ba21ca79b61932376b2fa922d2->leave($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof);
@@ -862,7 +862,7 @@ class __TwigTemplate_3b8ceb327f158d431115a15857408a0a extends Template
     public function getSourceContext(): Source
     {
         return new Source("{# templates/user/profile_front.html.twig #}
-{% extends 'base_home.html.twig' %}
+{% extends 'front/base_home.html.twig' %}
 
 {% block title %}Mon Profil - EduVie{% endblock %}
 
@@ -1506,6 +1506,6 @@ class __TwigTemplate_3b8ceb327f158d431115a15857408a0a extends Template
         }
     });
 </script>
-{% endblock %}", "front/user/profile.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\user\\profile.html.twig");
+{% endblock %}", "front/user/profile.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\front\\user\\profile.html.twig");
     }
 }

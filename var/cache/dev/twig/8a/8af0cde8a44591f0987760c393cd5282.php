@@ -364,6 +364,6 @@ class __TwigTemplate_75b385c800662d5cd543d5e694dcd6a8 extends Template
         </div>
     </div>
 </div>
-{% endblock %}", "front/publication/nouvelle.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\publication\\nouvelle.html.twig");
+{% endblock %}", "front/publication/nouvelle.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\front\\publication\\nouvelle.html.twig");
     }
 }

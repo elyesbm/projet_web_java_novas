@@ -1,123 +1,129 @@
 {% extends 'admin/base_admin.html.twig' %}
 
-{% block title %}{{ mode|default('create') == 'create' ? 'Nouvel' : 'Modifier' }} atelier - NOVAS Admin{% endblock %}
-{% block page_title %}{{ mode|default('create') == 'create' ? 'Nouvel atelier' : 'Modifier l\'atelier' }}{% endblock %}
+{% block title %}{{ mode == 'create' ? 'Nouvel atelier' : 'Modifier atelier' }}{% endblock %}
+{% block page_title %}{{ mode == 'create' ? 'Nouvel atelier' : 'Modifier l’atelier' }}{% endblock %}
 {% block page_subtitle %}Programmer un événement de formation{% endblock %}
 
 {% block body %}
-<div class="max-w-5xl mx-auto">
-    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white mb-6 shadow-lg shadow-indigo-500/25 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-        <div class="relative flex items-center gap-4">
-            <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center"><i data-lucide="calendar-days" class="w-8 h-8"></i></div>
-            <div>
-                <h2 class="text-2xl font-bold">Détails de l'atelier</h2>
-                <p class="text-indigo-100">Créez une expérience d'apprentissage</p>
-            </div>
+{{ form_start(form, { attr: { class: 'max-w-5xl mx-auto' } }) }}
+
+<!-- HEADER -->
+<div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white mb-6 shadow-lg">
+    <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center">
+            <i data-lucide="calendar-days" class="w-8 h-8"></i>
         </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
-                <div class="space-y-6">
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Titre <span class="text-rose-500">*</span></label>
-                        <input type="text" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 text-lg" placeholder="ex: Maîtrise de Python">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Type</label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="type" value="hard" class="peer sr-only" checked>
-                                    <div class="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-900/20 text-center transition-all">
-                                        <i data-lucide="cpu" class="w-6 h-6 mx-auto mb-2 text-indigo-500"></i>
-                                        <p class="font-semibold text-slate-900 dark:text-white">Hard Skill</p>
-                                    </div>
-                                </label>
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="type" value="soft" class="peer sr-only">
-                                    <div class="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 peer-checked:border-purple-500 peer-checked:bg-purple-50 dark:peer-checked:bg-purple-900/20 text-center transition-all">
-                                        <i data-lucide="heart-handshake" class="w-6 h-6 mx-auto mb-2 text-purple-500"></i>
-                                        <p class="font-semibold text-slate-900 dark:text-white">Soft Skill</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Catégorie</label>
-                            <select class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500">
-                                <option>Programmation</option>
-                                <option>Data Science</option>
-                                <option>Communication</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Description <span class="text-rose-500">*</span></label>
-                        <textarea rows="4" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 resize-none" placeholder="Décrivez l'atelier..."></textarea>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Date</label>
-                            <input type="date" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Heure</label>
-                            <input type="time" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Durée</label>
-                            <select class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500">
-                                <option>1 heure</option>
-                                <option selected>2 heures</option>
-                                <option>3 heures</option>
-                                <option>Journée</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="space-y-6">
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
-                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Capacité</h3>
-                <div class="space-y-4">
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Places disponibles</label>
-                        <div class="flex items-center gap-4">
-                            <button type="button" onclick="document.getElementById('places').value = Math.max(1, parseInt(document.getElementById('places').value) - 1)" class="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-center"><i data-lucide="minus" class="w-4 h-4"></i></button>
-                            <input type="number" id="places" value="20" min="1" max="100" class="w-20 text-center px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 text-2xl font-bold">
-                            <button type="button" onclick="document.getElementById('places').value = Math.min(100, parseInt(document.getElementById('places').value) + 1)" class="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-center"><i data-lucide="plus" class="w-4 h-4"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
-                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Formateur</h3>
-                <div class="space-y-4">
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Nom</label>
-                        <input type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500" placeholder="Dr. Marie Dupont">
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex flex-col gap-3">
-                <button onclick="showToast('Atelier enregistré', 'success'); setTimeout(() => window.location.href = '{{ path('app_admin_ateliers_list') }}', 1500);" class="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all">
-                    {{ mode|default('create') == 'create' ? 'Créer l\'atelier' : 'Enregistrer' }}
-                </button>
-                <a href="{{ path('app_admin_ateliers_list') }}" class="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium text-center transition-colors">
-                    Annuler
-                </a>
-            </div>
+        <div>
+            <h2 class="text-2xl font-bold">Détails de l'atelier</h2>
+            <p class="text-indigo-100">Créez une expérience d'apprentissage</p>
         </div>
     </div>
 </div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- COL GAUCHE -->
+    <div class="lg:col-span-2 space-y-6">
+
+        <div class="bg-white rounded-2xl p-6 shadow">
+            {{ form_row(form.titre_atelier, {
+                label: 'Titre',
+                attr: { class: 'w-full px-4 py-3 rounded-xl border text-lg' }
+            }) }}
+
+            <!-- CONTEXTE AVEC ICÔNES -->
+            <label class="block mt-6 mb-2 font-medium">Contexte</label>
+            <div class="grid grid-cols-2 gap-4">
+                {% for child in form.contexte_atelier %}
+                    <label class="cursor-pointer">
+                        {{ form_widget(child, { attr: { class: 'peer sr-only' } }) }}
+                        <div class="p-4 rounded-xl border-2 text-center
+                            peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition">
+                            {% if child.vars.value == 1 %}
+                                <i data-lucide="cpu" class="w-6 h-6 mx-auto mb-2 text-indigo-500"></i>
+                                <strong>Hard Skill</strong>
+                            {% else %}
+                                <i data-lucide="heart-handshake" class="w-6 h-6 mx-auto mb-2 text-purple-500"></i>
+                                <strong>Soft Skill</strong>
+                            {% endif %}
+                        </div>
+                    </label>
+                {% endfor %}
+            </div>
+
+            {{ form_row(form.type_atelier, {
+                label: 'Type',
+                attr: { class: 'w-full mt-6 px-4 py-3 rounded-xl border' }
+            }) }}
+
+            {{ form_row(form.description_atelier, {
+                label: 'Description',
+                attr: { class: 'w-full px-4 py-3 rounded-xl border resize-none' }
+            }) }}
+
+            {{ form_row(form.date_atelier, {
+                label: 'Date',
+                attr: { class: 'w-full px-4 py-3 rounded-xl border' }
+            }) }}
+        </div>
+    </div>
+
+    <!-- COL DROITE -->
+    <div class="space-y-6">
+
+        <!-- CAPACITÉ (UN SEUL CHAMP ✅) -->
+        <div class="bg-white rounded-2xl p-6 shadow">
+            <h3 class="font-semibold mb-2">Capacité</h3>
+            {{ form_widget(form.capacite, {
+                attr: { class: 'w-full px-4 py-3 rounded-xl border text-center text-xl font-bold' }
+            }) }}
+        </div>
+
+        <!-- IMAGE URL + PREVIEW -->
+        <div class="bg-white rounded-2xl p-6 shadow">
+            <h3 class="font-semibold mb-2">Image (URL)</h3>
+            {{ form_widget(form.image_atelier, {
+                attr: {
+                    class: 'w-full px-4 py-3 rounded-xl border',
+                    oninput: 'previewImage(this.value)'
+                }
+            }) }}
+            <img id="preview" class="mt-4 rounded-xl hidden max-h-48 mx-auto">
+        </div>
+
+        <!-- STATUT -->
+        <div class="bg-white rounded-2xl p-6 shadow">
+            <h3 class="font-semibold mb-2">Statut</h3>
+            {{ form_widget(form.statut_atelier) }}
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="flex flex-col gap-3">
+            <button type="submit"
+                class="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium">
+                {{ mode == 'create' ? 'Créer l’atelier' : 'Enregistrer' }}
+            </button>
+
+            <a href="{{ path('app_admin_ateliers_list') }}"
+               class="w-full py-3 rounded-xl border text-center">
+                Annuler
+            </a>
+        </div>
+
+    </div>
+</div>
+
+{{ form_end(form) }}
+
+<script>
+function previewImage(url) {
+    const img = document.getElementById('preview');
+    if (!url) {
+        img.classList.add('hidden');
+        return;
+    }
+    img.src = url;
+    img.classList.remove('hidden');
+}
+</script>
 {% endblock %}

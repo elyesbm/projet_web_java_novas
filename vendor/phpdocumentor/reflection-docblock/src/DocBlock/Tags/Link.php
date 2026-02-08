@@ -16,17 +16,19 @@ namespace phpDocumentor\Reflection\DocBlock\Tags;
 use phpDocumentor\Reflection\DocBlock\Description;
 use phpDocumentor\Reflection\DocBlock\DescriptionFactory;
 use phpDocumentor\Reflection\Types\Context as TypeContext;
-use phpDocumentor\Reflection\Utils;
 use Webmozart\Assert\Assert;
+use function preg_split;
 
 /**
- * Reflection class for a {@}link tag in a Docblock.
+ * Reflection class for a @link tag in a Docblock.
  */
-final class Link extends BaseTag
+final class Link extends BaseTag implements Factory\StaticMethod
 {
-    protected string $name = 'link';
+    /** @var string */
+    protected $name = 'link';
 
-    private string $link;
+    /** @var string */
+    private $link;
 
     /**
      * Initializes a link to a URL.
@@ -41,10 +43,11 @@ final class Link extends BaseTag
         string $body,
         ?DescriptionFactory $descriptionFactory = null,
         ?TypeContext $context = null
-    ): self {
+    ) : self {
         Assert::notNull($descriptionFactory);
 
-        $parts = Utils::pregSplit('/\s+/Su', $body, 2);
+        $parts = preg_split('/\s+/Su', $body, 2);
+        Assert::isArray($parts);
         $description = isset($parts[1]) ? $descriptionFactory->create($parts[1], $context) : null;
 
         return new static($parts[0], $description);
@@ -53,7 +56,7 @@ final class Link extends BaseTag
     /**
      * Gets the link
      */
-    public function getLink(): string
+    public function getLink() : string
     {
         return $this->link;
     }
@@ -61,16 +64,8 @@ final class Link extends BaseTag
     /**
      * Returns a string representation for this tag.
      */
-    public function __toString(): string
+    public function __toString() : string
     {
-        if ($this->description) {
-            $description = $this->description->render();
-        } else {
-            $description = '';
-        }
-
-        $link = $this->link;
-
-        return $link . ($description !== '' ? ($link !== '' ? ' ' : '') . $description : '');
+        return $this->link . ($this->description ? ' ' . $this->description->render() : '');
     }
 }

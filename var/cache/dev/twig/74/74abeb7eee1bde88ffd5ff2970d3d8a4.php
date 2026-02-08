@@ -570,6 +570,6 @@ class __TwigTemplate_bc8c437c58c7e3072c774c21809d9bae extends Template
         </div>
     </section>
 </div>
-{% endblock %}", "front/learning_path/detail.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\learning_path\\detail.html.twig");
+{% endblock %}", "front/learning_path/detail.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\front\\learning_path\\detail.html.twig");
     }
 }

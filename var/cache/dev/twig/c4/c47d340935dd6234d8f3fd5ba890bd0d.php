@@ -660,6 +660,6 @@ $context["pub"], "contexte", [], "any", false, false, false, 106) == "personal")
         }
     }
 </script>
-{% endblock %}", "front/publication/index.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\publication\\index.html.twig");
+{% endblock %}", "front/publication/index.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\front\\publication\\index.html.twig");
     }
 }

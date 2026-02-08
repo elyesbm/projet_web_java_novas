@@ -569,6 +569,6 @@ class __TwigTemplate_50de8c7751f90bfff80118b2af705493 extends Template
         </div>
     </div>
 </div>
-{% endblock %}", "front/marketplace/detail.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\front\\marketplace\\detail.html.twig");
+{% endblock %}", "front/marketplace/detail.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\front\\marketplace\\detail.html.twig");
     }
 }

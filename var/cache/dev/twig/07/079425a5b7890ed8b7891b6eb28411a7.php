@@ -417,6 +417,6 @@ class __TwigTemplate_90e3a3244f0e72506d521a01fc7981cf extends Template
     }
 </script>
 {% endblock %}
-{% endblock %}", "admin/jobs/list.html.twig", "C:\\Users\\ASUS\\Desktop\\pidev\\projet_symfony\\templates\\admin\\jobs\\list.html.twig");
+{% endblock %}", "admin/jobs/list.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\admin\\jobs\\list.html.twig");
     }
 }
