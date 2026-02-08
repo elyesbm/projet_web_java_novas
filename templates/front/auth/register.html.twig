@@ -45,122 +45,66 @@
                 </div>
             </div>
             
-            <!-- Form -->
-            <form action="{{ path('app_register') }}" method="post" class="space-y-5">
-                <!-- Name Row -->
+            {% for message in app.flashes('success') %}
+                <div class="mb-5 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm">{{ message }}</div>
+            {% endfor %}
+
+            {{ form_start(registrationForm, { 'attr': { 'class': 'space-y-5' } }) }}
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Prenom</label>
+                    <div class="space-y-2">
                         <div class="relative">
-                            <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
-                            <input 
-                                type="text" 
-                                name="firstName" 
-                                required 
-                                class="w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
-                                placeholder="Jean"
-                            >
+                            <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
+                            {{ form_widget(registrationForm.PRENOM) }}
                         </div>
+                        {{ form_errors(registrationForm.PRENOM) }}
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Nom</label>
+                    <div class="space-y-2">
                         <div class="relative">
-                            <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
-                            <input 
-                                type="text" 
-                                name="lastName" 
-                                required 
-                                class="w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
-                                placeholder="Dupont"
-                            >
+                            <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
+                            {{ form_widget(registrationForm.NOM) }}
                         </div>
+                        {{ form_errors(registrationForm.NOM) }}
                     </div>
                 </div>
-                
-                <!-- Email -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Email universitaire</label>
+                <div class="space-y-2">
                     <div class="relative">
-                        <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
-                        <input 
-                            type="email" 
-                            name="email" 
-                            required 
-                            class="w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
-                            placeholder="jean.dupont@univ.fr"
-                        >
+                        <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
+                        {{ form_widget(registrationForm.EMAIL) }}
                     </div>
+                    {{ form_errors(registrationForm.EMAIL) }}
                 </div>
-                
-                <!-- Level Select -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Niveau d'etudes</label>
+                <div class="space-y-2">
                     <div class="relative">
-                        <i data-lucide="graduation-cap" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
-                        <select 
-                            name="level" 
-                            required
-                            class="w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer"
-                        >
-                            <option value="" disabled selected>Selectionnez votre niveau</option>
-                            <option value="l1">Licence 1</option>
-                            <option value="l2">Licence 2</option>
-                            <option value="l3">Licence 3</option>
-                            <option value="m1">Master 1</option>
-                            <option value="m2">Master 2</option>
-                            <option value="doctorat">Doctorat</option>
-                        </select>
-                        <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none"></i>
+                        <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
+                        {{ form_widget(registrationForm.NUMERO) }}
                     </div>
+                    {{ form_errors(registrationForm.NUMERO) }}
                 </div>
-                
-                <!-- Password -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Mot de passe</label>
+                <div class="space-y-2">
                     <div class="relative">
-                        <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
-                        <input 
-                            type="password" 
-                            name="password" 
-                            required 
-                            class="w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-12 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
-                            placeholder="Minimum 8 caracteres"
-                        >
-                        <button type="button" onclick="togglePassword(this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                            <i data-lucide="eye" class="w-5 h-5"></i>
-                        </button>
+                        <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
+                        {{ form_widget(registrationForm.plainPassword.first) }}
                     </div>
+                    {{ form_errors(registrationForm.plainPassword.first) }}
                 </div>
-                
-                <!-- Confirm Password -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Confirmer le mot de passe</label>
+                <div class="space-y-2">
                     <div class="relative">
-                        <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
-                        <input 
-                            type="password" 
-                            name="password_confirm" 
-                            required 
-                            class="w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
-                            placeholder="••••••••"
-                        >
+                        <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
+                        {{ form_widget(registrationForm.plainPassword.second) }}
                     </div>
+                    {{ form_errors(registrationForm.plainPassword.second) }}
                 </div>
-                
-                <!-- Terms -->
                 <label class="flex items-start gap-3 cursor-pointer group">
                     <input type="checkbox" required class="mt-1 w-5 h-5 rounded border-white/10 bg-secondary text-primary focus:ring-primary focus:ring-offset-0">
                     <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                         J'accepte les <a href="#" class="text-primary hover:underline">conditions d'utilisation</a> et la <a href="#" class="text-primary hover:underline">politique de confidentialite</a>. Je certifie etre etudiant.
                     </span>
                 </label>
-                
-                <!-- Submit -->
                 <button type="submit" class="w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 group">
                     Creer mon compte
                     <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
                 </button>
-            </form>
+            {{ form_end(registrationForm) }}
             
             <!-- Login Link -->
             <p class="text-center text-sm text-muted-foreground mt-8">

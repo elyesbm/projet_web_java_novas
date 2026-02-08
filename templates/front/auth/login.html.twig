@@ -27,16 +27,25 @@
                 <p class="text-muted-foreground text-sm">Heureux de vous revoir sur NoVas</p>
             </div>
             
-            <!-- Form -->
+            {% if error %}
+                <div class="mb-5 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            <!-- Form (noms _username / _password requis par Symfony Security) -->
             <form action="{{ path('app_login') }}" method="post" class="space-y-5">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                 <div>
                     <label class="block text-sm font-medium mb-2">Email universitaire</label>
                     <div class="relative">
                         <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
                         <input 
                             type="email" 
-                            name="email" 
+                            name="_username" 
+                            value="{{ last_username|default('') }}"
                             required 
+                            autocomplete="email"
                             class="w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
                             placeholder="prenom.nom@univ.fr"
                         >
@@ -49,8 +58,9 @@
                         <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
                         <input 
                             type="password" 
-                            name="password" 
+                            name="_password" 
                             required 
+                            autocomplete="current-password"
                             class="w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-12 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
                             placeholder="••••••••"
                         >

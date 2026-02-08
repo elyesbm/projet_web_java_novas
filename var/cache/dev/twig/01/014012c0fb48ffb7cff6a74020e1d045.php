@@ -122,19 +122,39 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
         
         <!-- Auth Buttons -->
         <div class=\"flex items-center gap-4\">
-            <a href=\"";
+            ";
         // line 25
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_login");
-        yield "\" class=\"hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2\">
-                Se connecter
-            </a>
-            <a href=\"";
-        // line 28
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_register");
-        yield "\" class=\"text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25\">
-                Commencer
-            </a>
-        </div>
+        if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 25, $this->source); })()), "user", [], "any", false, false, false, 25)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+            // line 26
+            yield "                <a href=\"";
+            yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_user_profile");
+            yield "\" class=\"hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2\">
+                    Mon compte
+                </a>
+                <a href=\"";
+            // line 29
+            yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_logout");
+            yield "\" class=\"text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25\">
+                    Déconnexion
+                </a>
+            ";
+        } else {
+            // line 33
+            yield "                <a href=\"";
+            yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_login");
+            yield "\" class=\"hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2\">
+                    Se connecter
+                </a>
+                <a href=\"";
+            // line 36
+            yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_register");
+            yield "\" class=\"text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25\">
+                    Commencer
+                </a>
+            ";
+        }
+        // line 40
+        yield "        </div>
     </div>
 </nav>
 
@@ -167,14 +187,14 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
         <!-- CTA Buttons -->
         <div class=\"flex flex-wrap justify-center gap-4 mb-16\">
             <a href=\"";
-        // line 63
+        // line 72
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_register");
         yield "\" class=\"group inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-2xl font-medium hover:bg-primary/90 transition-all shadow-xl shadow-primary/30 hover:shadow-primary/50\">
                 Creer un compte gratuit
                 <i data-lucide=\"arrow-right\" class=\"w-5 h-5 group-hover:translate-x-1 transition-transform\"></i>
             </a>
             <a href=\"";
-        // line 67
+        // line 76
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_login");
         yield "\" class=\"inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-medium border border-white/20 hover:bg-white/5 transition-all\">
                 Se connecter
@@ -363,7 +383,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
         <h2 class=\"font-serif text-4xl md:text-5xl font-medium mb-6\">Pret a commencer votre <span class=\"italic text-primary\">transformation</span> ?</h2>
         <p class=\"text-muted-foreground mb-8\">Rejoignez des milliers d'etudiants des maintenant.</p>
         <a href=\"";
-        // line 253
+        // line 262
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_register");
         yield "\" class=\"inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-2xl font-medium hover:bg-primary/90 transition-all shadow-xl shadow-primary/30\">
             Creer mon compte gratuit
@@ -415,7 +435,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  367 => 253,  178 => 67,  171 => 63,  133 => 28,  127 => 25,  111 => 12,  107 => 11,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
+        return array (  387 => 262,  198 => 76,  191 => 72,  157 => 40,  150 => 36,  143 => 33,  136 => 29,  129 => 26,  127 => 25,  111 => 12,  107 => 11,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -444,12 +464,21 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
         
         <!-- Auth Buttons -->
         <div class=\"flex items-center gap-4\">
-            <a href=\"{{ path('app_login') }}\" class=\"hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2\">
-                Se connecter
-            </a>
-            <a href=\"{{ path('app_register') }}\" class=\"text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25\">
-                Commencer
-            </a>
+            {% if app.user %}
+                <a href=\"{{ path('app_user_profile') }}\" class=\"hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2\">
+                    Mon compte
+                </a>
+                <a href=\"{{ path('app_logout') }}\" class=\"text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25\">
+                    Déconnexion
+                </a>
+            {% else %}
+                <a href=\"{{ path('app_login') }}\" class=\"hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2\">
+                    Se connecter
+                </a>
+                <a href=\"{{ path('app_register') }}\" class=\"text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25\">
+                    Commencer
+                </a>
+            {% endif %}
         </div>
     </div>
 </nav>

@@ -124,19 +124,42 @@ class __TwigTemplate_80b196a5634ff991dac027f9dd88313f extends Template
                 <p class=\"text-muted-foreground text-sm\">Heureux de vous revoir sur NoVas</p>
             </div>
             
-            <!-- Form -->
+            ";
+        // line 30
+        if ((($tmp = (isset($context["error"]) || array_key_exists("error", $context) ? $context["error"] : (function () { throw new RuntimeError('Variable "error" does not exist.', 30, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+            // line 31
+            yield "                <div class=\"mb-5 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm\">
+                    ";
+            // line 32
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\TranslationExtension']->trans(CoreExtension::getAttribute($this->env, $this->source, (isset($context["error"]) || array_key_exists("error", $context) ? $context["error"] : (function () { throw new RuntimeError('Variable "error" does not exist.', 32, $this->source); })()), "messageKey", [], "any", false, false, false, 32), CoreExtension::getAttribute($this->env, $this->source, (isset($context["error"]) || array_key_exists("error", $context) ? $context["error"] : (function () { throw new RuntimeError('Variable "error" does not exist.', 32, $this->source); })()), "messageData", [], "any", false, false, false, 32), "security"), "html", null, true);
+            yield "
+                </div>
+            ";
+        }
+        // line 35
+        yield "
+            <!-- Form (noms _username / _password requis par Symfony Security) -->
             <form action=\"";
-        // line 31
+        // line 37
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_login");
         yield "\" method=\"post\" class=\"space-y-5\">
+                <input type=\"hidden\" name=\"_csrf_token\" value=\"";
+        // line 38
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken("authenticate"), "html", null, true);
+        yield "\">
                 <div>
                     <label class=\"block text-sm font-medium mb-2\">Email universitaire</label>
                     <div class=\"relative\">
                         <i data-lucide=\"mail\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
                         <input 
                             type=\"email\" 
-                            name=\"email\" 
+                            name=\"_username\" 
+                            value=\"";
+        // line 46
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((array_key_exists("last_username", $context)) ? (Twig\Extension\CoreExtension::default((isset($context["last_username"]) || array_key_exists("last_username", $context) ? $context["last_username"] : (function () { throw new RuntimeError('Variable "last_username" does not exist.', 46, $this->source); })()), "")) : ("")), "html", null, true);
+        yield "\"
                             required 
+                            autocomplete=\"email\"
                             class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
                             placeholder=\"prenom.nom@univ.fr\"
                         >
@@ -149,8 +172,9 @@ class __TwigTemplate_80b196a5634ff991dac027f9dd88313f extends Template
                         <i data-lucide=\"lock\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
                         <input 
                             type=\"password\" 
-                            name=\"password\" 
+                            name=\"_password\" 
                             required 
+                            autocomplete=\"current-password\"
                             class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-12 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
                             placeholder=\"••••••••\"
                         >
@@ -200,7 +224,7 @@ class __TwigTemplate_80b196a5634ff991dac027f9dd88313f extends Template
             <p class=\"text-center text-sm text-muted-foreground mt-8\">
                 Pas encore de compte ? 
                 <a href=\"";
-        // line 102
+        // line 112
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_register");
         yield "\" class=\"text-primary font-medium hover:underline\">Creer un compte</a>
             </p>
@@ -253,7 +277,7 @@ class __TwigTemplate_80b196a5634ff991dac027f9dd88313f extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  204 => 102,  130 => 31,  109 => 13,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
+        return array (  228 => 112,  159 => 46,  148 => 38,  144 => 37,  140 => 35,  134 => 32,  131 => 31,  129 => 30,  109 => 13,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -287,16 +311,25 @@ class __TwigTemplate_80b196a5634ff991dac027f9dd88313f extends Template
                 <p class=\"text-muted-foreground text-sm\">Heureux de vous revoir sur NoVas</p>
             </div>
             
-            <!-- Form -->
+            {% if error %}
+                <div class=\"mb-5 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm\">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            <!-- Form (noms _username / _password requis par Symfony Security) -->
             <form action=\"{{ path('app_login') }}\" method=\"post\" class=\"space-y-5\">
+                <input type=\"hidden\" name=\"_csrf_token\" value=\"{{ csrf_token('authenticate') }}\">
                 <div>
                     <label class=\"block text-sm font-medium mb-2\">Email universitaire</label>
                     <div class=\"relative\">
                         <i data-lucide=\"mail\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
                         <input 
                             type=\"email\" 
-                            name=\"email\" 
+                            name=\"_username\" 
+                            value=\"{{ last_username|default('') }}\"
                             required 
+                            autocomplete=\"email\"
                             class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
                             placeholder=\"prenom.nom@univ.fr\"
                         >
@@ -309,8 +342,9 @@ class __TwigTemplate_80b196a5634ff991dac027f9dd88313f extends Template
                         <i data-lucide=\"lock\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
                         <input 
                             type=\"password\" 
-                            name=\"password\" 
+                            name=\"_password\" 
                             required 
+                            autocomplete=\"current-password\"
                             class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-12 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
                             placeholder=\"••••••••\"
                         >

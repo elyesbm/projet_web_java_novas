@@ -142,131 +142,126 @@ class __TwigTemplate_47403475f3cdcf15494e8297f55727be extends Template
                 </div>
             </div>
             
-            <!-- Form -->
-            <form action=\"";
-        // line 49
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_register");
-        yield "\" method=\"post\" class=\"space-y-5\">
-                <!-- Name Row -->
+            ";
+        // line 48
+        $context['_parent'] = $context;
+        $context['_seq'] = CoreExtension::ensureTraversable(CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 48, $this->source); })()), "flashes", ["success"], "method", false, false, false, 48));
+        foreach ($context['_seq'] as $context["_key"] => $context["message"]) {
+            // line 49
+            yield "                <div class=\"mb-5 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm\">";
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["message"], "html", null, true);
+            yield "</div>
+            ";
+        }
+        $_parent = $context['_parent'];
+        unset($context['_seq'], $context['_key'], $context['message'], $context['_parent']);
+        $context = array_intersect_key($context, $_parent) + $_parent;
+        // line 51
+        yield "
+            ";
+        // line 52
+        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 52, $this->source); })()), 'form_start', ["attr" => ["class" => "space-y-5"]]);
+        yield "
                 <div class=\"grid grid-cols-2 gap-4\">
-                    <div>
-                        <label class=\"block text-sm font-medium mb-2\">Prenom</label>
+                    <div class=\"space-y-2\">
                         <div class=\"relative\">
-                            <i data-lucide=\"user\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
-                            <input 
-                                type=\"text\" 
-                                name=\"firstName\" 
-                                required 
-                                class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
-                                placeholder=\"Jean\"
-                            >
+                            <i data-lucide=\"user\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10\"></i>
+                            ";
+        // line 57
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 57, $this->source); })()), "PRENOM", [], "any", false, false, false, 57), 'widget');
+        yield "
                         </div>
+                        ";
+        // line 59
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 59, $this->source); })()), "PRENOM", [], "any", false, false, false, 59), 'errors');
+        yield "
                     </div>
-                    <div>
-                        <label class=\"block text-sm font-medium mb-2\">Nom</label>
+                    <div class=\"space-y-2\">
                         <div class=\"relative\">
-                            <i data-lucide=\"user\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
-                            <input 
-                                type=\"text\" 
-                                name=\"lastName\" 
-                                required 
-                                class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
-                                placeholder=\"Dupont\"
-                            >
+                            <i data-lucide=\"user\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10\"></i>
+                            ";
+        // line 64
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 64, $this->source); })()), "NOM", [], "any", false, false, false, 64), 'widget');
+        yield "
                         </div>
+                        ";
+        // line 66
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 66, $this->source); })()), "NOM", [], "any", false, false, false, 66), 'errors');
+        yield "
                     </div>
                 </div>
-                
-                <!-- Email -->
-                <div>
-                    <label class=\"block text-sm font-medium mb-2\">Email universitaire</label>
+                <div class=\"space-y-2\">
                     <div class=\"relative\">
-                        <i data-lucide=\"mail\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
-                        <input 
-                            type=\"email\" 
-                            name=\"email\" 
-                            required 
-                            class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
-                            placeholder=\"jean.dupont@univ.fr\"
-                        >
+                        <i data-lucide=\"mail\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10\"></i>
+                        ";
+        // line 72
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 72, $this->source); })()), "EMAIL", [], "any", false, false, false, 72), 'widget');
+        yield "
                     </div>
+                    ";
+        // line 74
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 74, $this->source); })()), "EMAIL", [], "any", false, false, false, 74), 'errors');
+        yield "
                 </div>
-                
-                <!-- Level Select -->
-                <div>
-                    <label class=\"block text-sm font-medium mb-2\">Niveau d'etudes</label>
+                <div class=\"space-y-2\">
                     <div class=\"relative\">
-                        <i data-lucide=\"graduation-cap\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
-                        <select 
-                            name=\"level\" 
-                            required
-                            class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer\"
-                        >
-                            <option value=\"\" disabled selected>Selectionnez votre niveau</option>
-                            <option value=\"l1\">Licence 1</option>
-                            <option value=\"l2\">Licence 2</option>
-                            <option value=\"l3\">Licence 3</option>
-                            <option value=\"m1\">Master 1</option>
-                            <option value=\"m2\">Master 2</option>
-                            <option value=\"doctorat\">Doctorat</option>
-                        </select>
-                        <i data-lucide=\"chevron-down\" class=\"absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none\"></i>
+                        <i data-lucide=\"phone\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10\"></i>
+                        ";
+        // line 79
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 79, $this->source); })()), "NUMERO", [], "any", false, false, false, 79), 'widget');
+        yield "
                     </div>
+                    ";
+        // line 81
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 81, $this->source); })()), "NUMERO", [], "any", false, false, false, 81), 'errors');
+        yield "
                 </div>
-                
-                <!-- Password -->
-                <div>
-                    <label class=\"block text-sm font-medium mb-2\">Mot de passe</label>
+                <div class=\"space-y-2\">
                     <div class=\"relative\">
-                        <i data-lucide=\"lock\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
-                        <input 
-                            type=\"password\" 
-                            name=\"password\" 
-                            required 
-                            class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-12 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
-                            placeholder=\"Minimum 8 caracteres\"
-                        >
-                        <button type=\"button\" onclick=\"togglePassword(this)\" class=\"absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors\">
-                            <i data-lucide=\"eye\" class=\"w-5 h-5\"></i>
-                        </button>
+                        <i data-lucide=\"lock\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10\"></i>
+                        ";
+        // line 86
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 86, $this->source); })()), "plainPassword", [], "any", false, false, false, 86), "first", [], "any", false, false, false, 86), 'widget');
+        yield "
                     </div>
+                    ";
+        // line 88
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 88, $this->source); })()), "plainPassword", [], "any", false, false, false, 88), "first", [], "any", false, false, false, 88), 'errors');
+        yield "
                 </div>
-                
-                <!-- Confirm Password -->
-                <div>
-                    <label class=\"block text-sm font-medium mb-2\">Confirmer le mot de passe</label>
+                <div class=\"space-y-2\">
                     <div class=\"relative\">
-                        <i data-lucide=\"lock\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
-                        <input 
-                            type=\"password\" 
-                            name=\"password_confirm\" 
-                            required 
-                            class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
-                            placeholder=\"••••••••\"
-                        >
+                        <i data-lucide=\"lock\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10\"></i>
+                        ";
+        // line 93
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 93, $this->source); })()), "plainPassword", [], "any", false, false, false, 93), "second", [], "any", false, false, false, 93), 'widget');
+        yield "
                     </div>
+                    ";
+        // line 95
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 95, $this->source); })()), "plainPassword", [], "any", false, false, false, 95), "second", [], "any", false, false, false, 95), 'errors');
+        yield "
                 </div>
-                
-                <!-- Terms -->
                 <label class=\"flex items-start gap-3 cursor-pointer group\">
                     <input type=\"checkbox\" required class=\"mt-1 w-5 h-5 rounded border-white/10 bg-secondary text-primary focus:ring-primary focus:ring-offset-0\">
                     <span class=\"text-sm text-muted-foreground group-hover:text-foreground transition-colors\">
                         J'accepte les <a href=\"#\" class=\"text-primary hover:underline\">conditions d'utilisation</a> et la <a href=\"#\" class=\"text-primary hover:underline\">politique de confidentialite</a>. Je certifie etre etudiant.
                     </span>
                 </label>
-                
-                <!-- Submit -->
                 <button type=\"submit\" class=\"w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 group\">
                     Creer mon compte
                     <i data-lucide=\"arrow-right\" class=\"w-5 h-5 group-hover:translate-x-1 transition-transform\"></i>
                 </button>
-            </form>
+            ";
+        // line 107
+        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["registrationForm"]) || array_key_exists("registrationForm", $context) ? $context["registrationForm"] : (function () { throw new RuntimeError('Variable "registrationForm" does not exist.', 107, $this->source); })()), 'form_end');
+        yield "
             
             <!-- Login Link -->
             <p class=\"text-center text-sm text-muted-foreground mt-8\">
                 Deja inscrit ? 
                 <a href=\"";
-        // line 168
+        // line 112
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_login");
         yield "\" class=\"text-primary font-medium hover:underline\">Se connecter</a>
             </p>
@@ -319,7 +314,7 @@ class __TwigTemplate_47403475f3cdcf15494e8297f55727be extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  270 => 168,  148 => 49,  109 => 13,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
+        return array (  265 => 112,  257 => 107,  242 => 95,  237 => 93,  229 => 88,  224 => 86,  216 => 81,  211 => 79,  203 => 74,  198 => 72,  189 => 66,  184 => 64,  176 => 59,  171 => 57,  163 => 52,  160 => 51,  151 => 49,  147 => 48,  109 => 13,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -371,122 +366,66 @@ class __TwigTemplate_47403475f3cdcf15494e8297f55727be extends Template
                 </div>
             </div>
             
-            <!-- Form -->
-            <form action=\"{{ path('app_register') }}\" method=\"post\" class=\"space-y-5\">
-                <!-- Name Row -->
+            {% for message in app.flashes('success') %}
+                <div class=\"mb-5 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm\">{{ message }}</div>
+            {% endfor %}
+
+            {{ form_start(registrationForm, { 'attr': { 'class': 'space-y-5' } }) }}
                 <div class=\"grid grid-cols-2 gap-4\">
-                    <div>
-                        <label class=\"block text-sm font-medium mb-2\">Prenom</label>
+                    <div class=\"space-y-2\">
                         <div class=\"relative\">
-                            <i data-lucide=\"user\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
-                            <input 
-                                type=\"text\" 
-                                name=\"firstName\" 
-                                required 
-                                class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
-                                placeholder=\"Jean\"
-                            >
+                            <i data-lucide=\"user\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10\"></i>
+                            {{ form_widget(registrationForm.PRENOM) }}
                         </div>
+                        {{ form_errors(registrationForm.PRENOM) }}
                     </div>
-                    <div>
-                        <label class=\"block text-sm font-medium mb-2\">Nom</label>
+                    <div class=\"space-y-2\">
                         <div class=\"relative\">
-                            <i data-lucide=\"user\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
-                            <input 
-                                type=\"text\" 
-                                name=\"lastName\" 
-                                required 
-                                class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
-                                placeholder=\"Dupont\"
-                            >
+                            <i data-lucide=\"user\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10\"></i>
+                            {{ form_widget(registrationForm.NOM) }}
                         </div>
+                        {{ form_errors(registrationForm.NOM) }}
                     </div>
                 </div>
-                
-                <!-- Email -->
-                <div>
-                    <label class=\"block text-sm font-medium mb-2\">Email universitaire</label>
+                <div class=\"space-y-2\">
                     <div class=\"relative\">
-                        <i data-lucide=\"mail\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
-                        <input 
-                            type=\"email\" 
-                            name=\"email\" 
-                            required 
-                            class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
-                            placeholder=\"jean.dupont@univ.fr\"
-                        >
+                        <i data-lucide=\"mail\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10\"></i>
+                        {{ form_widget(registrationForm.EMAIL) }}
                     </div>
+                    {{ form_errors(registrationForm.EMAIL) }}
                 </div>
-                
-                <!-- Level Select -->
-                <div>
-                    <label class=\"block text-sm font-medium mb-2\">Niveau d'etudes</label>
+                <div class=\"space-y-2\">
                     <div class=\"relative\">
-                        <i data-lucide=\"graduation-cap\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
-                        <select 
-                            name=\"level\" 
-                            required
-                            class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer\"
-                        >
-                            <option value=\"\" disabled selected>Selectionnez votre niveau</option>
-                            <option value=\"l1\">Licence 1</option>
-                            <option value=\"l2\">Licence 2</option>
-                            <option value=\"l3\">Licence 3</option>
-                            <option value=\"m1\">Master 1</option>
-                            <option value=\"m2\">Master 2</option>
-                            <option value=\"doctorat\">Doctorat</option>
-                        </select>
-                        <i data-lucide=\"chevron-down\" class=\"absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none\"></i>
+                        <i data-lucide=\"phone\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10\"></i>
+                        {{ form_widget(registrationForm.NUMERO) }}
                     </div>
+                    {{ form_errors(registrationForm.NUMERO) }}
                 </div>
-                
-                <!-- Password -->
-                <div>
-                    <label class=\"block text-sm font-medium mb-2\">Mot de passe</label>
+                <div class=\"space-y-2\">
                     <div class=\"relative\">
-                        <i data-lucide=\"lock\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
-                        <input 
-                            type=\"password\" 
-                            name=\"password\" 
-                            required 
-                            class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-12 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
-                            placeholder=\"Minimum 8 caracteres\"
-                        >
-                        <button type=\"button\" onclick=\"togglePassword(this)\" class=\"absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors\">
-                            <i data-lucide=\"eye\" class=\"w-5 h-5\"></i>
-                        </button>
+                        <i data-lucide=\"lock\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10\"></i>
+                        {{ form_widget(registrationForm.plainPassword.first) }}
                     </div>
+                    {{ form_errors(registrationForm.plainPassword.first) }}
                 </div>
-                
-                <!-- Confirm Password -->
-                <div>
-                    <label class=\"block text-sm font-medium mb-2\">Confirmer le mot de passe</label>
+                <div class=\"space-y-2\">
                     <div class=\"relative\">
-                        <i data-lucide=\"lock\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground\"></i>
-                        <input 
-                            type=\"password\" 
-                            name=\"password_confirm\" 
-                            required 
-                            class=\"w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50\"
-                            placeholder=\"••••••••\"
-                        >
+                        <i data-lucide=\"lock\" class=\"absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10\"></i>
+                        {{ form_widget(registrationForm.plainPassword.second) }}
                     </div>
+                    {{ form_errors(registrationForm.plainPassword.second) }}
                 </div>
-                
-                <!-- Terms -->
                 <label class=\"flex items-start gap-3 cursor-pointer group\">
                     <input type=\"checkbox\" required class=\"mt-1 w-5 h-5 rounded border-white/10 bg-secondary text-primary focus:ring-primary focus:ring-offset-0\">
                     <span class=\"text-sm text-muted-foreground group-hover:text-foreground transition-colors\">
                         J'accepte les <a href=\"#\" class=\"text-primary hover:underline\">conditions d'utilisation</a> et la <a href=\"#\" class=\"text-primary hover:underline\">politique de confidentialite</a>. Je certifie etre etudiant.
                     </span>
                 </label>
-                
-                <!-- Submit -->
                 <button type=\"submit\" class=\"w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 group\">
                     Creer mon compte
                     <i data-lucide=\"arrow-right\" class=\"w-5 h-5 group-hover:translate-x-1 transition-transform\"></i>
                 </button>
-            </form>
+            {{ form_end(registrationForm) }}
             
             <!-- Login Link -->
             <p class=\"text-center text-sm text-muted-foreground mt-8\">
