@@ -29,7 +29,6 @@
                 <div class="space-y-6">
                     <div class="glass-card rounded-3xl overflow-hidden">
                         <div class="relative h-64">
-                            {# ✅ IMAGE VIA URL (CORRECTION ICI UNIQUEMENT) #}
                             <img src="{{ atelier.imageAtelier }}"
                                  alt="{{ atelier.titreAtelier }}"
                                  class="w-full h-full object-cover">
@@ -65,19 +64,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="glass-card rounded-2xl p-4 border border-yellow-500/30 bg-yellow-500/10">
-                        <div class="flex items-start gap-3">
-                            <i data-lucide="alert-circle" class="w-5 h-5 text-yellow-500 mt-0.5"></i>
-                            <div>
-                                <p class="text-sm font-medium text-yellow-500">Places limitées</p>
-                                <p class="text-xs text-muted-foreground mt-1">
-                                    {{ atelier.capacite - atelier.reservations|length }}
-                                    places restantes
-                                </p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 {# ================= FORMULAIRE ================= #}
@@ -87,39 +73,51 @@
                             Formulaire de réservation
                         </h2>
 
-                        <form method="post" class="space-y-5">
+                        {{ form_start(form, {
+                            method: 'POST',
+                            attr: {
+                                class: 'space-y-5',
+                                novalidate: 'novalidate'
+                            }
+                        }) }}
+
                             {{ form_row(form._token) }}
 
                             <div>
                                 <label class="block text-sm font-medium mb-2">Nom</label>
-                                <input type="text"
-                                       name="{{ form.nom_user.vars.full_name }}"
-                                       value="{{ form.nom_user.vars.value }}"
-                                       required
-                                       class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4">
+                                {{ form_widget(form.nom_user, {
+                                    attr: {
+                                        class: 'w-full h-12 bg-secondary border border-white/10 rounded-xl px-4'
+                                    }
+                                }) }}
+                                {{ form_errors(form.nom_user) }}
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium mb-2">Email</label>
-                                <input type="email"
-                                       name="{{ form.email_user.vars.full_name }}"
-                                       value="{{ form.email_user.vars.value }}"
-                                       required
-                                       class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4">
+                                {{ form_widget(form.email_user, {
+                                    attr: {
+                                        class: 'w-full h-12 bg-secondary border border-white/10 rounded-xl px-4'
+                                    }
+                                }) }}
+                                {{ form_errors(form.email_user) }}
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium mb-2">Commentaire</label>
-                                <textarea name="{{ form.commentaire_reservation.vars.full_name }}"
-                                          rows="3"
-                                          class="w-full bg-secondary border border-white/10 rounded-xl p-4 resize-none">{{ form.commentaire_reservation.vars.value }}</textarea>
+                                {{ form_widget(form.commentaire_reservation, {
+                                    attr: {
+                                        class: 'w-full bg-secondary border border-white/10 rounded-xl p-4 resize-none',
+                                        rows: 3
+                                    }
+                                }) }}
+                                {{ form_errors(form.commentaire_reservation) }}
                             </div>
 
-                            {# ✅ CHECKBOX DE CONFIRMATION (AJOUTÉE) #}
+                            {# Checkbox informative UNIQUEMENT #}
                             <label class="flex items-start gap-3 cursor-pointer group">
                                 <input type="checkbox"
-                                       required
-                                       class="mt-1 w-5 h-5 rounded border-white/10 bg-secondary text-primary focus:ring-primary focus:ring-offset-0">
+                                       class="mt-1 w-5 h-5 rounded border-white/10 bg-secondary text-primary">
                                 <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                                     Je m'engage à être présent à l'atelier ou à prévenir en cas d'empêchement.
                                 </span>
@@ -129,7 +127,8 @@
                                     class="w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all">
                                 Confirmer ma réservation
                             </button>
-                        </form>
+
+                        {{ form_end(form) }}
                     </div>
                 </div>
 

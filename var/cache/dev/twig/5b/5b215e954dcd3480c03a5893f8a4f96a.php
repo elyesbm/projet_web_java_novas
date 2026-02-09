@@ -129,14 +129,13 @@ class __TwigTemplate_a0a4e93ad11a29134f211d69cab6a600 extends Template
         yield "                <div class=\"space-y-6\">
                     <div class=\"glass-card rounded-3xl overflow-hidden\">
                         <div class=\"relative h-64\">
-                            ";
-        // line 33
-        yield "                            <img src=\"";
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 33, $this->source); })()), "imageAtelier", [], "any", false, false, false, 33), "html", null, true);
+                            <img src=\"";
+        // line 32
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 32, $this->source); })()), "imageAtelier", [], "any", false, false, false, 32), "html", null, true);
         yield "\"
                                  alt=\"";
-        // line 34
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 34, $this->source); })()), "titreAtelier", [], "any", false, false, false, 34), "html", null, true);
+        // line 33
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 33, $this->source); })()), "titreAtelier", [], "any", false, false, false, 33), "html", null, true);
         yield "\"
                                  class=\"w-full h-full object-cover\">
 
@@ -145,13 +144,13 @@ class __TwigTemplate_a0a4e93ad11a29134f211d69cab6a600 extends Template
                             <div class=\"absolute top-4 left-4\">
                                 <span class=\"px-3 py-1 rounded-full text-xs font-medium
                                     ";
-        // line 41
-        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 41, $this->source); })()), "contexteAtelier", [], "any", false, false, false, 41) == 0)) ? ("bg-personal/90 text-white") : ("bg-academic/90 text-white"));
-        // line 43
+        // line 40
+        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 40, $this->source); })()), "contexteAtelier", [], "any", false, false, false, 40) == 0)) ? ("bg-personal/90 text-white") : ("bg-academic/90 text-white"));
+        // line 42
         yield "\">
                                     ";
-        // line 44
-        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 44, $this->source); })()), "contexteAtelier", [], "any", false, false, false, 44) == 0)) ? ("Soft Skill") : ("Hard Skill"));
+        // line 43
+        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 43, $this->source); })()), "contexteAtelier", [], "any", false, false, false, 43) == 0)) ? ("Soft Skill") : ("Hard Skill"));
         yield "
                                 </span>
                             </div>
@@ -160,115 +159,99 @@ class __TwigTemplate_a0a4e93ad11a29134f211d69cab6a600 extends Template
                         <div class=\"p-6\">
                             <div class=\"text-xs text-muted-foreground mb-3\">
                                 ";
-        // line 51
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 51, $this->source); })()), "typeAtelier", [], "any", false, false, false, 51), "html", null, true);
+        // line 50
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 50, $this->source); })()), "typeAtelier", [], "any", false, false, false, 50), "html", null, true);
         yield "
                             </div>
 
                             <h1 class=\"font-serif text-2xl font-medium mb-4\">
                                 ";
-        // line 55
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 55, $this->source); })()), "titreAtelier", [], "any", false, false, false, 55), "html", null, true);
+        // line 54
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 54, $this->source); })()), "titreAtelier", [], "any", false, false, false, 54), "html", null, true);
         yield "
                             </h1>
 
                             <p class=\"text-muted-foreground mb-6\">
                                 ";
-        // line 59
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 59, $this->source); })()), "descriptionAtelier", [], "any", false, false, false, 59), "html", null, true);
+        // line 58
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 58, $this->source); })()), "descriptionAtelier", [], "any", false, false, false, 58), "html", null, true);
         yield "
                             </p>
 
                             <div class=\"flex items-center gap-3 p-3 bg-secondary/50 rounded-xl\">
                                 <i data-lucide=\"calendar\" class=\"w-5 h-5 text-primary\"></i>
                                 <span>";
-        // line 64
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 64, $this->source); })()), "dateAtelier", [], "any", false, false, false, 64), "d/m/Y"), "html", null, true);
+        // line 63
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 63, $this->source); })()), "dateAtelier", [], "any", false, false, false, 63), "d/m/Y"), "html", null, true);
         yield "</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class=\"glass-card rounded-2xl p-4 border border-yellow-500/30 bg-yellow-500/10\">
-                        <div class=\"flex items-start gap-3\">
-                            <i data-lucide=\"alert-circle\" class=\"w-5 h-5 text-yellow-500 mt-0.5\"></i>
-                            <div>
-                                <p class=\"text-sm font-medium text-yellow-500\">Places limitées</p>
-                                <p class=\"text-xs text-muted-foreground mt-1\">
-                                    ";
-        // line 75
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 75, $this->source); })()), "capacite", [], "any", false, false, false, 75) - Twig\Extension\CoreExtension::length($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 75, $this->source); })()), "reservations", [], "any", false, false, false, 75))), "html", null, true);
-        yield "
-                                    places restantes
-                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 ";
-        // line 84
+        // line 70
         yield "                <div>
                     <div class=\"glass-card rounded-3xl p-8 sticky top-32\">
                         <h2 class=\"font-serif text-xl font-medium mb-6\">
                             Formulaire de réservation
                         </h2>
 
-                        <form method=\"post\" class=\"space-y-5\">
+                        ";
+        // line 76
+        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 76, $this->source); })()), 'form_start', ["method" => "POST", "attr" => ["class" => "space-y-5", "novalidate" => "novalidate"]]);
+        // line 82
+        yield "
+
                             ";
-        // line 91
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 91, $this->source); })()), "_token", [], "any", false, false, false, 91), 'row');
+        // line 84
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 84, $this->source); })()), "_token", [], "any", false, false, false, 84), 'row');
         yield "
 
                             <div>
                                 <label class=\"block text-sm font-medium mb-2\">Nom</label>
-                                <input type=\"text\"
-                                       name=\"";
-        // line 96
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 96, $this->source); })()), "nom_user", [], "any", false, false, false, 96), "vars", [], "any", false, false, false, 96), "full_name", [], "any", false, false, false, 96), "html", null, true);
-        yield "\"
-                                       value=\"";
-        // line 97
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 97, $this->source); })()), "nom_user", [], "any", false, false, false, 97), "vars", [], "any", false, false, false, 97), "value", [], "any", false, false, false, 97), "html", null, true);
-        yield "\"
-                                       required
-                                       class=\"w-full h-12 bg-secondary border border-white/10 rounded-xl px-4\">
+                                ";
+        // line 88
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 88, $this->source); })()), "nom_user", [], "any", false, false, false, 88), 'widget', ["attr" => ["class" => "w-full h-12 bg-secondary border border-white/10 rounded-xl px-4"]]);
+        // line 92
+        yield "
+                                ";
+        // line 93
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 93, $this->source); })()), "nom_user", [], "any", false, false, false, 93), 'errors');
+        yield "
                             </div>
 
                             <div>
                                 <label class=\"block text-sm font-medium mb-2\">Email</label>
-                                <input type=\"email\"
-                                       name=\"";
-        // line 105
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 105, $this->source); })()), "email_user", [], "any", false, false, false, 105), "vars", [], "any", false, false, false, 105), "full_name", [], "any", false, false, false, 105), "html", null, true);
-        yield "\"
-                                       value=\"";
-        // line 106
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 106, $this->source); })()), "email_user", [], "any", false, false, false, 106), "vars", [], "any", false, false, false, 106), "value", [], "any", false, false, false, 106), "html", null, true);
-        yield "\"
-                                       required
-                                       class=\"w-full h-12 bg-secondary border border-white/10 rounded-xl px-4\">
+                                ";
+        // line 98
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 98, $this->source); })()), "email_user", [], "any", false, false, false, 98), 'widget', ["attr" => ["class" => "w-full h-12 bg-secondary border border-white/10 rounded-xl px-4"]]);
+        // line 102
+        yield "
+                                ";
+        // line 103
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 103, $this->source); })()), "email_user", [], "any", false, false, false, 103), 'errors');
+        yield "
                             </div>
 
                             <div>
                                 <label class=\"block text-sm font-medium mb-2\">Commentaire</label>
-                                <textarea name=\"";
+                                ";
+        // line 108
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 108, $this->source); })()), "commentaire_reservation", [], "any", false, false, false, 108), 'widget', ["attr" => ["class" => "w-full bg-secondary border border-white/10 rounded-xl p-4 resize-none", "rows" => 3]]);
         // line 113
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 113, $this->source); })()), "commentaire_reservation", [], "any", false, false, false, 113), "vars", [], "any", false, false, false, 113), "full_name", [], "any", false, false, false, 113), "html", null, true);
-        yield "\"
-                                          rows=\"3\"
-                                          class=\"w-full bg-secondary border border-white/10 rounded-xl p-4 resize-none\">";
-        // line 115
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 115, $this->source); })()), "commentaire_reservation", [], "any", false, false, false, 115), "vars", [], "any", false, false, false, 115), "value", [], "any", false, false, false, 115), "html", null, true);
-        yield "</textarea>
+        yield "
+                                ";
+        // line 114
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 114, $this->source); })()), "commentaire_reservation", [], "any", false, false, false, 114), 'errors');
+        yield "
                             </div>
 
                             ";
-        // line 119
+        // line 118
         yield "                            <label class=\"flex items-start gap-3 cursor-pointer group\">
                                 <input type=\"checkbox\"
-                                       required
-                                       class=\"mt-1 w-5 h-5 rounded border-white/10 bg-secondary text-primary focus:ring-primary focus:ring-offset-0\">
+                                       class=\"mt-1 w-5 h-5 rounded border-white/10 bg-secondary text-primary\">
                                 <span class=\"text-sm text-muted-foreground group-hover:text-foreground transition-colors\">
                                     Je m'engage à être présent à l'atelier ou à prévenir en cas d'empêchement.
                                 </span>
@@ -278,7 +261,11 @@ class __TwigTemplate_a0a4e93ad11a29134f211d69cab6a600 extends Template
                                     class=\"w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all\">
                                 Confirmer ma réservation
                             </button>
-                        </form>
+
+                        ";
+        // line 131
+        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 131, $this->source); })()), 'form_end');
+        yield "
                     </div>
                 </div>
 
@@ -317,7 +304,7 @@ class __TwigTemplate_a0a4e93ad11a29134f211d69cab6a600 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  268 => 119,  262 => 115,  257 => 113,  247 => 106,  243 => 105,  232 => 97,  228 => 96,  220 => 91,  211 => 84,  200 => 75,  186 => 64,  178 => 59,  171 => 55,  164 => 51,  154 => 44,  151 => 43,  149 => 41,  139 => 34,  134 => 33,  129 => 29,  111 => 13,  102 => 6,  89 => 5,  64 => 3,  41 => 1,);
+        return array (  267 => 131,  252 => 118,  246 => 114,  243 => 113,  241 => 108,  233 => 103,  230 => 102,  228 => 98,  220 => 93,  217 => 92,  215 => 88,  208 => 84,  204 => 82,  202 => 76,  194 => 70,  185 => 63,  177 => 58,  170 => 54,  163 => 50,  153 => 43,  150 => 42,  148 => 40,  138 => 33,  134 => 32,  129 => 29,  111 => 13,  102 => 6,  89 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -353,7 +340,6 @@ class __TwigTemplate_a0a4e93ad11a29134f211d69cab6a600 extends Template
                 <div class=\"space-y-6\">
                     <div class=\"glass-card rounded-3xl overflow-hidden\">
                         <div class=\"relative h-64\">
-                            {# ✅ IMAGE VIA URL (CORRECTION ICI UNIQUEMENT) #}
                             <img src=\"{{ atelier.imageAtelier }}\"
                                  alt=\"{{ atelier.titreAtelier }}\"
                                  class=\"w-full h-full object-cover\">
@@ -389,19 +375,6 @@ class __TwigTemplate_a0a4e93ad11a29134f211d69cab6a600 extends Template
                             </div>
                         </div>
                     </div>
-
-                    <div class=\"glass-card rounded-2xl p-4 border border-yellow-500/30 bg-yellow-500/10\">
-                        <div class=\"flex items-start gap-3\">
-                            <i data-lucide=\"alert-circle\" class=\"w-5 h-5 text-yellow-500 mt-0.5\"></i>
-                            <div>
-                                <p class=\"text-sm font-medium text-yellow-500\">Places limitées</p>
-                                <p class=\"text-xs text-muted-foreground mt-1\">
-                                    {{ atelier.capacite - atelier.reservations|length }}
-                                    places restantes
-                                </p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 {# ================= FORMULAIRE ================= #}
@@ -411,39 +384,51 @@ class __TwigTemplate_a0a4e93ad11a29134f211d69cab6a600 extends Template
                             Formulaire de réservation
                         </h2>
 
-                        <form method=\"post\" class=\"space-y-5\">
+                        {{ form_start(form, {
+                            method: 'POST',
+                            attr: {
+                                class: 'space-y-5',
+                                novalidate: 'novalidate'
+                            }
+                        }) }}
+
                             {{ form_row(form._token) }}
 
                             <div>
                                 <label class=\"block text-sm font-medium mb-2\">Nom</label>
-                                <input type=\"text\"
-                                       name=\"{{ form.nom_user.vars.full_name }}\"
-                                       value=\"{{ form.nom_user.vars.value }}\"
-                                       required
-                                       class=\"w-full h-12 bg-secondary border border-white/10 rounded-xl px-4\">
+                                {{ form_widget(form.nom_user, {
+                                    attr: {
+                                        class: 'w-full h-12 bg-secondary border border-white/10 rounded-xl px-4'
+                                    }
+                                }) }}
+                                {{ form_errors(form.nom_user) }}
                             </div>
 
                             <div>
                                 <label class=\"block text-sm font-medium mb-2\">Email</label>
-                                <input type=\"email\"
-                                       name=\"{{ form.email_user.vars.full_name }}\"
-                                       value=\"{{ form.email_user.vars.value }}\"
-                                       required
-                                       class=\"w-full h-12 bg-secondary border border-white/10 rounded-xl px-4\">
+                                {{ form_widget(form.email_user, {
+                                    attr: {
+                                        class: 'w-full h-12 bg-secondary border border-white/10 rounded-xl px-4'
+                                    }
+                                }) }}
+                                {{ form_errors(form.email_user) }}
                             </div>
 
                             <div>
                                 <label class=\"block text-sm font-medium mb-2\">Commentaire</label>
-                                <textarea name=\"{{ form.commentaire_reservation.vars.full_name }}\"
-                                          rows=\"3\"
-                                          class=\"w-full bg-secondary border border-white/10 rounded-xl p-4 resize-none\">{{ form.commentaire_reservation.vars.value }}</textarea>
+                                {{ form_widget(form.commentaire_reservation, {
+                                    attr: {
+                                        class: 'w-full bg-secondary border border-white/10 rounded-xl p-4 resize-none',
+                                        rows: 3
+                                    }
+                                }) }}
+                                {{ form_errors(form.commentaire_reservation) }}
                             </div>
 
-                            {# ✅ CHECKBOX DE CONFIRMATION (AJOUTÉE) #}
+                            {# Checkbox informative UNIQUEMENT #}
                             <label class=\"flex items-start gap-3 cursor-pointer group\">
                                 <input type=\"checkbox\"
-                                       required
-                                       class=\"mt-1 w-5 h-5 rounded border-white/10 bg-secondary text-primary focus:ring-primary focus:ring-offset-0\">
+                                       class=\"mt-1 w-5 h-5 rounded border-white/10 bg-secondary text-primary\">
                                 <span class=\"text-sm text-muted-foreground group-hover:text-foreground transition-colors\">
                                     Je m'engage à être présent à l'atelier ou à prévenir en cas d'empêchement.
                                 </span>
@@ -453,7 +438,8 @@ class __TwigTemplate_a0a4e93ad11a29134f211d69cab6a600 extends Template
                                     class=\"w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all\">
                                 Confirmer ma réservation
                             </button>
-                        </form>
+
+                        {{ form_end(form) }}
                     </div>
                 </div>
 

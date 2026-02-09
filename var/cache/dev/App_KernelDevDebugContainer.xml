@@ -4375,7 +4375,7 @@
       <argument type="service" id="property_info"/>
       <argument type="service" id="property_info"/>
       <argument type="service" id="property_info"/>
-      <argument>null</argument>
+      <argument>{^App\\Entity\\}</argument>
     </service>
     <service id="messenger.senders_locator" class="Symfony\Component\Messenger\Transport\Sender\SendersLocator">
       <argument type="collection">
@@ -5472,7 +5472,7 @@
     <service id="doctrine.orm.default_entity_manager.validator_loader" class="Symfony\Bridge\Doctrine\Validator\DoctrineLoader">
       <tag name="validator.auto_mapper" priority="-100"/>
       <argument type="service" id="doctrine.orm.default_entity_manager"/>
-      <argument>null</argument>
+      <argument>{^App\\Entity\\}</argument>
     </service>
     <service id="doctrine.migrations.dependency_factory" class="Doctrine\Migrations\DependencyFactory" constructor="fromEntityManager">
       <argument type="service" id="doctrine.migrations.configuration_loader"/>

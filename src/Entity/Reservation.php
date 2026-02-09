@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ReservationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 class Reservation
@@ -14,12 +15,26 @@ class Reservation
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $nom_user = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "L'email {{ value }} n'est pas valide.")]
+    #[Assert\Length(max: 255)]
     private ?string $email_user = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'Le commentaire ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $commentaire_reservation = null;
 
     #[ORM\Column]
@@ -27,11 +42,15 @@ class Reservation
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'ID', nullable: false)]
+    #[Assert\NotNull(message: "L'utilisateur est obligatoire.")]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[ORM\JoinColumn(name: 'id_atelier', referencedColumnName: 'id_atelier', nullable: false)]
+    #[Assert\NotNull(message: "L'atelier est obligatoire.")]
     private ?Atelier $atelier = null;
+
+    /* ================= GETTERS / SETTERS ================= */
 
     public function getId(): ?int
     {

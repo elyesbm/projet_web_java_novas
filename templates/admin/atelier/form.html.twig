@@ -5,7 +5,20 @@
 {% block page_subtitle %}Programmer un événement de formation{% endblock %}
 
 {% block body %}
-{{ form_start(form, { attr: { class: 'max-w-5xl mx-auto' } }) }}
+
+{{ form_start(form, {
+    attr: {
+        class: 'max-w-5xl mx-auto',
+        novalidate: 'novalidate'
+    }
+}) }}
+
+{# MESSAGE GLOBAL #}
+{% if not form.vars.valid %}
+<div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-300 text-red-700">
+    Veuillez corriger les champs en rouge.
+</div>
+{% endif %}
 
 <!-- HEADER -->
 <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white mb-6 shadow-lg">
@@ -24,14 +37,20 @@
 
     <!-- COL GAUCHE -->
     <div class="lg:col-span-2 space-y-6">
-
         <div class="bg-white rounded-2xl p-6 shadow">
-            {{ form_row(form.titre_atelier, {
-                label: 'Titre',
-                attr: { class: 'w-full px-4 py-3 rounded-xl border text-lg' }
-            }) }}
 
-            <!-- CONTEXTE AVEC ICÔNES -->
+            {# TITRE #}
+            {% set e = form.titre_atelier.vars.errors|length %}
+            <label class="block mb-2 font-medium">Titre</label>
+            {{ form_widget(form.titre_atelier, {
+                attr: {
+                    class: 'w-full px-4 py-3 rounded-xl border text-lg ' ~
+                           (e ? 'border-red-500 bg-red-50' : 'border-gray-300')
+                }
+            }) }}
+            {{ form_errors(form.titre_atelier) }}
+
+            {# CONTEXTE #}
             <label class="block mt-6 mb-2 font-medium">Contexte</label>
             <div class="grid grid-cols-2 gap-4">
                 {% for child in form.contexte_atelier %}
@@ -50,54 +69,84 @@
                     </label>
                 {% endfor %}
             </div>
+            {{ form_errors(form.contexte_atelier) }}
 
-            {{ form_row(form.type_atelier, {
-                label: 'Type',
-                attr: { class: 'w-full mt-6 px-4 py-3 rounded-xl border' }
+            {# TYPE #}
+            {% set e = form.type_atelier.vars.errors|length %}
+            <label class="block mt-6 mb-2 font-medium">Type</label>
+            {{ form_widget(form.type_atelier, {
+                attr: {
+                    class: 'w-full px-4 py-3 rounded-xl border ' ~
+                           (e ? 'border-red-500 bg-red-50' : 'border-gray-300')
+                }
             }) }}
+            {{ form_errors(form.type_atelier) }}
 
-            {{ form_row(form.description_atelier, {
-                label: 'Description',
-                attr: { class: 'w-full px-4 py-3 rounded-xl border resize-none' }
+            {# DESCRIPTION #}
+            {% set e = form.description_atelier.vars.errors|length %}
+            <label class="block mt-6 mb-2 font-medium">Description</label>
+            {{ form_widget(form.description_atelier, {
+                attr: {
+                    class: 'w-full px-4 py-3 rounded-xl border resize-none ' ~
+                           (e ? 'border-red-500 bg-red-50' : 'border-gray-300'),
+                    rows: 4
+                }
             }) }}
+            {{ form_errors(form.description_atelier) }}
 
-            {{ form_row(form.date_atelier, {
-                label: 'Date',
-                attr: { class: 'w-full px-4 py-3 rounded-xl border' }
+            {# DATE #}
+            {% set e = form.date_atelier.vars.errors|length %}
+            <label class="block mt-6 mb-2 font-medium">Date</label>
+            {{ form_widget(form.date_atelier, {
+                attr: {
+                    class: 'w-full px-4 py-3 rounded-xl border ' ~
+                           (e ? 'border-red-500 bg-red-50' : 'border-gray-300')
+                }
             }) }}
+            {{ form_errors(form.date_atelier) }}
+
         </div>
     </div>
 
     <!-- COL DROITE -->
     <div class="space-y-6">
 
-        <!-- CAPACITÉ (UN SEUL CHAMP ✅) -->
+        {# CAPACITÉ #}
+        {% set e = form.capacite.vars.errors|length %}
         <div class="bg-white rounded-2xl p-6 shadow">
             <h3 class="font-semibold mb-2">Capacité</h3>
             {{ form_widget(form.capacite, {
-                attr: { class: 'w-full px-4 py-3 rounded-xl border text-center text-xl font-bold' }
+                attr: {
+                    class: 'w-full px-4 py-3 rounded-xl border text-center text-xl font-bold ' ~
+                           (e ? 'border-red-500 bg-red-50' : 'border-gray-300')
+                }
             }) }}
+            {{ form_errors(form.capacite) }}
         </div>
 
-        <!-- IMAGE URL + PREVIEW -->
+        {# IMAGE URL #}
+        {% set e = form.image_atelier.vars.errors|length %}
         <div class="bg-white rounded-2xl p-6 shadow">
             <h3 class="font-semibold mb-2">Image (URL)</h3>
             {{ form_widget(form.image_atelier, {
                 attr: {
-                    class: 'w-full px-4 py-3 rounded-xl border',
+                    class: 'w-full px-4 py-3 rounded-xl border ' ~
+                           (e ? 'border-red-500 bg-red-50' : 'border-gray-300'),
                     oninput: 'previewImage(this.value)'
                 }
             }) }}
+            {{ form_errors(form.image_atelier) }}
             <img id="preview" class="mt-4 rounded-xl hidden max-h-48 mx-auto">
         </div>
 
-        <!-- STATUT -->
+        {# STATUT #}
         <div class="bg-white rounded-2xl p-6 shadow">
             <h3 class="font-semibold mb-2">Statut</h3>
             {{ form_widget(form.statut_atelier) }}
+            {{ form_errors(form.statut_atelier) }}
         </div>
 
-        <!-- ACTIONS -->
+        {# ACTIONS #}
         <div class="flex flex-col gap-3">
             <button type="submit"
                 class="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium">
@@ -126,4 +175,6 @@ function previewImage(url) {
     img.classList.remove('hidden');
 }
 </script>
+
 {% endblock %}
+

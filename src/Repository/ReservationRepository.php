@@ -16,6 +16,22 @@ class ReservationRepository extends ServiceEntityRepository
         parent::__construct($registry, Reservation::class);
     }
 
+    /**
+     * Vérifie si l'utilisateur a déjà une réservation pour cet atelier (contrôle côté serveur).
+     */
+    public function existsForUserAndAtelier(\App\Entity\User $user, \App\Entity\Atelier $atelier): bool
+    {
+        return $this->createQueryBuilder('r')
+            ->select('1')
+            ->where('r.user = :user')
+            ->andWhere('r.atelier = :atelier')
+            ->setParameter('user', $user)
+            ->setParameter('atelier', $atelier)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult() !== null;
+    }
+
     //    /**
     //     * @return Reservation[] Returns an array of Reservation objects
     //     */

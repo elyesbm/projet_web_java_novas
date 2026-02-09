@@ -55,59 +55,65 @@ class ReservationController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/reserver/{userId}',name: 'app_reservation_reserver',requirements: ['id' => '\d+', 'userId' => '\d+'], methods: ['GET', 'POST'])]
+    #[Route(
+    '/{id}/reserver/{userId}',
+    name: 'app_reservation_reserver',
+    requirements: ['id' => '\d+', 'userId' => '\d+'],
+    methods: ['GET', 'POST']
+    )]
     public function reserver(
-        Request $request,
-        AtelierRepository $atelierRepository,
-        UserRepository $userRepository,
-        EntityManagerInterface $entityManager,
-        int $id,
-        int $userId ): Response
-    
+    Request $request,
+    AtelierRepository $atelierRepository,
+    UserRepository $userRepository,
+    EntityManagerInterface $entityManager,
+    int $id,
+    int $userId
+    ): Response
     {
-        // 🔍 Récupération de l'atelier
-        $atelier = $atelierRepository->find($id);
+    // 🔍 Récupération de l’atelier
+    $atelier = $atelierRepository->find($id);
+    if (!$atelier) {
+        throw $this->createNotFoundException('Atelier introuvable');
+    }
 
-        if (!$atelier) {
-            throw $this->createNotFoundException('Atelier introuvable');
-        }
-        $user = $userRepository->find($userId);
+    // 🔍 Récupération du user
+    $user = $userRepository->find($userId);
+    if (!$user) {
+        throw $this->createNotFoundException('Utilisateur introuvable');
+    }
 
-        if (!$user) {
-         throw $this->createNotFoundException('Utilisateur introuvable');
-          }
+    // 🆕 Nouvelle réservation
+    $reservation = new Reservation();
 
-        // 🆕 Nouvelle réservation
-        $reservation = new Reservation();
+    // ⚠️ IMPORTANT : lier AVANT la validation
+    $reservation->setAtelier($atelier);
+    $reservation->setUser($user);
+    $reservation->setStatutReservation(0); // 0 = en attente
 
-        // 🧾 Création du formulaire lié à l'entité Reservation
-        $form = $this->createForm(ReservationType::class, $reservation);
-        $form->handleRequest($request);
+    // 🧾 Formulaire
+    $form = $this->createForm(ReservationType::class, $reservation);
+    $form->handleRequest($request);
 
-        // ✅ Soumission valide
-        if ($form->isSubmitted() && $form->isValid()) {
+    // ✅ Soumission
+    if ($form->isSubmitted() && $form->isValid()) {
 
-            // 🔗 Relations métier
-            $reservation->setAtelier($atelier);
-            $reservation->setUser($this->getUser());
-            $reservation->setStatutReservation(0); // 0 = en attente
+        $entityManager->persist($reservation);
+        $entityManager->flush();
 
-            // 💾 Sauvegarde
-            $entityManager->persist($reservation);
-            $entityManager->flush();
+        $this->addFlash('success', 'Votre réservation a été enregistrée avec succès');
 
-            // 🔔 Message succès
-            $this->addFlash('success', 'Votre réservation a été enregistrée avec succès');
-
-            return $this->redirectToRoute('app_reservation_mes', ['id' => $user->getId()]);
-        }
-
-        // 🎨 Affichage du formulaire (design intact)
-        return $this->render('front/reservation/reserver.html.twig', [
-            'atelier' => $atelier,
-            'form' => $form->createView(),
+        return $this->redirectToRoute('app_reservation_mes', [
+            'id' => $user->getId()
         ]);
     }
+
+    // 🎨 Affichage
+    return $this->render('front/reservation/reserver.html.twig', [
+        'atelier' => $atelier,
+        'form' => $form->createView(),
+    ]);
+   }
+
 
     /**
      * Annuler (supprimer) une réservation.
