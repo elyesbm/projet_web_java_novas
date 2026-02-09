@@ -71,7 +71,6 @@
         <div class="max-w-4xl mx-auto space-y-6">
             {% for pub in publications %}
                 {% set isAnonymous = (pub.imageAuteur is empty) %}
-
                 {% set contextMap = { 1: 'academic', 2: 'personal', 3: 'help' } %}
                 {% set contexte = contextMap[pub.contexte] ?? 'help' %}
 
@@ -135,15 +134,15 @@
                         <div class="flex items-center gap-6">
                             <!-- Likes -->
                             <button
-    type="button"
-    onclick="likePublication({{ pub.id }})"
-    class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
->
-    <i data-lucide="heart" class="w-5 h-5 group-hover:fill-primary/20"></i>
-    <span class="text-sm" id="likes-{{ pub.id }}">
-        {{ pub.likes ?? 0 }}
-    </span>
-</button>
+                                type="button"
+                                onclick="likePublication({{ pub.id }})"
+                                class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
+                            >
+                                <i data-lucide="heart" class="w-5 h-5 group-hover:fill-primary/20"></i>
+                                <span class="text-sm" id="likes-{{ pub.id }}">
+                                    {{ pub.likes ?? 0 }}
+                                </span>
+                            </button>
 
                             <!-- Comments Toggle -->
                             <button onclick="toggleComments({{ pub.id }})" class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
@@ -155,31 +154,30 @@
                         <div class="flex items-center gap-3">
                             <!-- Status -->
                             <span class="px-2 py-1 rounded-lg text-xs flex items-center gap-1
-    {{ pub.statut == 1 
-        ? 'bg-green-500/20 text-green-400' 
-        : 'bg-red-500/20 text-red-400' }}">
-        
-    <span class="w-1.5 h-1.5 rounded-full 
-        {{ pub.statut == 1 ? 'bg-green-400' : 'bg-red-400' }}"></span>
+                                {{ pub.statut == 1 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400' }}">
+                                <span class="w-1.5 h-1.5 rounded-full {{ pub.statut == 1 ? 'bg-green-400' : 'bg-red-400' }}"></span>
+                                {{ pub.statut == 1 ? 'actif' : 'inactif' }}
+                            </span>
 
-    {{ pub.statut == 1 ? 'actif' : 'inactif' }}
-</span>
+                            {# ✅ Modifier/Supprimer UNIQUEMENT si auteur connecté #}
+                            {% if pub.auteur and pub.auteur.id == current_user_id %}
+                                <!-- Modifier -->
+                                <a href="{{ path('app_publication_modifier', { id: pub.id }) }}"
+                                   class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-colors"
+                                   title="Modifier la publication">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                    <span>Modifier</span>
+                                </a>
 
-
-                            <!-- Modifier -->
-                            <a href="{{ path('app_publication_modifier', { id: pub.id }) }}" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-colors" title="Modifier la publication">
-                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                                <span>Modifier</span>
-                            </a>
-
-                            <!-- Supprimer -->
-                            <form action="{{ path('app_publication_supprimer', { id: pub.id }) }}" method="post" class="inline" onsubmit="return confirm('Supprimer cette publication ?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete_publication_' ~ pub.id) }}">
-                                <button type="submit" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors" title="Supprimer la publication">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    <span>Supprimer</span>
-                                </button>
-                            </form>
+                                <!-- Supprimer -->
+                                <form action="{{ path('app_publication_supprimer', { id: pub.id }) }}" method="post" class="inline" onsubmit="return confirm('Supprimer cette publication ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_publication_' ~ pub.id) }}">
+                                    <button type="submit" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors" title="Supprimer la publication">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        <span>Supprimer</span>
+                                    </button>
+                                </form>
+                            {% endif %}
 
                             <!-- Signaler -->
                             <a href="{{ path('app_publication_signaler', {id: pub.id}) }}" class="text-muted-foreground hover:text-red-400 transition-colors" title="Signaler">
@@ -212,36 +210,34 @@
                                                             <span class="text-xs text-muted-foreground">{{ comment.dateCreation|date('d M H:i') }}</span>
                                                         </div>
 
-                                                        <!-- Supprimer commentaire -->
-<div class="flex items-center gap-2">
+                                                        {# ✅ Modifier/Supprimer commentaire UNIQUEMENT si auteur connecté #}
+                                                        {% if comment.auteur and comment.auteur.id == current_user_id %}
+                                                            <div class="flex items-center gap-2">
+                                                                <!-- Modifier commentaire -->
+                                                                <a href="{{ path('app_commentaire_modifier', { id: comment.id }) }}"
+                                                                   class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
+                                                                          text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent
+                                                                          hover:border-primary/30 transition-colors"
+                                                                   title="Modifier le commentaire">
+                                                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                                                    <span>Modifier</span>
+                                                                </a>
 
-    <!-- Modifier commentaire -->
-    <a href="{{ path('app_commentaire_modifier', { id: comment.id }) }}"
-       class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
-       text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent
-       hover:border-primary/30 transition-colors"
-       title="Modifier le commentaire">
-        <i data-lucide="pencil" class="w-4 h-4"></i>
-        <span>Modifier</span>
-    </a>
-
-    <!-- Supprimer commentaire -->
-    <form action="{{ path('app_commentaire_supprimer', { id: comment.id }) }}"
-          method="post"
-          onsubmit="return confirm('Supprimer ce commentaire ?');">
-        <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
-        <button type="submit"
-                class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
-                text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent
-                hover:border-red-500/30 transition-colors">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-            <span>Supprimer</span>
-        </button>
-    </form>
-
-</div>
-
-
+                                                                <!-- Supprimer commentaire -->
+                                                                <form action="{{ path('app_commentaire_supprimer', { id: comment.id }) }}"
+                                                                      method="post"
+                                                                      onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
+                                                                    <button type="submit"
+                                                                            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
+                                                                                   text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent
+                                                                                   hover:border-red-500/30 transition-colors">
+                                                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                                        <span>Supprimer</span>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        {% endif %}
                                                     </div>
 
                                                     <p class="text-sm text-foreground">{{ comment.contenu }}</p>
@@ -259,31 +255,30 @@
                             </div>
 
                             <!-- Add Comment -->
-{% set cform = comment_forms[pub.id] %}
+                            {% set cform = comment_forms[pub.id] %}
 
-{{ form_start(cform, { attr: { class: 'flex gap-4' } }) }}
-    {% if app.user and app.user.IMAGE %}
-        <img src="{{ asset('images/' ~ app.user.IMAGE) }}" alt="Moi" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30">
-    {% else %}
-        <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-primary/30">
-            <i data-lucide="user" class="w-5 h-5 text-muted-foreground"></i>
-        </div>
-    {% endif %}
+                            {{ form_start(cform, { attr: { class: 'flex gap-4' } }) }}
+                                {% if app.user and app.user.IMAGE %}
+                                    <img src="{{ asset('images/' ~ app.user.IMAGE) }}" alt="Moi" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30">
+                                {% else %}
+                                    <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-primary/30">
+                                        <i data-lucide="user" class="w-5 h-5 text-muted-foreground"></i>
+                                    </div>
+                                {% endif %}
 
-    <div class="flex-1 relative">
-        {{ form_widget(cform.contenu, {
-            attr: {
-                placeholder: "Ecrivez votre commentaire...",
-                class: "w-full h-12 bg-secondary border border-white/10 rounded-xl pl-4 pr-12 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50"
-            }
-        }) }}
+                                <div class="flex-1 relative">
+                                    {{ form_widget(cform.contenu, {
+                                        attr: {
+                                            placeholder: "Ecrivez votre commentaire...",
+                                            class: "w-full h-12 bg-secondary border border-white/10 rounded-xl pl-4 pr-12 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50"
+                                        }
+                                    }) }}
 
-        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors">
-            <i data-lucide="send" class="w-4 h-4 text-white"></i>
-        </button>
-    </div>
-{{ form_end(cform) }}
-
+                                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors">
+                                        <i data-lucide="send" class="w-4 h-4 text-white"></i>
+                                    </button>
+                                </div>
+                            {{ form_end(cform) }}
                         </div>
                     </div>
                 </article>
@@ -304,6 +299,7 @@
         }
     }
 </script>
+
 <script>
 function likePublication(pubId) {
     fetch(`/publications/${pubId}/like`, {

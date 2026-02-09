@@ -24,16 +24,19 @@ $totalLikes = 0;
     foreach ($publications as $publication) {
         $totalLikes += $publication->getLikes() ?? 0;
     }
+    $commentaires = $commentRepo->findBy([], ['date_creation' => 'DESC']);
+
 
 
   
     return $this->render('admin/publication/list.html.twig', [
     'publications' => $publications,
-    'totalCommentaires' => $totalCommentaires,
+    'commentaires' => $commentaires,
     'totalPublications' => $totalPublications,
-            'totalLikes' => $totalLikes,
-
+    'totalCommentaires' => $totalCommentaires,
+    'totalLikes' => $totalLikes,
 ]);
+
 
 }
 
@@ -86,4 +89,44 @@ $totalLikes = 0;
         $this->addFlash('success', 'Publication supprimée');
         return $this->redirectToRoute('app_admin_publications_list');
     }
+    #[Route('/{id}/approve', name: 'approve', methods: ['POST'])]
+public function approve(int $id, Request $request, PublicationRepository $publicationRepo, EntityManagerInterface $em): Response
+{
+    if (!$this->isCsrfTokenValid('admin_pub_action_' . $id, $request->request->get('_token'))) {
+        $this->addFlash('error', 'Token invalide');
+        return $this->redirectToRoute('app_admin_publications_edit', ['id' => $id]);
+    }
+
+    $publication = $publicationRepo->find($id);
+    if (!$publication) {
+        throw $this->createNotFoundException('Publication introuvable');
+    }
+
+    $publication->setStatut(1);
+    $em->flush();
+
+    $this->addFlash('success', 'Publication approuvée');
+    return $this->redirectToRoute('app_admin_publications_edit', ['id' => $id]);
+}
+
+#[Route('/{id}/hide', name: 'hide', methods: ['POST'])]
+public function hide(int $id, Request $request, PublicationRepository $publicationRepo, EntityManagerInterface $em): Response
+{
+    if (!$this->isCsrfTokenValid('admin_pub_action_' . $id, $request->request->get('_token'))) {
+        $this->addFlash('error', 'Token invalide');
+        return $this->redirectToRoute('app_admin_publications_edit', ['id' => $id]);
+    }
+
+    $publication = $publicationRepo->find($id);
+    if (!$publication) {
+        throw $this->createNotFoundException('Publication introuvable');
+    }
+
+    $publication->setStatut(0);
+    $em->flush();
+
+    $this->addFlash('success', 'Publication masquée');
+    return $this->redirectToRoute('app_admin_publications_edit', ['id' => $id]);
+}
+
 }
