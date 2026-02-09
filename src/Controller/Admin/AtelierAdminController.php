@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Atelier;
 use App\Repository\AtelierRepository;
+use App\Repository\ReservationRepository;
 use App\Form\AtelierType;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -16,7 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 class AtelierAdminController extends AbstractController
 {
     #[Route('/', name: 'list')]
-    public function list(Request $request, AtelierRepository $atelierRepository): Response
+    public function list(Request $request, AtelierRepository $atelierRepository, ReservationRepository $reservationRepository): Response
     {
         // Récupération des paramètres de recherche, filtre et tri
         $search = $request->query->get('search', '');
@@ -41,11 +42,15 @@ class AtelierAdminController extends AbstractController
         // Recherche, filtrage et tri
         $ateliers = $atelierRepository->searchFilterAndSort($search, $contexteInt, $sort);
 
+        // Statistiques Hard / Soft pour le graphique
+        $statsContexte = $reservationRepository->countByContexte();
+
         return $this->render('admin/atelier/list.html.twig', [
             'ateliers' => $ateliers,
             'search' => $search,
             'contexte' => $contexteInt,
             'sort' => $sort,
+            'statsContexte' => $statsContexte,
         ]);
     }
 

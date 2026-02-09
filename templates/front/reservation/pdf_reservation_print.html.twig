@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Réservation #{{ reservation.id }} – Enregistrer en PDF</title>
+    <style>
+        .print-only { display: none; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+        }
+        .banner { background: #f0f9ff; border: 1px solid #0ea5e9; color: #0369a1; padding: 12px 20px; margin-bottom: 20px; border-radius: 8px; }
+        .banner p { margin: 0; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="no-print banner">
+        <p><strong>Enregistrer en PDF :</strong> utilisez le menu de votre navigateur <strong>Fichier → Imprimer</strong> (ou <kbd>Ctrl+P</kbd> / <kbd>Cmd+P</kbd>), puis choisissez <strong>« Enregistrer en PDF »</strong> comme destination.</p>
+    </div>
+    {{ content|raw }}
+</body>
+</html>

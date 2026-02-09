@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use App\Entity\Reservation;
 use App\Form\ReservationType;
 use App\Repository\AtelierRepository;
@@ -132,6 +133,61 @@ class ReservationController extends AbstractController
     ]);
    }
 
+
+    /**
+     * Export PDF d'une réservation (Dompdf si installé, sinon page HTML imprimable).
+     */
+    #[Route('/export-pdf/{id}', name: 'app_reservation_export_pdf', requirements: ['id' => '\d+'])]
+    public function exportPdf(int $id, ReservationRepository $reservationRepository): Response
+    {
+        $reservation = $reservationRepository->find($id);
+        if (!$reservation) {
+            throw $this->createNotFoundException('Réservation introuvable.');
+        }
+
+        $html = $this->renderView('front/reservation/pdf_reservation.html.twig', [
+            'reservation' => $reservation,
+        ]);
+
+        if (class_exists(\Dompdf\Dompdf::class)) {
+            $dompdf = new \Dompdf\Dompdf();
+            $dompdf->getOptions()->set('isRemoteEnabled', true);
+            $dompdf->getOptions()->set('defaultFont', 'DejaVu Sans');
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            return new Response($dompdf->output(), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="reservation-' . $reservation->getId() . '.pdf"',
+            ]);
+        }
+
+        // Fallback : page HTML imprimable (Ctrl+P → Enregistrer en PDF)
+        $printHtml = $this->renderView('front/reservation/pdf_reservation_print.html.twig', [
+            'reservation' => $reservation,
+            'content' => $html,
+        ]);
+        return new Response($printHtml, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+    }
+
+    /**
+     * Affiche le QR code d'accès pour une réservation.
+     */
+    #[Route('/qrcode/{id}', name: 'app_reservation_qrcode', requirements: ['id' => '\d+'])]
+    public function qrcode(int $id, ReservationRepository $reservationRepository, UrlGeneratorInterface $urlGenerator): Response
+    {
+        $reservation = $reservationRepository->find($id);
+        if (!$reservation) {
+            throw $this->createNotFoundException('Réservation introuvable.');
+        }
+
+        $pdfUrl = $urlGenerator->generate('app_reservation_export_pdf', ['id' => $id], UrlGeneratorInterface::ABSOLUTE_URL);
+        return $this->render('front/reservation/qrcode_reservation.html.twig', [
+            'reservation' => $reservation,
+            'qr_url' => $pdfUrl,
+        ]);
+    }
 
     /**
      * Annuler (supprimer) une réservation.

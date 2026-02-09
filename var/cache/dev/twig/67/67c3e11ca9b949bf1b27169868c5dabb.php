@@ -303,18 +303,32 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
                                 </p>
                             </div>
 
-                            <div class=\"flex gap-2\">
-                                <button class=\"px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2\">
-                                    <i data-lucide=\"download\" class=\"w-4 h-4\"></i>
+                            <div class=\"flex gap-2 flex-wrap\">
+                                <a href=\"";
+            // line 145
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_reservation_export_pdf", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "id", [], "any", false, false, false, 145)]), "html", null, true);
+            yield "\"
+                                   target=\"_blank\"
+                                   class=\"px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2\">
+                                    <i data-lucide=\"file-text\" class=\"w-4 h-4\"></i>
+                                    Exporter en PDF
+                                </a>
+                                <a href=\"";
+            // line 151
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_reservation_qrcode", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "id", [], "any", false, false, false, 151)]), "html", null, true);
+            yield "\"
+                                   target=\"_blank\"
+                                   class=\"px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2\">
+                                    <i data-lucide=\"qr-code\" class=\"w-4 h-4\"></i>
                                     QR Code
-                                </button>
+                                </a>
                                 <form method=\"post\" action=\"";
-            // line 149
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_reservation_annuler", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "id", [], "any", false, false, false, 149)]), "html", null, true);
+            // line 157
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_reservation_annuler", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "id", [], "any", false, false, false, 157)]), "html", null, true);
             yield "\" class=\"inline\" onsubmit=\"return confirm('Annuler cette réservation ?');\">
                                     <input type=\"hidden\" name=\"_token\" value=\"";
-            // line 150
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("annuler" . CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "id", [], "any", false, false, false, 150))), "html", null, true);
+            // line 158
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("annuler" . CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "id", [], "any", false, false, false, 158))), "html", null, true);
             yield "\">
                                     <button type=\"submit\" class=\"px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-2\">
                                         <i data-lucide=\"x-circle\" class=\"w-4 h-4\"></i>
@@ -330,8 +344,8 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
                                 <div>
                                     <p class=\"text-xs text-muted-foreground\">Date atelier</p>
                                     <p class=\"text-sm font-medium\">";
-            // line 164
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 164, $this->source); })()), "dateAtelier", [], "any", false, false, false, 164), "d F Y"), "html", null, true);
+            // line 172
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 172, $this->source); })()), "dateAtelier", [], "any", false, false, false, 172), "d F Y"), "html", null, true);
             yield "</p>
                                 </div>
                             </div>
@@ -340,36 +354,36 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
                                 <div>
                                     <p class=\"text-xs text-muted-foreground\">Type</p>
                                     <p class=\"text-sm font-medium\">";
-            // line 171
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::capitalize($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 171, $this->source); })()), "typeAtelier", [], "any", false, false, false, 171)), "html", null, true);
+            // line 179
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::capitalize($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, (isset($context["atelier"]) || array_key_exists("atelier", $context) ? $context["atelier"] : (function () { throw new RuntimeError('Variable "atelier" does not exist.', 179, $this->source); })()), "typeAtelier", [], "any", false, false, false, 179)), "html", null, true);
             yield "</p>
                                 </div>
                             </div>
                         </div>
 
                         ";
-            // line 176
-            if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "commentaireReservation", [], "any", false, false, false, 176)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
-                // line 177
+            // line 184
+            if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "commentaireReservation", [], "any", false, false, false, 184)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+                // line 185
                 yield "                        <div class=\"flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t border-white/10\">
                             <i data-lucide=\"message-square\" class=\"w-4 h-4\"></i>
                             <span>";
-                // line 179
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "commentaireReservation", [], "any", false, false, false, 179), "html", null, true);
+                // line 187
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["reservation"], "commentaireReservation", [], "any", false, false, false, 187), "html", null, true);
                 yield "</span>
                         </div>
                         ";
             }
-            // line 182
+            // line 190
             yield "                    </div>
                 </div>
             </div>
             ";
             $context['_iterated'] = true;
         }
-        // line 185
+        // line 193
         if (!$context['_iterated']) {
-            // line 186
+            // line 194
             yield "            <div class=\"glass-card rounded-3xl p-12 text-center\">
                 <h3 class=\"text-xl font-medium mb-2\">Aucune reservation</h3>
                 <p class=\"text-muted-foreground mb-6\">Vous n'avez pas encore reserve d'atelier.</p>
@@ -379,7 +393,7 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
         $_parent = $context['_parent'];
         unset($context['_seq'], $context['_key'], $context['reservation'], $context['_parent'], $context['_iterated']);
         $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 191
+        // line 199
         yield "        </div>
     </section>
 </div>
@@ -453,7 +467,7 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  383 => 191,  373 => 186,  371 => 185,  364 => 182,  358 => 179,  354 => 177,  352 => 176,  344 => 171,  334 => 164,  317 => 150,  313 => 149,  301 => 140,  296 => 138,  290 => 135,  286 => 134,  281 => 132,  277 => 131,  265 => 122,  261 => 121,  257 => 119,  252 => 115,  249 => 114,  244 => 113,  234 => 105,  224 => 99,  222 => 98,  208 => 87,  204 => 86,  186 => 71,  171 => 59,  157 => 48,  150 => 44,  122 => 19,  116 => 16,  109 => 12,  105 => 11,  100 => 8,  87 => 7,  64 => 5,  41 => 3,);
+        return array (  397 => 199,  387 => 194,  385 => 193,  378 => 190,  372 => 187,  368 => 185,  366 => 184,  358 => 179,  348 => 172,  331 => 158,  327 => 157,  318 => 151,  309 => 145,  301 => 140,  296 => 138,  290 => 135,  286 => 134,  281 => 132,  277 => 131,  265 => 122,  261 => 121,  257 => 119,  252 => 115,  249 => 114,  244 => 113,  234 => 105,  224 => 99,  222 => 98,  208 => 87,  204 => 86,  186 => 71,  171 => 59,  157 => 48,  150 => 44,  122 => 19,  116 => 16,  109 => 12,  105 => 11,  100 => 8,  87 => 7,  64 => 5,  41 => 3,);
     }
 
     public function getSourceContext(): Source
@@ -601,11 +615,19 @@ class __TwigTemplate_91361864c19c9e8c07c3115ef95c17f9 extends Template
                                 </p>
                             </div>
 
-                            <div class=\"flex gap-2\">
-                                <button class=\"px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2\">
-                                    <i data-lucide=\"download\" class=\"w-4 h-4\"></i>
+                            <div class=\"flex gap-2 flex-wrap\">
+                                <a href=\"{{ path('app_reservation_export_pdf', { id: reservation.id }) }}\"
+                                   target=\"_blank\"
+                                   class=\"px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2\">
+                                    <i data-lucide=\"file-text\" class=\"w-4 h-4\"></i>
+                                    Exporter en PDF
+                                </a>
+                                <a href=\"{{ path('app_reservation_qrcode', { id: reservation.id }) }}\"
+                                   target=\"_blank\"
+                                   class=\"px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2\">
+                                    <i data-lucide=\"qr-code\" class=\"w-4 h-4\"></i>
                                     QR Code
-                                </button>
+                                </a>
                                 <form method=\"post\" action=\"{{ path('app_reservation_annuler', { id: reservation.id }) }}\" class=\"inline\" onsubmit=\"return confirm('Annuler cette réservation ?');\">
                                     <input type=\"hidden\" name=\"_token\" value=\"{{ csrf_token('annuler' ~ reservation.id) }}\">
                                     <button type=\"submit\" class=\"px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-2\">

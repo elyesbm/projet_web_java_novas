@@ -24,18 +24,17 @@
                 <i data-lucide="users" class="w-7 h-7"></i>
             </div>
             <div>
-                <p class="text-3xl font-bold text-slate-900 dark:text-white">456</p>
-                <p class="text-slate-500">Inscriptions</p>
+                <p class="text-3xl font-bold text-slate-900 dark:text-white">
+                    {{ (statsContexte.soft + statsContexte.hard) }}
+                </p>
+                <p class="text-slate-500">Réservations (Soft + Hard)</p>
             </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700 flex items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600">
-                <i data-lucide="check-circle" class="w-7 h-7"></i>
-            </div>
-            <div>
-                <p class="text-3xl font-bold text-slate-900 dark:text-white">89%</p>
-                <p class="text-slate-500">Taux de présence</p>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
+            <h3 class="text-sm font-semibold text-slate-900 dark:text-white mb-4">Répartition Hard / Soft</h3>
+            <div class="h-32">
+                <canvas id="contexteChart"></canvas>
             </div>
         </div>
     </div>
@@ -258,4 +257,33 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    (function() {
+        const ctx = document.getElementById('contexteChart');
+        if (!ctx) return;
+
+        const data = {
+            labels: ['Soft Skill', 'Hard Skill'],
+            datasets: [{
+                data: [{{ statsContexte.soft|default(0) }}, {{ statsContexte.hard|default(0) }}],
+                backgroundColor: ['#0ea5e9', '#d946ef'],
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: data,
+            options: {
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    })();
+    </script>
 {% endblock %}

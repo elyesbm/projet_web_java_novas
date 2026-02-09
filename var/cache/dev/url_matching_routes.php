@@ -104,7 +104,9 @@ return [
                 .'|/reservation/(?'
                     .'|mes\\-reservations/(\\d+)(*:827)'
                     .'|(\\d+)/reserver/(\\d+)(*:855)'
-                    .'|annuler/(\\d+)(*:876)'
+                    .'|export\\-pdf/(\\d+)(*:880)'
+                    .'|qrcode/(\\d+)(*:900)'
+                    .'|annuler/(\\d+)(*:921)'
                 .')'
             .')/?$}sDu',
     ],
@@ -139,7 +141,9 @@ return [
         779 => [[['_route' => 'app_publication_signaler', '_controller' => 'App\\Controller\\Front\\PublicationController::signaler'], ['id'], null, null, false, false, null]],
         827 => [[['_route' => 'app_reservation_mes', '_controller' => 'App\\Controller\\Front\\ReservationController::mesReservations'], ['id'], null, null, false, true, null]],
         855 => [[['_route' => 'app_reservation_reserver', '_controller' => 'App\\Controller\\Front\\ReservationController::reserver'], ['id', 'userId'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
-        876 => [
+        880 => [[['_route' => 'app_reservation_export_pdf', '_controller' => 'App\\Controller\\Front\\ReservationController::exportPdf'], ['id'], null, null, false, true, null]],
+        900 => [[['_route' => 'app_reservation_qrcode', '_controller' => 'App\\Controller\\Front\\ReservationController::qrcode'], ['id'], null, null, false, true, null]],
+        921 => [
             [['_route' => 'app_reservation_annuler', '_controller' => 'App\\Controller\\Front\\ReservationController::annuler'], ['id'], ['POST' => 0], null, false, true, null],
             [null, null, null, null, false, false, 0],
         ],

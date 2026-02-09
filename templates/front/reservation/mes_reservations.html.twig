@@ -141,11 +141,19 @@
                                 </p>
                             </div>
 
-                            <div class="flex gap-2">
-                                <button class="px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2">
-                                    <i data-lucide="download" class="w-4 h-4"></i>
+                            <div class="flex gap-2 flex-wrap">
+                                <a href="{{ path('app_reservation_export_pdf', { id: reservation.id }) }}"
+                                   target="_blank"
+                                   class="px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2">
+                                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                                    Exporter en PDF
+                                </a>
+                                <a href="{{ path('app_reservation_qrcode', { id: reservation.id }) }}"
+                                   target="_blank"
+                                   class="px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2">
+                                    <i data-lucide="qr-code" class="w-4 h-4"></i>
                                     QR Code
-                                </button>
+                                </a>
                                 <form method="post" action="{{ path('app_reservation_annuler', { id: reservation.id }) }}" class="inline" onsubmit="return confirm('Annuler cette réservation ?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('annuler' ~ reservation.id) }}">
                                     <button type="submit" class="px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-2">

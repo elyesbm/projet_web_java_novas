@@ -34,6 +34,7 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
             'page_title' => [$this, 'block_page_title'],
             'page_subtitle' => [$this, 'block_page_subtitle'],
             'body' => [$this, 'block_body'],
+            'javascripts' => [$this, 'block_javascripts'],
         ];
     }
 
@@ -166,18 +167,20 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                 <i data-lucide=\"users\" class=\"w-7 h-7\"></i>
             </div>
             <div>
-                <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">456</p>
-                <p class=\"text-slate-500\">Inscriptions</p>
+                <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">
+                    ";
+        // line 28
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((CoreExtension::getAttribute($this->env, $this->source, (isset($context["statsContexte"]) || array_key_exists("statsContexte", $context) ? $context["statsContexte"] : (function () { throw new RuntimeError('Variable "statsContexte" does not exist.', 28, $this->source); })()), "soft", [], "any", false, false, false, 28) + CoreExtension::getAttribute($this->env, $this->source, (isset($context["statsContexte"]) || array_key_exists("statsContexte", $context) ? $context["statsContexte"] : (function () { throw new RuntimeError('Variable "statsContexte" does not exist.', 28, $this->source); })()), "hard", [], "any", false, false, false, 28)), "html", null, true);
+        yield "
+                </p>
+                <p class=\"text-slate-500\">Réservations (Soft + Hard)</p>
             </div>
         </div>
 
-        <div class=\"bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700 flex items-center gap-4\">
-            <div class=\"w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600\">
-                <i data-lucide=\"check-circle\" class=\"w-7 h-7\"></i>
-            </div>
-            <div>
-                <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">89%</p>
-                <p class=\"text-slate-500\">Taux de présence</p>
+        <div class=\"bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700\">
+            <h3 class=\"text-sm font-semibold text-slate-900 dark:text-white mb-4\">Répartition Hard / Soft</h3>
+            <div class=\"h-32\">
+                <canvas id=\"contexteChart\"></canvas>
             </div>
         </div>
     </div>
@@ -212,7 +215,7 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                 <h3 class=\"text-lg font-bold mb-2\">Créer un atelier</h3>
                 <p class=\"text-indigo-100 text-sm mb-4\">Programmez un nouvel événement</p>
                 <a href=\"";
-        // line 72
+        // line 71
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_ateliers_new");
         yield "\"
                    class=\"inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-colors text-sm font-medium\">
@@ -249,14 +252,14 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
 
                 <div class=\"grid grid-cols-7 gap-2\">
                     ";
-        // line 106
+        // line 105
         $context['_parent'] = $context;
         $context['_seq'] = CoreExtension::ensureTraversable(range(1, 29));
         foreach ($context['_seq'] as $context["_key"] => $context["day"]) {
-            // line 107
+            // line 106
             yield "                        <div class=\"aspect-square rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-300 flex items-center justify-center cursor-pointer transition-all\">
                             <span class=\"text-sm font-medium text-slate-700 dark:text-slate-300\">";
-            // line 108
+            // line 107
             yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["day"], "html", null, true);
             yield "</span>
                         </div>
@@ -265,14 +268,14 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
         $_parent = $context['_parent'];
         unset($context['_seq'], $context['_key'], $context['day'], $context['_parent']);
         $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 111
+        // line 110
         yield "                </div>
             </div>
 
             <!-- Barre de recherche et filtres -->
             <div class=\"bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6\">
                 <form method=\"GET\" action=\"";
-        // line 116
+        // line 115
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_ateliers_list");
         yield "\" class=\"space-y-4\">
                     <div class=\"grid grid-cols-1 md:grid-cols-4 gap-4\">
@@ -287,8 +290,8 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                                        id=\"search\"
                                        name=\"search\"
                                        value=\"";
-        // line 128
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((array_key_exists("search", $context)) ? (Twig\Extension\CoreExtension::default((isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 128, $this->source); })()), "")) : ("")), "html", null, true);
+        // line 127
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((array_key_exists("search", $context)) ? (Twig\Extension\CoreExtension::default((isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 127, $this->source); })()), "")) : ("")), "html", null, true);
         yield "\"
                                        placeholder=\"Nom d'atelier...\"
                                        class=\"w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500\">
@@ -305,12 +308,12 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                                     class=\"w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500\">
                                 <option value=\"\">Tous</option>
                                 <option value=\"0\" ";
-        // line 143
-        yield ((((isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 143, $this->source); })()) == 0)) ? ("selected") : (""));
+        // line 142
+        yield ((((isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 142, $this->source); })()) == 0)) ? ("selected") : (""));
         yield ">Soft Skill</option>
                                 <option value=\"1\" ";
-        // line 144
-        yield ((((isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 144, $this->source); })()) == 1)) ? ("selected") : (""));
+        // line 143
+        yield ((((isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 143, $this->source); })()) == 1)) ? ("selected") : (""));
         yield ">Hard Skill</option>
                             </select>
                         </div>
@@ -324,28 +327,28 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                                     name=\"sort\"
                                     class=\"w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500\">
                                 <option value=\"id_desc\" ";
-        // line 156
-        yield ((((isset($context["sort"]) || array_key_exists("sort", $context) ? $context["sort"] : (function () { throw new RuntimeError('Variable "sort" does not exist.', 156, $this->source); })()) == "id_desc")) ? ("selected") : (""));
+        // line 155
+        yield ((((isset($context["sort"]) || array_key_exists("sort", $context) ? $context["sort"] : (function () { throw new RuntimeError('Variable "sort" does not exist.', 155, $this->source); })()) == "id_desc")) ? ("selected") : (""));
         yield ">Plus récent</option>
                                 <option value=\"id_asc\" ";
-        // line 157
-        yield ((((isset($context["sort"]) || array_key_exists("sort", $context) ? $context["sort"] : (function () { throw new RuntimeError('Variable "sort" does not exist.', 157, $this->source); })()) == "id_asc")) ? ("selected") : (""));
+        // line 156
+        yield ((((isset($context["sort"]) || array_key_exists("sort", $context) ? $context["sort"] : (function () { throw new RuntimeError('Variable "sort" does not exist.', 156, $this->source); })()) == "id_asc")) ? ("selected") : (""));
         yield ">Plus ancien</option>
                                 <option value=\"date_asc\" ";
-        // line 158
-        yield ((((isset($context["sort"]) || array_key_exists("sort", $context) ? $context["sort"] : (function () { throw new RuntimeError('Variable "sort" does not exist.', 158, $this->source); })()) == "date_asc")) ? ("selected") : (""));
+        // line 157
+        yield ((((isset($context["sort"]) || array_key_exists("sort", $context) ? $context["sort"] : (function () { throw new RuntimeError('Variable "sort" does not exist.', 157, $this->source); })()) == "date_asc")) ? ("selected") : (""));
         yield ">Date (↑)</option>
                                 <option value=\"date_desc\" ";
-        // line 159
-        yield ((((isset($context["sort"]) || array_key_exists("sort", $context) ? $context["sort"] : (function () { throw new RuntimeError('Variable "sort" does not exist.', 159, $this->source); })()) == "date_desc")) ? ("selected") : (""));
+        // line 158
+        yield ((((isset($context["sort"]) || array_key_exists("sort", $context) ? $context["sort"] : (function () { throw new RuntimeError('Variable "sort" does not exist.', 158, $this->source); })()) == "date_desc")) ? ("selected") : (""));
         yield ">Date (↓)</option>
                                 <option value=\"titre_asc\" ";
-        // line 160
-        yield ((((isset($context["sort"]) || array_key_exists("sort", $context) ? $context["sort"] : (function () { throw new RuntimeError('Variable "sort" does not exist.', 160, $this->source); })()) == "titre_asc")) ? ("selected") : (""));
+        // line 159
+        yield ((((isset($context["sort"]) || array_key_exists("sort", $context) ? $context["sort"] : (function () { throw new RuntimeError('Variable "sort" does not exist.', 159, $this->source); })()) == "titre_asc")) ? ("selected") : (""));
         yield ">Titre (A-Z)</option>
                                 <option value=\"titre_desc\" ";
-        // line 161
-        yield ((((isset($context["sort"]) || array_key_exists("sort", $context) ? $context["sort"] : (function () { throw new RuntimeError('Variable "sort" does not exist.', 161, $this->source); })()) == "titre_desc")) ? ("selected") : (""));
+        // line 160
+        yield ((((isset($context["sort"]) || array_key_exists("sort", $context) ? $context["sort"] : (function () { throw new RuntimeError('Variable "sort" does not exist.', 160, $this->source); })()) == "titre_desc")) ? ("selected") : (""));
         yield ">Titre (Z-A)</option>
                             </select>
                         </div>
@@ -358,9 +361,9 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                             Appliquer
                         </button>
                         ";
-        // line 172
-        if (((isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 172, $this->source); })()) ||  !(null === (isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 172, $this->source); })())))) {
-            // line 173
+        // line 171
+        if (((isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 171, $this->source); })()) ||  !(null === (isset($context["contexte"]) || array_key_exists("contexte", $context) ? $context["contexte"] : (function () { throw new RuntimeError('Variable "contexte" does not exist.', 171, $this->source); })())))) {
+            // line 172
             yield "                            <a href=\"";
             yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_ateliers_list");
             yield "\"
@@ -370,7 +373,7 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                             </a>
                         ";
         }
-        // line 179
+        // line 178
         yield "                    </div>
                 </form>
             </div>
@@ -378,8 +381,8 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
             <div class=\"bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 overflow-hidden\">
                 <div class=\"px-6 py-4 border-b border-slate-200 dark:border-slate-700\">
                     <h3 class=\"text-lg font-semibold text-slate-900 dark:text-white\">Tous les ateliers (";
-        // line 185
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["ateliers"]) || array_key_exists("ateliers", $context) ? $context["ateliers"] : (function () { throw new RuntimeError('Variable "ateliers" does not exist.', 185, $this->source); })())), "html", null, true);
+        // line 184
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["ateliers"]) || array_key_exists("ateliers", $context) ? $context["ateliers"] : (function () { throw new RuntimeError('Variable "ateliers" does not exist.', 184, $this->source); })())), "html", null, true);
         yield ")</h3>
                 </div>
 
@@ -396,12 +399,12 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
 
                         <tbody class=\"divide-y divide-slate-100 dark:divide-slate-700\">
                         ";
-        // line 200
+        // line 199
         $context['_parent'] = $context;
-        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["ateliers"]) || array_key_exists("ateliers", $context) ? $context["ateliers"] : (function () { throw new RuntimeError('Variable "ateliers" does not exist.', 200, $this->source); })()));
+        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["ateliers"]) || array_key_exists("ateliers", $context) ? $context["ateliers"] : (function () { throw new RuntimeError('Variable "ateliers" does not exist.', 199, $this->source); })()));
         $context['_iterated'] = false;
         foreach ($context['_seq'] as $context["_key"] => $context["atelier"]) {
-            // line 201
+            // line 200
             yield "                            <tr class=\"hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors\">
                                 <td class=\"px-6 py-4\">
                                     <div class=\"flex items-center gap-3\">
@@ -411,14 +414,14 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                                         <div>
                                             <p class=\"font-semibold text-slate-900 dark:text-white\">
                                                 ";
-            // line 209
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "titreAtelier", [], "any", false, false, false, 209), "html", null, true);
+            // line 208
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "titreAtelier", [], "any", false, false, false, 208), "html", null, true);
             yield "
                                             </p>
                                             <p class=\"text-sm text-slate-500\">
                                                 Type : ";
-            // line 212
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::capitalize($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "typeAtelier", [], "any", false, false, false, 212)), "html", null, true);
+            // line 211
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::capitalize($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "typeAtelier", [], "any", false, false, false, 211)), "html", null, true);
             yield "
                                             </p>
                                         </div>
@@ -427,16 +430,16 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
 
                                 <td class=\"px-6 py-4 text-sm text-slate-600 dark:text-slate-400\">
                                     ";
-            // line 219
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "dateAtelier", [], "any", false, false, false, 219), "d M Y"), "html", null, true);
+            // line 218
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "dateAtelier", [], "any", false, false, false, 218), "d M Y"), "html", null, true);
             yield "
                                 </td>
 
                                 <td class=\"px-6 py-4\">
                                     <span class=\"text-sm font-medium text-rose-600\">
                                         ";
-            // line 224
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "capacite", [], "any", false, false, false, 224), "html", null, true);
+            // line 223
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "capacite", [], "any", false, false, false, 223), "html", null, true);
             yield "
                                     </span>
                                     <span class=\"text-sm text-slate-500\">restantes</span>
@@ -445,21 +448,21 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                                 <td class=\"px-6 py-4 text-right\">
                                     <div class=\"flex items-center justify-end gap-2\">
                                         <a href=\"";
-            // line 231
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_ateliers_edit", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "id", [], "any", false, false, false, 231)]), "html", null, true);
+            // line 230
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_ateliers_edit", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "id", [], "any", false, false, false, 230)]), "html", null, true);
             yield "\"
                                            class=\"inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors\">
                                             <i data-lucide=\"pencil\" class=\"w-4 h-4\"></i>
                                             Modifier
                                         </a>
                                         <form method=\"post\" action=\"";
-            // line 236
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_ateliers_delete", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "id", [], "any", false, false, false, 236)]), "html", null, true);
+            // line 235
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_ateliers_delete", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "id", [], "any", false, false, false, 235)]), "html", null, true);
             yield "\" class=\"inline\"
                                               onsubmit=\"return confirm('Supprimer cet atelier ?');\">
                                             <input type=\"hidden\" name=\"_token\" value=\"";
-            // line 238
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("delete" . CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "id", [], "any", false, false, false, 238))), "html", null, true);
+            // line 237
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("delete" . CoreExtension::getAttribute($this->env, $this->source, $context["atelier"], "id", [], "any", false, false, false, 237))), "html", null, true);
             yield "\">
                                             <button type=\"submit\" class=\"inline-flex items-center justify-center p-2 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors\" title=\"Supprimer\">
                                                 <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
@@ -471,9 +474,9 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                         ";
             $context['_iterated'] = true;
         }
-        // line 246
+        // line 245
         if (!$context['_iterated']) {
-            // line 247
+            // line 246
             yield "                            <tr>
                                 <td colspan=\"4\" class=\"px-6 py-6 text-center text-slate-500\">
                                     Aucun atelier en base
@@ -484,7 +487,7 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
         $_parent = $context['_parent'];
         unset($context['_seq'], $context['_key'], $context['atelier'], $context['_parent'], $context['_iterated']);
         $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 253
+        // line 252
         yield "                        </tbody>
                     </table>
                 </div>
@@ -493,6 +496,63 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
         </div>
     </div>
 </div>
+";
+        
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
+
+        
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->leave($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof);
+
+        yield from [];
+    }
+
+    // line 262
+    /**
+     * @return iterable<null|scalar|\Stringable>
+     */
+    public function block_javascripts(array $context, array $blocks = []): iterable
+    {
+        $macros = $this->macros;
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2 = $this->extensions["Symfony\\Bundle\\WebProfilerBundle\\Twig\\WebProfilerExtension"];
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->enter($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
+
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
+
+        // line 263
+        yield "    ";
+        yield from $this->yieldParentBlock("javascripts", $context, $blocks);
+        yield "
+    <script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>
+    <script>
+    (function() {
+        const ctx = document.getElementById('contexteChart');
+        if (!ctx) return;
+
+        const data = {
+            labels: ['Soft Skill', 'Hard Skill'],
+            datasets: [{
+                data: [";
+        // line 273
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["statsContexte"] ?? null), "soft", [], "any", true, true, false, 273)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["statsContexte"]) || array_key_exists("statsContexte", $context) ? $context["statsContexte"] : (function () { throw new RuntimeError('Variable "statsContexte" does not exist.', 273, $this->source); })()), "soft", [], "any", false, false, false, 273), 0)) : (0)), "html", null, true);
+        yield ", ";
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["statsContexte"] ?? null), "hard", [], "any", true, true, false, 273)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["statsContexte"]) || array_key_exists("statsContexte", $context) ? $context["statsContexte"] : (function () { throw new RuntimeError('Variable "statsContexte" does not exist.', 273, $this->source); })()), "hard", [], "any", false, false, false, 273), 0)) : (0)), "html", null, true);
+        yield "],
+                backgroundColor: ['#0ea5e9', '#d946ef'],
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: data,
+            options: {
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    })();
+    </script>
 ";
         
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
@@ -524,7 +584,7 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  488 => 253,  477 => 247,  475 => 246,  462 => 238,  457 => 236,  449 => 231,  439 => 224,  431 => 219,  421 => 212,  415 => 209,  405 => 201,  400 => 200,  382 => 185,  374 => 179,  364 => 173,  362 => 172,  348 => 161,  344 => 160,  340 => 159,  336 => 158,  332 => 157,  328 => 156,  313 => 144,  309 => 143,  291 => 128,  276 => 116,  269 => 111,  260 => 108,  257 => 107,  253 => 106,  216 => 72,  158 => 17,  148 => 9,  135 => 8,  112 => 6,  89 => 5,  66 => 4,  43 => 2,);
+        return array (  537 => 273,  523 => 263,  510 => 262,  491 => 252,  480 => 246,  478 => 245,  465 => 237,  460 => 235,  452 => 230,  442 => 223,  434 => 218,  424 => 211,  418 => 208,  408 => 200,  403 => 199,  385 => 184,  377 => 178,  367 => 172,  365 => 171,  351 => 160,  347 => 159,  343 => 158,  339 => 157,  335 => 156,  331 => 155,  316 => 143,  312 => 142,  294 => 127,  279 => 115,  272 => 110,  263 => 107,  260 => 106,  256 => 105,  219 => 71,  173 => 28,  159 => 17,  149 => 9,  136 => 8,  113 => 6,  90 => 5,  67 => 4,  44 => 2,);
     }
 
     public function getSourceContext(): Source
@@ -555,18 +615,17 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
                 <i data-lucide=\"users\" class=\"w-7 h-7\"></i>
             </div>
             <div>
-                <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">456</p>
-                <p class=\"text-slate-500\">Inscriptions</p>
+                <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">
+                    {{ (statsContexte.soft + statsContexte.hard) }}
+                </p>
+                <p class=\"text-slate-500\">Réservations (Soft + Hard)</p>
             </div>
         </div>
 
-        <div class=\"bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700 flex items-center gap-4\">
-            <div class=\"w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600\">
-                <i data-lucide=\"check-circle\" class=\"w-7 h-7\"></i>
-            </div>
-            <div>
-                <p class=\"text-3xl font-bold text-slate-900 dark:text-white\">89%</p>
-                <p class=\"text-slate-500\">Taux de présence</p>
+        <div class=\"bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700\">
+            <h3 class=\"text-sm font-semibold text-slate-900 dark:text-white mb-4\">Répartition Hard / Soft</h3>
+            <div class=\"h-32\">
+                <canvas id=\"contexteChart\"></canvas>
             </div>
         </div>
     </div>
@@ -789,6 +848,35 @@ class __TwigTemplate_d1ab28fabce553018b78246038134cf3 extends Template
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>
+    <script>
+    (function() {
+        const ctx = document.getElementById('contexteChart');
+        if (!ctx) return;
+
+        const data = {
+            labels: ['Soft Skill', 'Hard Skill'],
+            datasets: [{
+                data: [{{ statsContexte.soft|default(0) }}, {{ statsContexte.hard|default(0) }}],
+                backgroundColor: ['#0ea5e9', '#d946ef'],
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: data,
+            options: {
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    })();
+    </script>
 {% endblock %}
 ", "admin/atelier/list.html.twig", "C:\\Users\\FATHI\\Desktop\\pi\\projet_web_java_novas\\templates\\admin\\atelier\\list.html.twig");
     }
