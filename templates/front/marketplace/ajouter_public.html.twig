@@ -1,0 +1,83 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Nouvelle Annonce (publique) - Marketplace{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background relative overflow-hidden">
+    <div class="absolute inset-0 gradient-orb"></div>
+    <div class="pt-32 pb-24 px-6">
+        <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/20 mb-4">
+                    <i data-lucide="plus-circle" class="w-8 h-8 text-primary"></i>
+                </div>
+                <h1 class="font-serif text-3xl font-medium mb-2">Ajouter un produit (publique)</h1>
+                <p class="text-muted-foreground">Ce formulaire permet d'ajouter un article sans se connecter. L'annonce sera publiée sans auteur.</p>
+            </div>
+
+            <form method="post" action="{{ path('app_marketplace_ajouter_public') }}" enctype="multipart/form-data" class="glass-card rounded-3xl p-8 space-y-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Image (choisir un fichier depuis votre PC)</label>
+                    <input type="file" name="image" accept="image/*" class="w-full bg-secondary border border-white/10 rounded-xl px-4 py-2">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Categorie</label>
+                    <select name="categorie" required class="w-full h-14 bg-secondary border border-white/10 rounded-xl px-4">
+                        <option value="">Selectionnez une categorie</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Titre</label>
+                    <input type="text" name="titre" required class="w-full h-14 bg-secondary border rounded-xl px-4">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Description</label>
+                    <textarea name="contenu" rows="5" required class="w-full bg-secondary border rounded-xl p-4 resize-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Prix (€)</label>
+                    <input type="number" name="prix" required min="0" class="w-full h-14 bg-secondary border rounded-xl px-4">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Type</label>
+                    <select name="type" class="w-full h-14 bg-secondary border rounded-xl px-4">
+                        <option value="academic">Academic</option>
+                        <option value="personnel">Personal</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Statut</label>
+                    <select name="statut" class="w-full h-14 bg-secondary border rounded-xl px-4">
+                        <option value="disponible">Disponible</option>
+                        <option value="reserve">Réservé</option>
+                        <option value="vendu">Vendu</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <a href="{{ path('app_marketplace_index') }}" class="flex-1 h-14 bg-secondary border rounded-xl flex items-center justify-center">Annuler</a>
+                    <button type="submit" class="flex-1 h-14 bg-primary text-white rounded-xl">Publier (publique)</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {% for flash in app.flashes('success') %}
+        <script>
+            // Fallback redirect in case server rendered the same page with a success flash
+            window.location.href = "{{ path('app_marketplace_index') }}";
+        </script>
+    {% endfor %}
+{% endblock %}

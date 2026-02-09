@@ -1,0 +1,26 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Modifier catégorie - Marketplace{% endblock %}
+
+{% block body %}
+<div class="max-w-2xl mx-auto p-6">
+    <h1 class="text-2xl font-semibold mb-4">Modifier la catégorie</h1>
+
+    <form method="post" action="{{ path('app_marketplace_categorie_modifier', {'id': categorie.getId()}) }}" class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium mb-1">Nom</label>
+            <input name="nom" type="text" value="{{ categorie.getNomCategorie() }}" class="w-full border rounded px-3 py-2" required>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Description</label>
+            <textarea name="description" class="w-full border rounded px-3 py-2" rows="4">{{ categorie.getDescriptionCategorie() }}</textarea>
+        </div>
+
+        <div>
+            <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded">Enregistrer</button>
+            <a href="{{ path('app_marketplace_categories') }}" class="ml-3 text-sm">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

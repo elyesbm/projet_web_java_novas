@@ -1,0 +1,32 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Catégories - Marketplace{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-2xl font-semibold mb-4">Gestion des catégories</h1>
+
+    <a href="{{ path('app_marketplace_categorie_ajouter') }}" class="inline-block mb-4 px-4 py-2 bg-primary text-primary-foreground rounded">Ajouter une catégorie</a>
+
+    <div class="space-y-3">
+        {% for cat in categories %}
+            <div class="p-4 border rounded flex justify-between items-start">
+                <div>
+                    <div class="font-medium">{{ cat.getNomCategorie() }}</div>
+                    <div class="text-sm text-muted">{{ cat.getDescriptionCategorie() }}</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{{ path('app_marketplace_categorie_modifier', {'id': cat.getId()}) }}" class="px-3 py-1 border rounded">Modifier</a>
+
+                    <form method="post" action="{{ path('app_marketplace_categorie_supprimer', {'id': cat.getId()}) }}" onsubmit="return confirm('Confirmer la suppression ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('supprimer_categorie_' ~ cat.getId()) }}">
+                        <button class="px-3 py-1 bg-red-500 text-white rounded">Supprimer</button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="p-4 border rounded">Aucune catégorie trouvée.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
