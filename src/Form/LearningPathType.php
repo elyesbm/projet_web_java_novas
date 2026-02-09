@@ -3,14 +3,14 @@
 namespace App\Form;
 
 use App\Entity\LearningPath;
-use App\Entity\LearningPathEtape;
 use App\Entity\Skill;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -32,6 +32,23 @@ class LearningPathType extends AbstractType
                 'label' => 'Durée estimée (heures ou semaines)',
                 'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white', 'min' => 1],
             ])
+            ->add('type_etape', ChoiceType::class, [
+                'label' => 'Type de contenu',
+                'required' => false,
+                'placeholder' => '— Non défini —',
+                'choices' => [
+                    'Article / Post' => LearningPath::TYPE_POST,
+                    'Vidéo' => LearningPath::TYPE_VIDEO,
+                    'Exercice' => LearningPath::TYPE_EXERCICE,
+                    'Quiz' => LearningPath::TYPE_QUIZ,
+                ],
+                'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white'],
+            ])
+            ->add('url', UrlType::class, [
+                'label' => 'URL (vidéo, lien externe)',
+                'required' => false,
+                'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white', 'placeholder' => 'https://...'],
+            ])
             ->add('contexte_path', IntegerType::class, [
                 'label' => 'Contexte (code)',
                 'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white'],
@@ -50,14 +67,6 @@ class LearningPathType extends AbstractType
                 'choice_label' => 'nomSkill',
                 'placeholder' => 'Choisir une compétence',
                 'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white'],
-            ])
-            ->add('etapes', CollectionType::class, [
-                'label' => false,
-                'entry_type' => LearningPathEtapeType::class,
-                'entry_options' => ['label' => false],
-                'allow_add' => true,
-                'allow_delete' => true,
-                'by_reference' => false,
             ])
         ;
     }

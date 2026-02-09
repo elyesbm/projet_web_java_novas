@@ -7,7 +7,7 @@ namespace Proxies\__CG__\App\Entity;
  */
 class Skill extends \App\Entity\Skill implements \Doctrine\ORM\Proxy\InternalProxy
 {
-     use \Symfony\Component\VarExporter\LazyGhostTrait {
+    use \Symfony\Component\VarExporter\LazyGhostTrait {
         initializeLazyObject as private;
         setLazyObjectAsInitialized as public __setInitialized;
         isLazyObjectInitialized as private;
@@ -36,7 +36,7 @@ class Skill extends \App\Entity\Skill implements \Doctrine\ORM\Proxy\InternalPro
         'id' => [parent::class, 'id', null, 16],
         'learningPaths' => [parent::class, 'learningPaths', null, 16],
         'nom_skill' => [parent::class, 'nom_skill', null, 16],
-    ];
+    ];
 
     public function __isInitialized(): bool
     {

@@ -143,45 +143,31 @@
         </div>
     </section>
 
-    <!-- Timeline des étapes du parcours -->
+    <!-- Contenu du parcours -->
     <section class="px-6 py-12 border-t border-white/5">
         <div class="max-w-4xl mx-auto">
-            <h2 class="font-serif text-2xl font-medium mb-8">Parcours de progression</h2>
-            {% set etapes = parcours.etapesPourNiveau %}
-            {% if etapes is not empty %}
-            <div class="relative">
-                <div class="absolute left-8 top-0 bottom-0 w-px bg-white/10"></div>
-                <div class="space-y-8">
-                    {% for etape in etapes %}
-                    {% set typeIcon = etape.typeEtape == 'video' ? 'video' : (etape.typeEtape == 'post' ? 'file-text' : (etape.typeEtape == 'exercice' ? 'pencil' : 'help-circle')) %}
-                    <div class="relative flex items-start gap-6">
-                        <div class="relative z-10 w-16 h-16 rounded-2xl bg-secondary border border-white/10 flex items-center justify-center flex-shrink-0">
-                            <i data-lucide="{{ typeIcon }}" class="w-7 h-7 text-primary"></i>
-                        </div>
-                        <div class="flex-1 glass-card rounded-2xl p-6 hover:border-primary/30 transition-all">
-                            <div class="flex items-start justify-between gap-4 mb-2">
-                                <h3 class="font-medium text-lg">{{ etape.titre }}</h3>
-                                <span class="px-3 py-1 rounded-full text-xs bg-secondary text-muted-foreground whitespace-nowrap">{{ etape.dureeMinutes }} min</span>
-                            </div>
-                            {% if etape.description %}
-                            <p class="text-sm text-muted-foreground mb-3">{{ etape.description }}</p>
-                            {% endif %}
-                            {% if etape.url %}
-                            <a href="{{ etape.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary text-sm font-medium transition-colors">
-                                <i data-lucide="external-link" class="w-4 h-4"></i>
-                                {{ etape.typeEtape == 'video' ? 'Voir la vidéo' : 'Accéder à la ressource' }}
-                            </a>
-                            {% endif %}
-                        </div>
+            <h2 class="font-serif text-2xl font-medium mb-8">Contenu du parcours</h2>
+            {% set typeIcon = parcours.typeEtape == 'video' ? 'video' : (parcours.typeEtape == 'post' ? 'file-text' : (parcours.typeEtape == 'exercice' ? 'pencil' : (parcours.typeEtape == 'quiz' ? 'help-circle' : 'book-open'))) %}
+            <div class="relative flex items-start gap-6">
+                <div class="relative z-10 w-16 h-16 rounded-2xl bg-secondary border border-white/10 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="{{ typeIcon }}" class="w-7 h-7 text-primary"></i>
+                </div>
+                <div class="flex-1 glass-card rounded-2xl p-6 hover:border-primary/30 transition-all">
+                    <div class="flex items-start justify-between gap-4 mb-2">
+                        <h3 class="font-medium text-lg">{{ parcours.titrePath }}</h3>
+                        <span class="px-3 py-1 rounded-full text-xs bg-secondary text-muted-foreground whitespace-nowrap">{{ parcours.dureeEstimee }} h</span>
                     </div>
-                    {% endfor %}
+                    {% if parcours.descriptionSkill %}
+                    <p class="text-sm text-muted-foreground mb-3">{{ parcours.descriptionSkill }}</p>
+                    {% endif %}
+                    {% if parcours.url %}
+                    <a href="{{ parcours.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary text-sm font-medium transition-colors">
+                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                        {{ parcours.typeEtape == 'video' ? 'Voir la vidéo' : 'Accéder à la ressource' }}
+                    </a>
+                    {% endif %}
                 </div>
             </div>
-            {% else %}
-            <div class="glass-card rounded-2xl p-8 text-center">
-                <p class="text-muted-foreground">Aucune étape définie pour ce parcours pour le niveau {{ niveauLabel }}. Les étapes seront bientôt ajoutées.</p>
-            </div>
-            {% endif %}
         </div>
     </section>
 

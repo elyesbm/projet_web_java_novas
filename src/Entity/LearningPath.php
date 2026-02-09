@@ -3,14 +3,17 @@
 namespace App\Entity;
 
 use App\Repository\LearningPathRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: LearningPathRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class LearningPath
 {
+    public const TYPE_POST = 'post';
+    public const TYPE_VIDEO = 'video';
+    public const TYPE_EXERCICE = 'exercice';
+    public const TYPE_QUIZ = 'quiz';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_learning')]
@@ -34,44 +37,17 @@ class LearningPath
     #[ORM\Column]
     private ?int $niveau_path = null;
 
+    /** Type de contenu : post, video, exercice, quiz */
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $type_etape = null;
+
+    /** URL vers la ressource (vidéo, lien externe, etc.) */
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $url = null;
+
     #[ORM\ManyToOne(targetEntity: Skill::class, inversedBy: 'learningPaths')]
     #[ORM\JoinColumn(name: 'id_skill', referencedColumnName: 'id_skill', nullable: false)]
     private ?Skill $skill = null;
-
-    /** @var Collection<int, LearningPathEtape> */
-    #[ORM\OneToMany(mappedBy: 'learningPath', targetEntity: LearningPathEtape::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['ordre' => 'ASC'])]
-    private Collection $etapes;
-
-    public function __construct()
-    {
-        $this->etapes = new ArrayCollection();
-    }
-
-    /** @return Collection<int, LearningPathEtape> */
-    public function getEtapes(): Collection { return $this->etapes; }
-    public function addEtape(LearningPathEtape $etape): static
-    {
-        if (!$this->etapes->contains($etape)) {
-            $this->etapes->add($etape);
-            $etape->setLearningPath($this);
-        }
-        return $this;
-    }
-    public function removeEtape(LearningPathEtape $etape): static
-    {
-        if ($this->etapes->removeElement($etape) && $etape->getLearningPath() === $this) {
-            $etape->setLearningPath(null);
-        }
-        return $this;
-    }
-
-    /** Étapes filtrées par niveau du parcours (débutant=1 voit niveau 1, intermédiaire=2 voit 1+2, avancé=3 voit tout) */
-    public function getEtapesPourNiveau(): Collection
-    {
-        $niveau = $this->niveau_path ?? 1;
-        return $this->etapes->filter(fn(LearningPathEtape $e) => ($e->getNiveauMin() ?? 1) <= $niveau);
-    }
 
     public function getId(): ?int { return $this->id; }
     public function getTitrePath(): ?string { return $this->titre_path; }
@@ -97,4 +73,10 @@ class LearningPath
     public function setNiveauPath(int $niveau_path): static { $this->niveau_path = $niveau_path; return $this; }
     public function getSkill(): ?Skill { return $this->skill; }
     public function setSkill(?Skill $skill): static { $this->skill = $skill; return $this; }
+
+    public function getTypeEtape(): ?string { return $this->type_etape; }
+    public function setTypeEtape(?string $type_etape): static { $this->type_etape = $type_etape; return $this; }
+
+    public function getUrl(): ?string { return $this->url; }
+    public function setUrl(?string $url): static { $this->url = $url; return $this; }
 }

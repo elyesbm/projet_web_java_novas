@@ -50,40 +50,22 @@
                     {{ form_errors(form.statut_path) }}
                 </div>
             </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    {{ form_label(form.type_etape) }}
+                    {{ form_widget(form.type_etape) }}
+                    {{ form_errors(form.type_etape) }}
+                </div>
+                <div class="space-y-2">
+                    {{ form_label(form.url) }}
+                    {{ form_widget(form.url) }}
+                    {{ form_errors(form.url) }}
+                </div>
+            </div>
             <div class="space-y-2">
                 {{ form_label(form.contexte_path) }}
                 {{ form_widget(form.contexte_path) }}
                 {{ form_errors(form.contexte_path) }}
-            </div>
-
-            <div class="border-t border-slate-200 dark:border-slate-700 pt-8 space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="font-semibold text-lg">Étapes du parcours</h3>
-                    <button type="button" class="add-etape px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium flex items-center gap-2">
-                        <i data-lucide="plus" class="w-4 h-4"></i> Ajouter une étape
-                    </button>
-                </div>
-                <div class="etapes-list space-y-4" data-prototype="{{ form_widget(form.etapes.vars.prototype)|e('html_attr') }}" data-index="{{ form.etapes|length }}">
-                    {% for etape in form.etapes %}
-                    <div class="etape-item p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Étape {{ loop.index }}</span>
-                            <button type="button" class="remove-etape text-red-500 hover:text-red-600 text-sm flex items-center gap-1">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i> Supprimer
-                            </button>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                            <div class="md:col-span-2">{{ form_row(etape.titre) }}</div>
-                            <div>{{ form_row(etape.type_etape) }}</div>
-                            <div>{{ form_row(etape.ordre) }}</div>
-                            <div class="md:col-span-2">{{ form_row(etape.description) }}</div>
-                            <div>{{ form_row(etape.url) }}</div>
-                            <div>{{ form_row(etape.duree_minutes) }}</div>
-                            <div>{{ form_row(etape.niveau_min) }}</div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
@@ -96,30 +78,4 @@
         {{ form_end(form) }}
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const container = document.querySelector('.etapes-list');
-    if (!container) return;
-    const prototype = container.dataset.prototype;
-    const addBtn = document.querySelector('.add-etape');
-    let index = parseInt(container.dataset.index || '0', 10);
-
-    addBtn?.addEventListener('click', function() {
-        const html = prototype.replace(/__name__/g, index);
-        const div = document.createElement('div');
-        div.className = 'etape-item p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-3';
-        div.innerHTML = '<div class="flex justify-between items-center"><span class="text-sm font-medium text-slate-600 dark:text-slate-400">Étape ' + (index + 1) + '</span><button type="button" class="remove-etape text-red-500 hover:text-red-600 text-sm flex items-center gap-1"><i data-lucide="trash-2" class="w-4 h-4"></i> Supprimer</button></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">' + html + '</div>';
-        container.appendChild(div);
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-        index++;
-    });
-
-    container.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-etape')) {
-            e.target.closest('.etape-item')?.remove();
-        }
-    });
-});
-</script>
 {% endblock %}

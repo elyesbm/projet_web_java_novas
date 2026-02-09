@@ -254,156 +254,70 @@ class __TwigTemplate_3e00caa61d4493fe8740a8f2aa6e57e9 extends Template
         yield "
                 </div>
             </div>
+            <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">
+                <div class=\"space-y-2\">
+                    ";
+        // line 55
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 55, $this->source); })()), "type_etape", [], "any", false, false, false, 55), 'label');
+        yield "
+                    ";
+        // line 56
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 56, $this->source); })()), "type_etape", [], "any", false, false, false, 56), 'widget');
+        yield "
+                    ";
+        // line 57
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 57, $this->source); })()), "type_etape", [], "any", false, false, false, 57), 'errors');
+        yield "
+                </div>
+                <div class=\"space-y-2\">
+                    ";
+        // line 60
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 60, $this->source); })()), "url", [], "any", false, false, false, 60), 'label');
+        yield "
+                    ";
+        // line 61
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 61, $this->source); })()), "url", [], "any", false, false, false, 61), 'widget');
+        yield "
+                    ";
+        // line 62
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 62, $this->source); })()), "url", [], "any", false, false, false, 62), 'errors');
+        yield "
+                </div>
+            </div>
             <div class=\"space-y-2\">
                 ";
-        // line 54
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 54, $this->source); })()), "contexte_path", [], "any", false, false, false, 54), 'label');
-        yield "
-                ";
-        // line 55
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 55, $this->source); })()), "contexte_path", [], "any", false, false, false, 55), 'widget');
-        yield "
-                ";
-        // line 56
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 56, $this->source); })()), "contexte_path", [], "any", false, false, false, 56), 'errors');
-        yield "
-            </div>
-
-            <div class=\"border-t border-slate-200 dark:border-slate-700 pt-8 space-y-4\">
-                <div class=\"flex items-center justify-between\">
-                    <h3 class=\"font-semibold text-lg\">Étapes du parcours</h3>
-                    <button type=\"button\" class=\"add-etape px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium flex items-center gap-2\">
-                        <i data-lucide=\"plus\" class=\"w-4 h-4\"></i> Ajouter une étape
-                    </button>
-                </div>
-                <div class=\"etapes-list space-y-4\" data-prototype=\"";
         // line 66
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 66, $this->source); })()), "etapes", [], "any", false, false, false, 66), "vars", [], "any", false, false, false, 66), "prototype", [], "any", false, false, false, 66), 'widget'), "html_attr");
-        yield "\" data-index=\"";
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 66, $this->source); })()), "etapes", [], "any", false, false, false, 66)), "html", null, true);
-        yield "\">
-                    ";
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 66, $this->source); })()), "contexte_path", [], "any", false, false, false, 66), 'label');
+        yield "
+                ";
         // line 67
-        $context['_parent'] = $context;
-        $context['_seq'] = CoreExtension::ensureTraversable(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 67, $this->source); })()), "etapes", [], "any", false, false, false, 67));
-        $context['loop'] = [
-          'parent' => $context['_parent'],
-          'index0' => 0,
-          'index'  => 1,
-          'first'  => true,
-        ];
-        if (is_array($context['_seq']) || (is_object($context['_seq']) && $context['_seq'] instanceof \Countable)) {
-            $length = count($context['_seq']);
-            $context['loop']['revindex0'] = $length - 1;
-            $context['loop']['revindex'] = $length;
-            $context['loop']['length'] = $length;
-            $context['loop']['last'] = 1 === $length;
-        }
-        foreach ($context['_seq'] as $context["_key"] => $context["etape"]) {
-            // line 68
-            yield "                    <div class=\"etape-item p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-3\">
-                        <div class=\"flex justify-between items-center\">
-                            <span class=\"text-sm font-medium text-slate-600 dark:text-slate-400\">Étape ";
-            // line 70
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["loop"], "index", [], "any", false, false, false, 70), "html", null, true);
-            yield "</span>
-                            <button type=\"button\" class=\"remove-etape text-red-500 hover:text-red-600 text-sm flex items-center gap-1\">
-                                <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i> Supprimer
-                            </button>
-                        </div>
-                        <div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3\">
-                            <div class=\"md:col-span-2\">";
-            // line 76
-            yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, $context["etape"], "titre", [], "any", false, false, false, 76), 'row');
-            yield "</div>
-                            <div>";
-            // line 77
-            yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, $context["etape"], "type_etape", [], "any", false, false, false, 77), 'row');
-            yield "</div>
-                            <div>";
-            // line 78
-            yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, $context["etape"], "ordre", [], "any", false, false, false, 78), 'row');
-            yield "</div>
-                            <div class=\"md:col-span-2\">";
-            // line 79
-            yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, $context["etape"], "description", [], "any", false, false, false, 79), 'row');
-            yield "</div>
-                            <div>";
-            // line 80
-            yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, $context["etape"], "url", [], "any", false, false, false, 80), 'row');
-            yield "</div>
-                            <div>";
-            // line 81
-            yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, $context["etape"], "duree_minutes", [], "any", false, false, false, 81), 'row');
-            yield "</div>
-                            <div>";
-            // line 82
-            yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, $context["etape"], "niveau_min", [], "any", false, false, false, 82), 'row');
-            yield "</div>
-                        </div>
-                    </div>
-                    ";
-            ++$context['loop']['index0'];
-            ++$context['loop']['index'];
-            $context['loop']['first'] = false;
-            if (isset($context['loop']['revindex0'], $context['loop']['revindex'])) {
-                --$context['loop']['revindex0'];
-                --$context['loop']['revindex'];
-                $context['loop']['last'] = 0 === $context['loop']['revindex0'];
-            }
-        }
-        $_parent = $context['_parent'];
-        unset($context['_seq'], $context['_key'], $context['etape'], $context['_parent'], $context['loop']);
-        $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 86
-        yield "                </div>
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 67, $this->source); })()), "contexte_path", [], "any", false, false, false, 67), 'widget');
+        yield "
+                ";
+        // line 68
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 68, $this->source); })()), "contexte_path", [], "any", false, false, false, 68), 'errors');
+        yield "
             </div>
 
             <div class=\"flex items-center justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-700\">
                 <a href=\"";
-        // line 90
+        // line 72
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_admin_skills_list");
         yield "\" class=\"px-6 py-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium transition-colors\">Annuler</a>
                 <button type=\"submit\" class=\"px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all flex items-center gap-2\">
                     <i data-lucide=\"check\" class=\"w-4 h-4\"></i>
                     ";
-        // line 93
-        yield ((((isset($context["mode"]) || array_key_exists("mode", $context) ? $context["mode"] : (function () { throw new RuntimeError('Variable "mode" does not exist.', 93, $this->source); })()) == "create")) ? ("Créer le parcours") : ("Enregistrer"));
+        // line 75
+        yield ((((isset($context["mode"]) || array_key_exists("mode", $context) ? $context["mode"] : (function () { throw new RuntimeError('Variable "mode" does not exist.', 75, $this->source); })()) == "create")) ? ("Créer le parcours") : ("Enregistrer"));
         yield "
                 </button>
             </div>
         ";
-        // line 96
-        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 96, $this->source); })()), 'form_end');
+        // line 78
+        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 78, $this->source); })()), 'form_end');
         yield "
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const container = document.querySelector('.etapes-list');
-    if (!container) return;
-    const prototype = container.dataset.prototype;
-    const addBtn = document.querySelector('.add-etape');
-    let index = parseInt(container.dataset.index || '0', 10);
-
-    addBtn?.addEventListener('click', function() {
-        const html = prototype.replace(/__name__/g, index);
-        const div = document.createElement('div');
-        div.className = 'etape-item p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-3';
-        div.innerHTML = '<div class=\"flex justify-between items-center\"><span class=\"text-sm font-medium text-slate-600 dark:text-slate-400\">Étape ' + (index + 1) + '</span><button type=\"button\" class=\"remove-etape text-red-500 hover:text-red-600 text-sm flex items-center gap-1\"><i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i> Supprimer</button></div><div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3\">' + html + '</div>';
-        container.appendChild(div);
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-        index++;
-    });
-
-    container.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-etape')) {
-            e.target.closest('.etape-item')?.remove();
-        }
-    });
-});
-</script>
 ";
         
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
@@ -435,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     public function getDebugInfo(): array
     {
-        return array (  377 => 96,  371 => 93,  365 => 90,  359 => 86,  341 => 82,  337 => 81,  333 => 80,  329 => 79,  325 => 78,  321 => 77,  317 => 76,  308 => 70,  304 => 68,  287 => 67,  281 => 66,  268 => 56,  264 => 55,  260 => 54,  253 => 50,  249 => 49,  245 => 48,  239 => 45,  235 => 44,  231 => 43,  225 => 40,  221 => 39,  217 => 38,  210 => 34,  206 => 33,  202 => 32,  196 => 29,  192 => 28,  188 => 27,  182 => 24,  178 => 23,  174 => 22,  169 => 20,  160 => 14,  156 => 13,  149 => 8,  136 => 7,  113 => 5,  90 => 4,  66 => 3,  43 => 1,);
+        return array (  317 => 78,  311 => 75,  305 => 72,  298 => 68,  294 => 67,  290 => 66,  283 => 62,  279 => 61,  275 => 60,  269 => 57,  265 => 56,  261 => 55,  253 => 50,  249 => 49,  245 => 48,  239 => 45,  235 => 44,  231 => 43,  225 => 40,  221 => 39,  217 => 38,  210 => 34,  206 => 33,  202 => 32,  196 => 29,  192 => 28,  188 => 27,  182 => 24,  178 => 23,  174 => 22,  169 => 20,  160 => 14,  156 => 13,  149 => 8,  136 => 7,  113 => 5,  90 => 4,  66 => 3,  43 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -492,40 +406,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     {{ form_errors(form.statut_path) }}
                 </div>
             </div>
+            <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">
+                <div class=\"space-y-2\">
+                    {{ form_label(form.type_etape) }}
+                    {{ form_widget(form.type_etape) }}
+                    {{ form_errors(form.type_etape) }}
+                </div>
+                <div class=\"space-y-2\">
+                    {{ form_label(form.url) }}
+                    {{ form_widget(form.url) }}
+                    {{ form_errors(form.url) }}
+                </div>
+            </div>
             <div class=\"space-y-2\">
                 {{ form_label(form.contexte_path) }}
                 {{ form_widget(form.contexte_path) }}
                 {{ form_errors(form.contexte_path) }}
-            </div>
-
-            <div class=\"border-t border-slate-200 dark:border-slate-700 pt-8 space-y-4\">
-                <div class=\"flex items-center justify-between\">
-                    <h3 class=\"font-semibold text-lg\">Étapes du parcours</h3>
-                    <button type=\"button\" class=\"add-etape px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium flex items-center gap-2\">
-                        <i data-lucide=\"plus\" class=\"w-4 h-4\"></i> Ajouter une étape
-                    </button>
-                </div>
-                <div class=\"etapes-list space-y-4\" data-prototype=\"{{ form_widget(form.etapes.vars.prototype)|e('html_attr') }}\" data-index=\"{{ form.etapes|length }}\">
-                    {% for etape in form.etapes %}
-                    <div class=\"etape-item p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-3\">
-                        <div class=\"flex justify-between items-center\">
-                            <span class=\"text-sm font-medium text-slate-600 dark:text-slate-400\">Étape {{ loop.index }}</span>
-                            <button type=\"button\" class=\"remove-etape text-red-500 hover:text-red-600 text-sm flex items-center gap-1\">
-                                <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i> Supprimer
-                            </button>
-                        </div>
-                        <div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3\">
-                            <div class=\"md:col-span-2\">{{ form_row(etape.titre) }}</div>
-                            <div>{{ form_row(etape.type_etape) }}</div>
-                            <div>{{ form_row(etape.ordre) }}</div>
-                            <div class=\"md:col-span-2\">{{ form_row(etape.description) }}</div>
-                            <div>{{ form_row(etape.url) }}</div>
-                            <div>{{ form_row(etape.duree_minutes) }}</div>
-                            <div>{{ form_row(etape.niveau_min) }}</div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
             </div>
 
             <div class=\"flex items-center justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-700\">
@@ -538,32 +434,6 @@ document.addEventListener('DOMContentLoaded', function() {
         {{ form_end(form) }}
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const container = document.querySelector('.etapes-list');
-    if (!container) return;
-    const prototype = container.dataset.prototype;
-    const addBtn = document.querySelector('.add-etape');
-    let index = parseInt(container.dataset.index || '0', 10);
-
-    addBtn?.addEventListener('click', function() {
-        const html = prototype.replace(/__name__/g, index);
-        const div = document.createElement('div');
-        div.className = 'etape-item p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-3';
-        div.innerHTML = '<div class=\"flex justify-between items-center\"><span class=\"text-sm font-medium text-slate-600 dark:text-slate-400\">Étape ' + (index + 1) + '</span><button type=\"button\" class=\"remove-etape text-red-500 hover:text-red-600 text-sm flex items-center gap-1\"><i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i> Supprimer</button></div><div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3\">' + html + '</div>';
-        container.appendChild(div);
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-        index++;
-    });
-
-    container.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-etape')) {
-            e.target.closest('.etape-item')?.remove();
-        }
-    });
-});
-</script>
 {% endblock %}
 ", "admin/learning_path/form.html.twig", "C:\\Users\\MSI\\Desktop\\projetweb\\projet_web_java_novas\\templates\\admin\\learning_path\\form.html.twig");
     }

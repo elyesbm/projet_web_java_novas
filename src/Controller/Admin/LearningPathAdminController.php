@@ -20,6 +20,12 @@ class LearningPathAdminController extends AbstractController
     ) {
     }
 
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(): Response
+    {
+        return $this->redirectToRoute('app_admin_skills_list');
+    }
+
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
