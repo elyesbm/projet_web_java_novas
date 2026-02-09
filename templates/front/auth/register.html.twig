@@ -23,92 +23,122 @@
                 <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary glow-primary mb-4">
                     <i data-lucide="user-plus" class="w-8 h-8 text-white"></i>
                 </div>
-                <h1 class="font-serif text-2xl font-semibold mb-2">Creer un compte</h1>
-                <p class="text-muted-foreground text-sm">Rejoignez la communaute NoVas</p>
-            </div>
-            
-            <!-- Progress Steps -->
-            <div class="flex items-center justify-center gap-4 mb-8">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium">1</div>
-                    <span class="text-sm text-foreground">Profil</span>
-                </div>
-                <div class="w-12 h-px bg-white/10"></div>
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-white/10 text-muted-foreground flex items-center justify-center text-sm font-medium">2</div>
-                    <span class="text-sm text-muted-foreground">Etudes</span>
-                </div>
-                <div class="w-12 h-px bg-white/10"></div>
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-white/10 text-muted-foreground flex items-center justify-center text-sm font-medium">3</div>
-                    <span class="text-sm text-muted-foreground">Compte</span>
-                </div>
+                <h1 class="font-serif text-2xl font-semibold mb-2">Créer un compte</h1>
+                <p class="text-muted-foreground text-sm">Rejoignez la communauté NoVas</p>
             </div>
             
             {% for message in app.flashes('success') %}
                 <div class="mb-5 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm">{{ message }}</div>
             {% endfor %}
 
-            {{ form_start(registrationForm, { 'attr': { 'class': 'space-y-5' } }) }}
+            {# ⬇️ IMPORTANT : 'novalidate' désactive la validation HTML5 pour forcer la validation serveur #}
+            {{ form_start(registrationForm, { 'attr': { 'class': 'space-y-5', 'novalidate': 'novalidate' } }) }}
+                
+                {# Erreurs globales du formulaire #}
+                {{ form_errors(registrationForm) }}
+                
+                {# Ligne Prénom + Nom #}
                 <div class="grid grid-cols-2 gap-4">
+                    {# Prénom #}
                     <div class="space-y-2">
+                        {{ form_label(registrationForm.PRENOM, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
                         <div class="relative">
                             <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
                             {{ form_widget(registrationForm.PRENOM) }}
                         </div>
-                        {{ form_errors(registrationForm.PRENOM) }}
+                        {# ⬇️ Message d'erreur pour PRENOM #}
+                        <div class="text-rose-400 text-xs mt-1">
+                            {{ form_errors(registrationForm.PRENOM) }}
+                        </div>
                     </div>
+                    
+                    {# Nom #}
                     <div class="space-y-2">
+                        {{ form_label(registrationForm.NOM, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
                         <div class="relative">
                             <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
                             {{ form_widget(registrationForm.NOM) }}
                         </div>
-                        {{ form_errors(registrationForm.NOM) }}
+                        {# ⬇️ Message d'erreur pour NOM #}
+                        <div class="text-rose-400 text-xs mt-1">
+                            {{ form_errors(registrationForm.NOM) }}
+                        </div>
                     </div>
                 </div>
+                
+                {# Email #}
                 <div class="space-y-2">
+                    {{ form_label(registrationForm.EMAIL, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
                     <div class="relative">
                         <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
                         {{ form_widget(registrationForm.EMAIL) }}
                     </div>
-                    {{ form_errors(registrationForm.EMAIL) }}
+                    {# ⬇️ Message d'erreur pour EMAIL #}
+                    <div class="text-rose-400 text-xs mt-1">
+                        {{ form_errors(registrationForm.EMAIL) }}
+                    </div>
                 </div>
+                
+                {# Numéro #}
                 <div class="space-y-2">
+                    {{ form_label(registrationForm.NUMERO, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
                     <div class="relative">
                         <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
                         {{ form_widget(registrationForm.NUMERO) }}
                     </div>
-                    {{ form_errors(registrationForm.NUMERO) }}
+                    {# ⬇️ Message d'erreur pour NUMERO #}
+                    <div class="text-rose-400 text-xs mt-1">
+                        {{ form_errors(registrationForm.NUMERO) }}
+                    </div>
                 </div>
+                
+                {# Mot de passe #}
                 <div class="space-y-2">
+                    {{ form_label(registrationForm.plainPassword.first, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
                     <div class="relative">
                         <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
                         {{ form_widget(registrationForm.plainPassword.first) }}
+                        <button type="button" onclick="togglePassword(this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                            <i data-lucide="eye" class="w-5 h-5"></i>
+                        </button>
                     </div>
-                    {{ form_errors(registrationForm.plainPassword.first) }}
+                    {# ⬇️ Message d'erreur pour mot de passe #}
+                    <div class="text-rose-400 text-xs mt-1">
+                        {{ form_errors(registrationForm.plainPassword.first) }}
+                    </div>
                 </div>
+                
+                {# Confirmation mot de passe #}
                 <div class="space-y-2">
+                    {{ form_label(registrationForm.plainPassword.second, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
                     <div class="relative">
                         <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
                         {{ form_widget(registrationForm.plainPassword.second) }}
                     </div>
-                    {{ form_errors(registrationForm.plainPassword.second) }}
+                    {# ⬇️ Message d'erreur pour confirmation #}
+                    <div class="text-rose-400 text-xs mt-1">
+                        {{ form_errors(registrationForm.plainPassword.second) }}
+                    </div>
                 </div>
+                
+                {# Checkbox conditions #}
                 <label class="flex items-start gap-3 cursor-pointer group">
                     <input type="checkbox" required class="mt-1 w-5 h-5 rounded border-white/10 bg-secondary text-primary focus:ring-primary focus:ring-offset-0">
                     <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                        J'accepte les <a href="#" class="text-primary hover:underline">conditions d'utilisation</a> et la <a href="#" class="text-primary hover:underline">politique de confidentialite</a>. Je certifie etre etudiant.
+                        J'accepte les <a href="#" class="text-primary hover:underline">conditions d'utilisation</a> et la <a href="#" class="text-primary hover:underline">politique de confidentialité</a>. Je certifie être étudiant.
                     </span>
                 </label>
+                
                 <button type="submit" class="w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 group">
-                    Creer mon compte
+                    Créer mon compte
                     <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
                 </button>
+                
             {{ form_end(registrationForm) }}
             
             <!-- Login Link -->
             <p class="text-center text-sm text-muted-foreground mt-8">
-                Deja inscrit ? 
+                Déjà inscrit ? 
                 <a href="{{ path('app_login') }}" class="text-primary font-medium hover:underline">Se connecter</a>
             </p>
         </div>

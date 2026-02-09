@@ -5,9 +5,10 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping as ORM;    
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert; // ⬅️ AJOUTE CECI
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -18,18 +19,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire")] // ⬅️ CONTRAINTE
+    #[Assert\Length(min: 2, max: 50, minMessage: "Le nom doit faire au moins {{ limit }} caractères")]
     private ?string $NOM = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire")] // ⬅️ CONTRAINTE
+    #[Assert\Length(min: 2, max: 50, minMessage: "Le prénom doit faire au moins {{ limit }} caractères")]
     private ?string $PRENOM = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "L'email est obligatoire")] // ⬅️ CONTRAINTE
+    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide")] // ⬅️ CONTRAINTE
     private ?string $EMAIL = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $IMAGE = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive(message: "Le numéro doit être positif")] // ⬅️ CONTRAINTE (optionnel)
     private ?int $NUMERO = null;
 
     #[ORM\Column(length: 255)]

@@ -11,8 +11,10 @@ use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Positive;
 
 class RegistrationFormType extends AbstractType
 {
@@ -24,19 +26,48 @@ class RegistrationFormType extends AbstractType
             ->add('PRENOM', TextType::class, [
                 'label' => 'Prénom',
                 'attr' => ['class' => $inputClass, 'placeholder' => 'Jean'],
+                // ⬇️ CONTRAINTES AJOUTÉES
+                'constraints' => [
+                    new NotBlank(['message' => 'Le prénom est obligatoire']),
+                    new Length([
+                        'min' => 2,
+                        'max' => 50,
+                        'minMessage' => 'Le prénom doit faire au moins {{ limit }} caractères',
+                        'maxMessage' => 'Le prénom ne peut pas dépasser {{ limit }} caractères'
+                    ]),
+                ],
             ])
             ->add('NOM', TextType::class, [
                 'label' => 'Nom',
                 'attr' => ['class' => $inputClass, 'placeholder' => 'Dupont'],
+                // ⬇️ CONTRAINTES AJOUTÉES
+                'constraints' => [
+                    new NotBlank(['message' => 'Le nom est obligatoire']),
+                    new Length([
+                        'min' => 2,
+                        'max' => 50,
+                        'minMessage' => 'Le nom doit faire au moins {{ limit }} caractères',
+                        'maxMessage' => 'Le nom ne peut pas dépasser {{ limit }} caractères'
+                    ]),
+                ],
             ])
             ->add('EMAIL', EmailType::class, [
                 'label' => 'Email universitaire',
                 'attr' => ['class' => $inputClass, 'placeholder' => 'jean.dupont@univ.fr'],
+                // ⬇️ CONTRAINTES AJOUTÉES
+                'constraints' => [
+                    new NotBlank(['message' => 'L\'email est obligatoire']),
+                    new Email(['message' => 'L\'email n\'est pas valide']),
+                ],
             ])
             ->add('NUMERO', IntegerType::class, [
                 'label' => 'Numéro de téléphone',
                 'required' => false,
                 'attr' => ['class' => $inputClass, 'placeholder' => '0612345678'],
+                // ⬇️ CONTRAINTE AJOUTÉE (optionnel mais recommandé)
+                'constraints' => [
+                    new Positive(['message' => 'Le numéro doit être positif']),
+                ],
             ])
             ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,
@@ -50,8 +81,11 @@ class RegistrationFormType extends AbstractType
                     'attr' => ['class' => $inputClass, 'placeholder' => '••••••••'],
                 ],
                 'constraints' => [
-                    new NotBlank(['message' => 'Entrez un mot de passe']),
-                    new Length(['min' => 6, 'minMessage' => 'Le mot de passe doit faire au moins {{ limit }} caractères']),
+                    new NotBlank(['message' => 'Le mot de passe est obligatoire']),
+                    new Length([
+                        'min' => 8, // ⬅️ CORRIGÉ : 8 au lieu de 6 pour matcher le placeholder
+                        'minMessage' => 'Le mot de passe doit faire au moins {{ limit }} caractères'
+                    ]),
                 ],
             ])
         ;

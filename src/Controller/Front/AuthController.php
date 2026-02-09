@@ -79,6 +79,7 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
+        // ⬇️ IL MANQUAIT CE RETURN ! Toujours retourner une Response
         return $this->render('front/auth/register.html.twig', [
             'registrationForm' => $form,
         ]);

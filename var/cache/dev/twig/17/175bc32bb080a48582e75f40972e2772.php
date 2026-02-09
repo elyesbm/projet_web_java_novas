@@ -220,27 +220,65 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
             
             ";
         // line 114
-        yield "            <div class=\"p-4 border-t border-slate-200 dark:border-slate-700\">
-                <div class=\"flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50\">
-                    <img src=\"https://ui-avatars.com/api/?name=Admin&background=0ea5e9&color=fff\" class=\"w-10 h-10 rounded-full\">
-                    <div class=\"flex-1 min-w-0\">
-                        <p class=\"text-sm font-semibold text-slate-900 dark:text-white truncate\">Administrateur</p>
-                        <p class=\"text-xs text-slate-500 truncate\">admin@novas.edu</p>
+        yield "            <div class=\"p-4 border-t border-slate-200 dark:border-slate-700 space-y-3\">
+                <div class=\"flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700\">
+                    ";
+        // line 116
+        if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 116, $this->source); })()), "user", [], "any", false, false, false, 116), "IMAGE", [], "any", false, false, false, 116)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+            // line 117
+            yield "                        <img src=\"";
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 117, $this->source); })()), "user", [], "any", false, false, false, 117), "IMAGE", [], "any", false, false, false, 117), "html", null, true);
+            yield "\" alt=\"";
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 117, $this->source); })()), "user", [], "any", false, false, false, 117), "PRENOM", [], "any", false, false, false, 117), "html", null, true);
+            yield " ";
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 117, $this->source); })()), "user", [], "any", false, false, false, 117), "NOM", [], "any", false, false, false, 117), "html", null, true);
+            yield "\" class=\"w-10 h-10 rounded-lg object-cover\">
+                    ";
+        } else {
+            // line 119
+            yield "                        <div class=\"w-10 h-10 rounded-lg bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center text-white font-bold text-sm\">
+                            ";
+            // line 120
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::slice($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 120, $this->source); })()), "user", [], "any", false, false, false, 120), "PRENOM", [], "any", false, false, false, 120), 0, 1), "html", null, true);
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::slice($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 120, $this->source); })()), "user", [], "any", false, false, false, 120), "NOM", [], "any", false, false, false, 120), 0, 1), "html", null, true);
+            yield "
+                        </div>
+                    ";
+        }
+        // line 123
+        yield "                    <div class=\"flex-1 min-w-0\">
+                        <p class=\"text-sm font-semibold text-slate-900 dark:text-white truncate\">";
+        // line 124
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 124, $this->source); })()), "user", [], "any", false, false, false, 124), "PRENOM", [], "any", false, false, false, 124), "html", null, true);
+        yield " ";
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 124, $this->source); })()), "user", [], "any", false, false, false, 124), "NOM", [], "any", false, false, false, 124), "html", null, true);
+        yield "</p>
+                        <p class=\"text-xs text-slate-500 truncate\">";
+        // line 125
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 125, $this->source); })()), "user", [], "any", false, false, false, 125), "EMAIL", [], "any", false, false, false, 125), "html", null, true);
+        yield "</p>
                     </div>
                     <button onclick=\"toggleTheme()\" class=\"p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700\">
                         <i data-lucide=\"moon\" class=\"w-4 h-4 hidden dark:block\"></i>
                         <i data-lucide=\"sun\" class=\"w-4 h-4 block dark:hidden\"></i>
                     </button>
                 </div>
+                <a href=\"";
+        // line 132
+        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_logout");
+        yield "\" class=\"w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors font-medium text-sm\">
+                    <i data-lucide=\"log-out\" class=\"w-4 h-4\"></i>
+                    Déconnexion
+                </a>
             </div>
         </aside>
 
         ";
-        // line 130
+        // line 140
         yield "        <div class=\"flex-1 flex flex-col overflow-hidden\">
             
             ";
-        // line 133
+        // line 143
         yield "            <header class=\"sticky top-0 z-20 glass border-b border-slate-200 dark:border-slate-700 px-8 py-4\">
                 <div class=\"flex items-center justify-between\">
                     <div class=\"flex items-center gap-4\">
@@ -249,11 +287,11 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
                         </button>
                         <div>
                             <h2 class=\"text-2xl font-display font-bold text-slate-800 dark:text-white\">";
-        // line 140
+        // line 150
         yield from $this->unwrap()->yieldBlock('page_title', $context, $blocks);
         yield "</h2>
                             <p class=\"text-sm text-slate-500 hidden sm:block\">";
-        // line 141
+        // line 151
         yield from $this->unwrap()->yieldBlock('page_subtitle', $context, $blocks);
         yield "</p>
                         </div>
@@ -273,18 +311,18 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
             </header>
 
             ";
-        // line 159
+        // line 169
         yield "            <main class=\"flex-1 overflow-y-auto p-8\">
                 ";
-        // line 160
+        // line 170
         yield from $this->unwrap()->yieldBlock('body', $context, $blocks);
-        // line 161
+        // line 171
         yield "            </main>
         </div>
     </div>
 
     ";
-        // line 166
+        // line 176
         yield "    <div id=\"toast-container\" class=\"fixed bottom-6 right-6 z-50 space-y-3\"></div>
 
     <script>
@@ -319,9 +357,9 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
     </script>
     
     ";
-        // line 199
+        // line 209
         yield from $this->unwrap()->yieldBlock('javascripts', $context, $blocks);
-        // line 200
+        // line 210
         yield "</body>
 </html>";
         
@@ -378,7 +416,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
         yield from [];
     }
 
-    // line 140
+    // line 150
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -401,7 +439,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
         yield from [];
     }
 
-    // line 141
+    // line 151
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -424,7 +462,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
         yield from [];
     }
 
-    // line 160
+    // line 170
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -446,7 +484,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
         yield from [];
     }
 
-    // line 199
+    // line 209
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -489,7 +527,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  450 => 199,  428 => 160,  405 => 141,  382 => 140,  360 => 45,  337 => 6,  325 => 200,  323 => 199,  288 => 166,  282 => 161,  280 => 160,  277 => 159,  257 => 141,  253 => 140,  244 => 133,  240 => 130,  223 => 114,  211 => 106,  200 => 100,  190 => 95,  180 => 90,  170 => 85,  160 => 80,  150 => 75,  140 => 70,  137 => 69,  135 => 68,  131 => 66,  119 => 56,  116 => 55,  112 => 52,  105 => 46,  103 => 45,  61 => 6,  54 => 1,);
+        return array (  488 => 209,  466 => 170,  443 => 151,  420 => 150,  398 => 45,  375 => 6,  363 => 210,  361 => 209,  326 => 176,  320 => 171,  318 => 170,  315 => 169,  295 => 151,  291 => 150,  282 => 143,  278 => 140,  268 => 132,  258 => 125,  252 => 124,  249 => 123,  242 => 120,  239 => 119,  229 => 117,  227 => 116,  223 => 114,  211 => 106,  200 => 100,  190 => 95,  180 => 90,  170 => 85,  160 => 80,  150 => 75,  140 => 70,  137 => 69,  135 => 68,  131 => 66,  119 => 56,  116 => 55,  112 => 52,  105 => 46,  103 => 45,  61 => 6,  54 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -607,18 +645,28 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
             </nav>
             
             {# User Profile #}
-            <div class=\"p-4 border-t border-slate-200 dark:border-slate-700\">
-                <div class=\"flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50\">
-                    <img src=\"https://ui-avatars.com/api/?name=Admin&background=0ea5e9&color=fff\" class=\"w-10 h-10 rounded-full\">
+            <div class=\"p-4 border-t border-slate-200 dark:border-slate-700 space-y-3\">
+                <div class=\"flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700\">
+                    {% if app.user.IMAGE %}
+                        <img src=\"{{ app.user.IMAGE }}\" alt=\"{{ app.user.PRENOM }} {{ app.user.NOM }}\" class=\"w-10 h-10 rounded-lg object-cover\">
+                    {% else %}
+                        <div class=\"w-10 h-10 rounded-lg bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center text-white font-bold text-sm\">
+                            {{ app.user.PRENOM|slice(0,1) }}{{ app.user.NOM|slice(0,1) }}
+                        </div>
+                    {% endif %}
                     <div class=\"flex-1 min-w-0\">
-                        <p class=\"text-sm font-semibold text-slate-900 dark:text-white truncate\">Administrateur</p>
-                        <p class=\"text-xs text-slate-500 truncate\">admin@novas.edu</p>
+                        <p class=\"text-sm font-semibold text-slate-900 dark:text-white truncate\">{{ app.user.PRENOM }} {{ app.user.NOM }}</p>
+                        <p class=\"text-xs text-slate-500 truncate\">{{ app.user.EMAIL }}</p>
                     </div>
                     <button onclick=\"toggleTheme()\" class=\"p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700\">
                         <i data-lucide=\"moon\" class=\"w-4 h-4 hidden dark:block\"></i>
                         <i data-lucide=\"sun\" class=\"w-4 h-4 block dark:hidden\"></i>
                     </button>
                 </div>
+                <a href=\"{{ path('app_logout') }}\" class=\"w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors font-medium text-sm\">
+                    <i data-lucide=\"log-out\" class=\"w-4 h-4\"></i>
+                    Déconnexion
+                </a>
             </div>
         </aside>
 
