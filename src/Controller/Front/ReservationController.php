@@ -21,18 +21,34 @@ class ReservationController extends AbstractController
      * Mes réservations pour l'utilisateur dont l'id est dans l'URL (ex: /reservation/mes-reservations/1)
      */
     #[Route('/mes-reservations/{id}', name: 'app_reservation_mes', requirements: ['id' => '\d+'])]
-    public function mesReservations(int $id, UserRepository $userRepository): Response
+    public function mesReservations(Request $request, int $id, UserRepository $userRepository, ReservationRepository $reservationRepository): Response
     {
         $user = $userRepository->find($id);
         if (!$user) {
             throw $this->createNotFoundException('Utilisateur introuvable.');
         }
 
-        $today = new \DateTimeImmutable('today');
-        $toutes = $user->getReservations();
+        // Récupération des paramètres de recherche et filtre depuis la requête GET
+        $search = $request->query->get('search', '');
+        $statut = $request->query->get('statut');
 
+        // Conversion du statut en int si fourni
+        $statutInt = null;
+        if ($statut !== null && $statut !== '') {
+            $statutInt = (int) $statut;
+            // Validation : seulement 0 (En attente) ou 1 (Confirmée)
+            if ($statutInt !== 0 && $statutInt !== 1) {
+                $statutInt = null;
+            }
+        }
+
+        // Recherche et filtrage des réservations
+        $toutes = $reservationRepository->searchAndFilterByUser($user, $search, $statutInt);
+
+        $today = new \DateTimeImmutable('today');
         $reservations = [];
         $historique = [];
+        
         foreach ($toutes as $reservation) {
             $atelier = $reservation->getAtelier();
             if (!$atelier || !$atelier->getDateAtelier()) {
@@ -52,6 +68,8 @@ class ReservationController extends AbstractController
             'user' => $user,
             'reservations' => $reservations,
             'historique' => $historique,
+            'search' => $search,
+            'statut' => $statutInt,
         ]);
     }
 

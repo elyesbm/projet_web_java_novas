@@ -15,17 +15,40 @@ use Symfony\Component\Routing\Attribute\Route;
 class ReservationAdminController extends AbstractController
 {
     #[Route('/', name: 'list')]
-    public function list(ReservationRepository $reservationRepository): Response
+    public function list(Request $request, ReservationRepository $reservationRepository): Response
     {
-        $reservations = $reservationRepository->findBy([], ['id' => 'DESC']);
+        // Récupération des paramètres de recherche, filtre et tri
+        $search = $request->query->get('search', '');
+        $statut = $request->query->get('statut');
+        $sort = $request->query->get('sort', 'id_desc');
 
+        // Conversion du statut en int si fourni
+        $statutInt = null;
+        if ($statut !== null && $statut !== '') {
+            $statutInt = (int) $statut;
+            if ($statutInt !== 0 && $statutInt !== 1 && $statutInt !== 2) {
+                $statutInt = null;
+            }
+        }
+
+        // Validation du tri
+        $validSorts = ['id_desc', 'id_asc', 'date_asc', 'date_desc', 'nom_asc', 'nom_desc'];
+        if (!in_array($sort, $validSorts)) {
+            $sort = 'id_desc';
+        }
+
+        // Recherche, filtrage et tri
+        $reservations = $reservationRepository->searchFilterAndSort($search, $statutInt, $sort);
+
+        // Calcul des stats sur toutes les réservations (pas seulement celles filtrées)
+        $toutesReservations = $reservationRepository->findAll();
         $stats = [
-            'total' => count($reservations),
+            'total' => count($toutesReservations),
             'en_attente' => 0,
             'acceptees' => 0,
             'refusees' => 0,
         ];
-        foreach ($reservations as $r) {
+        foreach ($toutesReservations as $r) {
             if ($r->getStatutReservation() === 0) {
                 $stats['en_attente']++;
             } elseif ($r->getStatutReservation() === 1) {
@@ -38,6 +61,9 @@ class ReservationAdminController extends AbstractController
         return $this->render('admin/reservation/list.html.twig', [
             'reservations' => $reservations,
             'stats' => $stats,
+            'search' => $search,
+            'statut' => $statutInt,
+            'sort' => $sort,
         ]);
     }
 

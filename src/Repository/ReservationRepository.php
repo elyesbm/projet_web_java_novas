@@ -32,6 +32,92 @@ class ReservationRepository extends ServiceEntityRepository
             ->getOneOrNullResult() !== null;
     }
 
+    /**
+     * Recherche et filtre les réservations d'un utilisateur par nom d'atelier et statut.
+     * 
+     * @param \App\Entity\User $user L'utilisateur propriétaire des réservations
+     * @param string|null $search Terme de recherche (nom d'atelier)
+     * @param int|null $statut Filtre par statut : 0 = En attente, 1 = Confirmée, null = tous
+     * @return Reservation[]
+     */
+    public function searchAndFilterByUser(\App\Entity\User $user, ?string $search = null, ?int $statut = null): array
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->leftJoin('r.atelier', 'a')
+            ->where('r.user = :user')
+            ->setParameter('user', $user);
+
+        // Recherche par nom d'atelier (insensible à la casse)
+        if ($search !== null && $search !== '') {
+            $qb->andWhere('LOWER(a.titre_atelier) LIKE LOWER(:search)')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Filtre par statut (0 = En attente, 1 = Confirmée)
+        if ($statut !== null) {
+            $qb->andWhere('r.statut_reservation = :statut')
+               ->setParameter('statut', $statut);
+        }
+
+        // Tri par date d'atelier (ateliers à venir en premier)
+        $qb->orderBy('a.date_atelier', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Recherche, filtre et tri les réservations pour l'admin.
+     * 
+     * @param string|null $search Terme de recherche (nom d'atelier ou nom/email utilisateur)
+     * @param int|null $statut Filtre par statut : 0 = En attente, 1 = Confirmée, 2 = Refusée, null = tous
+     * @param string|null $sort Tri : 'id_desc', 'id_asc', 'date_asc', 'date_desc', 'nom_asc', 'nom_desc', null = id_desc par défaut
+     * @return Reservation[]
+     */
+    public function searchFilterAndSort(?string $search = null, ?int $statut = null, ?string $sort = null): array
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->leftJoin('r.atelier', 'a');
+
+        // Recherche par nom d'atelier, nom utilisateur ou email (insensible à la casse)
+        if ($search !== null && $search !== '') {
+            $qb->andWhere('LOWER(a.titre_atelier) LIKE LOWER(:search) 
+                OR LOWER(r.nom_user) LIKE LOWER(:search) 
+                OR LOWER(r.email_user) LIKE LOWER(:search)')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Filtre par statut
+        if ($statut !== null) {
+            $qb->andWhere('r.statut_reservation = :statut')
+               ->setParameter('statut', $statut);
+        }
+
+        // Tri selon le paramètre
+        switch ($sort) {
+            case 'id_asc':
+                $qb->orderBy('r.id', 'ASC');
+                break;
+            case 'date_asc':
+                $qb->orderBy('a.date_atelier', 'ASC');
+                break;
+            case 'date_desc':
+                $qb->orderBy('a.date_atelier', 'DESC');
+                break;
+            case 'nom_asc':
+                $qb->orderBy('r.nom_user', 'ASC');
+                break;
+            case 'nom_desc':
+                $qb->orderBy('r.nom_user', 'DESC');
+                break;
+            case 'id_desc':
+            default:
+                $qb->orderBy('r.id', 'DESC');
+                break;
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
     //    /**
     //     * @return Reservation[] Returns an array of Reservation objects
     //     */

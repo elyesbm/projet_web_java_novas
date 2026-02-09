@@ -16,12 +16,36 @@ use Doctrine\ORM\EntityManagerInterface;
 class AtelierAdminController extends AbstractController
 {
     #[Route('/', name: 'list')]
-    public function list(AtelierRepository $atelierRepository): Response
+    public function list(Request $request, AtelierRepository $atelierRepository): Response
     {
-        $ateliers = $atelierRepository->findAll();
+        // Récupération des paramètres de recherche, filtre et tri
+        $search = $request->query->get('search', '');
+        $contexte = $request->query->get('contexte');
+        $sort = $request->query->get('sort', 'id_desc');
+
+        // Conversion du contexte en int si fourni
+        $contexteInt = null;
+        if ($contexte !== null && $contexte !== '') {
+            $contexteInt = (int) $contexte;
+            if ($contexteInt !== 0 && $contexteInt !== 1) {
+                $contexteInt = null;
+            }
+        }
+
+        // Validation du tri
+        $validSorts = ['id_desc', 'id_asc', 'date_asc', 'date_desc', 'titre_asc', 'titre_desc'];
+        if (!in_array($sort, $validSorts)) {
+            $sort = 'id_desc';
+        }
+
+        // Recherche, filtrage et tri
+        $ateliers = $atelierRepository->searchFilterAndSort($search, $contexteInt, $sort);
 
         return $this->render('admin/atelier/list.html.twig', [
             'ateliers' => $ateliers,
+            'search' => $search,
+            'contexte' => $contexteInt,
+            'sort' => $sort,
         ]);
     }
 
