@@ -71,6 +71,7 @@ return [
     'app_skills_mes' => [[], ['_controller' => 'App\\Controller\\Front\\SkillController::mesSkills'], [], [['text', '/skills/mes-skills']], [], [], []],
     'app_skills_ajouter' => [[], ['_controller' => 'App\\Controller\\Front\\SkillController::ajouter'], [], [['text', '/skills/ajouter']], [], [], []],
     'app_user_profile' => [[], ['_controller' => 'App\\Controller\\Front\\UserController::profile'], [], [['text', '/user/profile']], [], [], []],
+    'app_user_edit' => [[], ['_controller' => 'App\\Controller\\Front\\UserController::edit'], [], [['text', '/user/profile/edit']], [], [], []],
     'App\Controller\Admin\AtelierAdminController::list' => [[], ['_controller' => 'App\\Controller\\Admin\\AtelierAdminController::list'], [], [['text', '/admin/ateliers/']], [], [], []],
     'App\Controller\Admin\AtelierAdminController::new' => [[], ['_controller' => 'App\\Controller\\Admin\\AtelierAdminController::new'], [], [['text', '/admin/ateliers/new']], [], [], []],
     'App\Controller\Admin\AtelierAdminController::edit' => [['id'], ['_controller' => 'App\\Controller\\Admin\\AtelierAdminController::edit'], [], [['text', '/edit'], ['variable', '/', '[^/]++', 'id', true], ['text', '/admin/ateliers']], [], [], []],
@@ -125,4 +126,5 @@ return [
     'App\Controller\Front\SkillController::mesSkills' => [[], ['_controller' => 'App\\Controller\\Front\\SkillController::mesSkills'], [], [['text', '/skills/mes-skills']], [], [], []],
     'App\Controller\Front\SkillController::ajouter' => [[], ['_controller' => 'App\\Controller\\Front\\SkillController::ajouter'], [], [['text', '/skills/ajouter']], [], [], []],
     'App\Controller\Front\UserController::profile' => [[], ['_controller' => 'App\\Controller\\Front\\UserController::profile'], [], [['text', '/user/profile']], [], [], []],
+    'App\Controller\Front\UserController::edit' => [[], ['_controller' => 'App\\Controller\\Front\\UserController::edit'], [], [['text', '/user/profile/edit']], [], [], []],
 ];

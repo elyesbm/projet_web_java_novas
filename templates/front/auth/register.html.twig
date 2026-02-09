@@ -44,9 +44,8 @@
                         {{ form_label(registrationForm.PRENOM, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
                         <div class="relative">
                             <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
-                            {{ form_widget(registrationForm.PRENOM) }}
+                            {{ form_widget(registrationForm.PRENOM, {'attr': {'class': 'w-full h-12 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50'}, 'errors': false}) }}
                         </div>
-                        {# ⬇️ Message d'erreur pour PRENOM #}
                         <div class="text-rose-400 text-xs mt-1">
                             {{ form_errors(registrationForm.PRENOM) }}
                         </div>
@@ -57,9 +56,8 @@
                         {{ form_label(registrationForm.NOM, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
                         <div class="relative">
                             <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
-                            {{ form_widget(registrationForm.NOM) }}
+                            {{ form_widget(registrationForm.NOM, {'attr': {'class': 'w-full h-12 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50'}, 'errors': false}) }}
                         </div>
-                        {# ⬇️ Message d'erreur pour NOM #}
                         <div class="text-rose-400 text-xs mt-1">
                             {{ form_errors(registrationForm.NOM) }}
                         </div>
@@ -71,9 +69,8 @@
                     {{ form_label(registrationForm.EMAIL, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
                     <div class="relative">
                         <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
-                        {{ form_widget(registrationForm.EMAIL) }}
+                        {{ form_widget(registrationForm.EMAIL, {'attr': {'class': 'w-full h-12 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50'}, 'errors': false}) }}
                     </div>
-                    {# ⬇️ Message d'erreur pour EMAIL #}
                     <div class="text-rose-400 text-xs mt-1">
                         {{ form_errors(registrationForm.EMAIL) }}
                     </div>
@@ -84,9 +81,8 @@
                     {{ form_label(registrationForm.NUMERO, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
                     <div class="relative">
                         <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
-                        {{ form_widget(registrationForm.NUMERO) }}
+                        {{ form_widget(registrationForm.NUMERO, {'attr': {'class': 'w-full h-12 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50'}, 'errors': false}) }}
                     </div>
-                    {# ⬇️ Message d'erreur pour NUMERO #}
                     <div class="text-rose-400 text-xs mt-1">
                         {{ form_errors(registrationForm.NUMERO) }}
                     </div>
@@ -97,12 +93,11 @@
                     {{ form_label(registrationForm.plainPassword.first, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
                     <div class="relative">
                         <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
-                        {{ form_widget(registrationForm.plainPassword.first) }}
+                        {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'w-full h-12 bg-secondary border border-white/10 rounded-xl pl-12 pr-12 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50'}, 'errors': false}) }}
                         <button type="button" onclick="togglePassword(this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                             <i data-lucide="eye" class="w-5 h-5"></i>
                         </button>
                     </div>
-                    {# ⬇️ Message d'erreur pour mot de passe #}
                     <div class="text-rose-400 text-xs mt-1">
                         {{ form_errors(registrationForm.plainPassword.first) }}
                     </div>
@@ -113,9 +108,8 @@
                     {{ form_label(registrationForm.plainPassword.second, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
                     <div class="relative">
                         <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10"></i>
-                        {{ form_widget(registrationForm.plainPassword.second) }}
+                        {{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'w-full h-12 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50'}, 'errors': false}) }}
                     </div>
-                    {# ⬇️ Message d'erreur pour confirmation #}
                     <div class="text-rose-400 text-xs mt-1">
                         {{ form_errors(registrationForm.plainPassword.second) }}
                     </div>

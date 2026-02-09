@@ -13,7 +13,10 @@
         <div class="rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 px-4 py-3 mb-4">{{ message }}</div>
     {% endfor %}
 
-    {{ form_start(form, { 'attr': { 'class': 'space-y-6' } }) }}
+    {{ form_start(form, { 'attr': { 'class': 'space-y-6', 'novalidate': 'novalidate' } }) }}
+
+        {# Erreurs globales du formulaire #}
+        {{ form_errors(form) }}
 
         {# Avatar preview #}
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
@@ -35,24 +38,55 @@
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">Informations personnelles</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="space-y-2">{{ form_row(form.NOM) }}</div>
-                <div class="space-y-2">{{ form_row(form.PRENOM) }}</div>
+                <div class="space-y-2">
+                    {{ form_label(form.NOM) }}
+                    {{ form_widget(form.NOM, {'errors': false}) }}
+                    <div class="text-rose-500 text-xs">{{ form_errors(form.NOM) }}</div>
+                </div>
+                <div class="space-y-2">
+                    {{ form_label(form.PRENOM) }}
+                    {{ form_widget(form.PRENOM, {'errors': false}) }}
+                    <div class="text-rose-500 text-xs">{{ form_errors(form.PRENOM) }}</div>
+                </div>
             </div>
-            <div class="space-y-2 mb-6">{{ form_row(form.EMAIL) }}</div>
-            <div class="space-y-2 mb-6">{{ form_row(form.NUMERO) }}</div>
-            <div class="space-y-2">{{ form_row(form.IMAGE) }}</div>
+            <div class="space-y-2 mb-6">
+                {{ form_label(form.EMAIL) }}
+                {{ form_widget(form.EMAIL, {'errors': false}) }}
+                <div class="text-rose-500 text-xs">{{ form_errors(form.EMAIL) }}</div>
+            </div>
+            <div class="space-y-2 mb-6">
+                {{ form_label(form.NUMERO) }}
+                <div class="relative">
+                    <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 z-10"></i>
+                    {{ form_widget(form.NUMERO, {'errors': false}) }}
+                </div>
+                <div class="text-rose-500 text-xs">{{ form_errors(form.NUMERO) }}</div>
+            </div>
+            <div class="space-y-2">
+                {{ form_label(form.IMAGE) }}
+                {{ form_widget(form.IMAGE, {'errors': false}) }}
+                <div class="text-rose-500 text-xs">{{ form_errors(form.IMAGE) }}</div>
+            </div>
         </div>
 
         {# Rôle #}
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">Rôle</h3>
-            {{ form_row(form.ROLE) }}
+            <div class="space-y-2">
+                {{ form_label(form.ROLE) }}
+                {{ form_widget(form.ROLE, {'errors': false}) }}
+                <div class="text-rose-500 text-xs">{{ form_errors(form.ROLE) }}</div>
+            </div>
         </div>
 
         {# Mot de passe #}
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">Mot de passe</h3>
-            {{ form_row(form.plainPassword) }}
+            <div class="space-y-2">
+                {{ form_label(form.plainPassword) }}
+                {{ form_widget(form.plainPassword, {'errors': false}) }}
+                <div class="text-rose-500 text-xs">{{ form_errors(form.plainPassword) }}</div>
+            </div>
             {% if mode == 'edit' %}
                 <p class="text-sm text-slate-500 mt-2">Laisser vide pour conserver le mot de passe actuel.</p>
             {% endif %}

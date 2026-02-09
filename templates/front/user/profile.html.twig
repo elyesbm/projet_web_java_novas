@@ -11,6 +11,8 @@
                 <a href="{{ path('app_learning_paths_index') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Parcours</a>
                 <a href="{{ path('app_reservation_ateliers') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Ateliers</a>
                 <a href="{{ path('app_publications_index') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Publications</a>
+                <a href="{{ path('app_jobs_index') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Emplois</a>
+                <a href="{{ path('app_skills_index') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Compétences</a>
             </div>
             <div class="flex items-center gap-4">
                 <div class="hidden md:flex items-center gap-3 px-4 py-2 glass-card rounded-xl">
@@ -113,9 +115,9 @@
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     Retour à l’accueil
                 </a>
-                <a href="{{ path('app_learning_paths_index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors text-sm font-medium shadow-lg shadow-primary/25">
-                    Explorer les parcours
-                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                <a href="{{ path('app_user_edit') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors text-sm font-medium shadow-lg shadow-primary/25">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                    Modifier mon profil
                 </a>
             </div>
         </div>

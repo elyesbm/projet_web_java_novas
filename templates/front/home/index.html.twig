@@ -68,6 +68,7 @@
         </p>
         
         <!-- CTA Buttons -->
+        {% if not app.user %}
         <div class="flex flex-wrap justify-center gap-4 mb-16">
             <a href="{{ path('app_register') }}" class="group inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-2xl font-medium hover:bg-primary/90 transition-all shadow-xl shadow-primary/30 hover:shadow-primary/50">
                 Creer un compte gratuit
@@ -77,6 +78,17 @@
                 Se connecter
             </a>
         </div>
+        {% else %}
+        <div class="flex flex-wrap justify-center gap-4 mb-16">
+            <a href="{{ path('app_learning_paths_index') }}" class="group inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-2xl font-medium hover:bg-primary/90 transition-all shadow-xl shadow-primary/30 hover:shadow-primary/50">
+                Explorer les parcours
+                <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+            </a>
+            <a href="{{ path('app_user_profile') }}" class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-medium border border-white/20 hover:bg-white/5 transition-all">
+                Mon profil
+            </a>
+        </div>
+        {% endif %}
         
         <!-- Mockup Dashboard -->
         <div class="relative max-w-5xl mx-auto animate-float">

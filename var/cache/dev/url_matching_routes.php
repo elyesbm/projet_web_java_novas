@@ -50,6 +50,7 @@ return [
         '/skills/mes-skills' => [[['_route' => 'app_skills_mes', '_controller' => 'App\\Controller\\Front\\SkillController::mesSkills'], null, null, null, false, false, null]],
         '/skills/ajouter' => [[['_route' => 'app_skills_ajouter', '_controller' => 'App\\Controller\\Front\\SkillController::ajouter'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
         '/user/profile' => [[['_route' => 'app_user_profile', '_controller' => 'App\\Controller\\Front\\UserController::profile'], null, null, null, false, false, null]],
+        '/user/profile/edit' => [[['_route' => 'app_user_edit', '_controller' => 'App\\Controller\\Front\\UserController::edit'], null, null, null, false, false, null]],
     ],
     [ // $regexpList
         0 => '{^(?'
