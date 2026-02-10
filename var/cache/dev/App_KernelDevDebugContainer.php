@@ -16,7 +16,7 @@ if (!\class_exists(App_KernelDevDebugContainer::class, false)) {
 
 return new \ContainerPGn4FHD\App_KernelDevDebugContainer([
     'container.build_hash' => 'PGn4FHD',
-    'container.build_id' => '9a04d871',
-    'container.build_time' => 1770664968,
+    'container.build_id' => 'd94f3a7b',
+    'container.build_time' => 1770678202,
     'container.runtime_mode' => \in_array(\PHP_SAPI, ['cli', 'phpdbg', 'embed'], true) ? 'web=0' : 'web=1',
 ], __DIR__.\DIRECTORY_SEPARATOR.'ContainerPGn4FHD');

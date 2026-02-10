@@ -66,6 +66,56 @@
         </div>
     </section>
 
+    {# ✅ Recherche + Tri (même form) #}
+<form method="get"
+      action="{{ path('app_publications_index') }}"
+      class="mt-6 mb-10 max-w-4xl mx-auto">
+
+    <div class="flex flex-col md:flex-row md:items-center gap-4">
+
+        {# 🔎 Recherche #}
+        <div class="relative flex-1">
+            <input
+                type="text"
+                name="q"
+                value="{{ q ?? app.request.query.get('q') }}"
+                placeholder="Rechercher une publication..."
+                class="w-full h-12 bg-secondary border border-white/10 rounded-xl pl-12 pr-4
+                       text-sm focus:outline-none focus:border-primary transition-all
+                       placeholder:text-muted-foreground/50"
+            />
+            <button type="submit"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-primary transition-colors"
+                    title="Rechercher">
+                <i data-lucide="search" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        {# 🔽 Tri (submit auto) #}
+        <div class="md:w-72 w-full">
+            <select
+                name="sort"
+                onchange="this.form.submit()"
+                class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4
+                       text-sm focus:outline-none focus:border-primary transition-all"
+            >
+                <option value="created_desc" {{ (sort ?? app.request.query.get('sort')) == 'created_desc' ? 'selected' : '' }}>
+                    Dernière création
+                </option>
+                <option value="updated_desc" {{ (sort ?? app.request.query.get('sort')) == 'updated_desc' ? 'selected' : '' }}>
+                    Dernière modification
+                </option>
+            </select>
+        </div>
+
+        {# ✅ conserver le filtre contexte si actif #}
+        {% if contexte_filter is not null %}
+            <input type="hidden" name="contexte" value="{{ contexte_filter }}">
+        {% endif %}
+    </div>
+</form>
+
+
     <!-- Publications List -->
     <section class="px-6 pb-24">
         <div class="max-w-4xl mx-auto space-y-6">
@@ -187,7 +237,12 @@
                     </div>
 
                     <!-- Comments Section (Hidden by default) -->
-                    <div id="comments-{{ pub.id }}" class="hidden border-t border-white/5">
+                    {% set cform = comment_forms[pub.id] %}
+                    {% set comment_error_flashes = app.flashes('comment_error_' ~ pub.id) %}
+                    {% set comment_success_flashes = app.flashes('comment_success_' ~ pub.id) %}
+                    {% set has_comment_errors = (cform.contenu.vars.errors|length > 0) or (comment_error_flashes|length > 0) %}
+
+                    <div id="comments-{{ pub.id }}" class="{{ has_comment_errors ? '' : 'hidden' }} border-t border-white/5">
                         <div class="p-6 bg-secondary/20">
                             <!-- Comments List -->
                             <div class="space-y-4 mb-6">
@@ -255,9 +310,12 @@
                             </div>
 
                             <!-- Add Comment -->
-                            {% set cform = comment_forms[pub.id] %}
 
                             {{ form_start(cform, { attr: { class: 'flex gap-4' } }) }}
+                            <input type="hidden" name="return_q" value="{{ q ?? '' }}">
+<input type="hidden" name="return_sort" value="{{ sort ?? 'created_desc' }}">
+<input type="hidden" name="return_contexte" value="{{ contexte_filter ?? '' }}">
+
                                 {% if app.user and app.user.IMAGE %}
                                     <img src="{{ asset('images/' ~ app.user.IMAGE) }}" alt="Moi" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30">
                                 {% else %}
@@ -267,12 +325,38 @@
                                 {% endif %}
 
                                 <div class="flex-1 relative">
+                                {# ✅ erreurs de validation #}
+{% if cform.contenu.vars.errors|length > 0 %}
+    <div class="mt-2 text-sm text-red-400">
+        {{ form_errors(cform.contenu) }}
+        
+    </div>
+{% endif %}
+
                                     {{ form_widget(cform.contenu, {
                                         attr: {
                                             placeholder: "Ecrivez votre commentaire...",
                                             class: "w-full h-12 bg-secondary border border-white/10 rounded-xl pl-4 pr-12 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50"
                                         }
                                     }) }}
+                                    {% for msg in comment_error_flashes %}
+    <div class="mb-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2">
+        {{ msg }}
+    </div>
+{% endfor %}
+
+{% for msg in comment_success_flashes %}
+    <div class="mb-2 text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-2">
+        {{ msg }}
+    </div>
+{% endfor %}
+
+                                    {% if cform.contenu.vars.errors|length > 0 %}
+    <div class="mt-2 text-sm text-red-400">
+        {{ form_errors(cform.contenu) }}
+    </div>
+{% endif %}
+
 
                                     <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors">
                                         <i data-lucide="send" class="w-4 h-4 text-white"></i>
@@ -319,5 +403,31 @@ function likePublication(pubId) {
     });
 }
 </script>
+{% if open_comments_for is defined and open_comments_for %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const openId = params.get('open');
+
+    if (!openId) return;
+
+    // 1) FORCER l'ouverture (pas de toggle)
+    const comments = document.getElementById('comments-' + openId);
+    if (comments) {
+        comments.classList.remove('hidden');
+    }
+
+    // 2 Scroller vers la publication (avec léger délai pour être sûr)
+    const pubEl = document.getElementById('pub-' + openId);
+    if (pubEl) {
+        setTimeout(() => {
+            pubEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+    }
+});
+</script>
+
+{% endif %}
+
 
 {% endblock %}

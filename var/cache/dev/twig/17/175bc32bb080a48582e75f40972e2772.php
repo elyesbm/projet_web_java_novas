@@ -259,32 +259,23 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
                         </div>
                     </div>
                     
-                    <div class=\"flex items-center gap-3\">
-                        <div class=\"relative hidden md:block\">
-                            <input type=\"text\" placeholder=\"Rechercher...\" class=\"w-64 pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary-500\">
-                            <i data-lucide=\"search\" class=\"w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400\"></i>
-                        </div>
-                        <button class=\"relative p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800\">
-                            <i data-lucide=\"bell\" class=\"w-5 h-5\"></i>
-                            <span class=\"absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full\"></span>
-                        </button>
-                    </div>
+                    
                 </div>
             </header>
 
             ";
-        // line 159
+        // line 150
         yield "            <main class=\"flex-1 overflow-y-auto p-8\">
                 ";
-        // line 160
+        // line 151
         yield from $this->unwrap()->yieldBlock('body', $context, $blocks);
-        // line 161
+        // line 152
         yield "            </main>
         </div>
     </div>
 
     ";
-        // line 166
+        // line 157
         yield "    <div id=\"toast-container\" class=\"fixed bottom-6 right-6 z-50 space-y-3\"></div>
 
     <script>
@@ -319,9 +310,9 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
     </script>
     
     ";
-        // line 199
+        // line 190
         yield from $this->unwrap()->yieldBlock('javascripts', $context, $blocks);
-        // line 200
+        // line 191
         yield "</body>
 </html>";
         
@@ -424,7 +415,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
         yield from [];
     }
 
-    // line 160
+    // line 151
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -446,7 +437,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
         yield from [];
     }
 
-    // line 199
+    // line 190
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -489,7 +480,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  450 => 199,  428 => 160,  405 => 141,  382 => 140,  360 => 45,  337 => 6,  325 => 200,  323 => 199,  288 => 166,  282 => 161,  280 => 160,  277 => 159,  257 => 141,  253 => 140,  244 => 133,  240 => 130,  223 => 114,  211 => 106,  200 => 100,  190 => 95,  180 => 90,  170 => 85,  160 => 80,  150 => 75,  140 => 70,  137 => 69,  135 => 68,  131 => 66,  119 => 56,  116 => 55,  112 => 52,  105 => 46,  103 => 45,  61 => 6,  54 => 1,);
+        return array (  441 => 190,  419 => 151,  396 => 141,  373 => 140,  351 => 45,  328 => 6,  316 => 191,  314 => 190,  279 => 157,  273 => 152,  271 => 151,  268 => 150,  257 => 141,  253 => 140,  244 => 133,  240 => 130,  223 => 114,  211 => 106,  200 => 100,  190 => 95,  180 => 90,  170 => 85,  160 => 80,  150 => 75,  140 => 70,  137 => 69,  135 => 68,  131 => 66,  119 => 56,  116 => 55,  112 => 52,  105 => 46,  103 => 45,  61 => 6,  54 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -638,16 +629,7 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
                         </div>
                     </div>
                     
-                    <div class=\"flex items-center gap-3\">
-                        <div class=\"relative hidden md:block\">
-                            <input type=\"text\" placeholder=\"Rechercher...\" class=\"w-64 pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary-500\">
-                            <i data-lucide=\"search\" class=\"w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400\"></i>
-                        </div>
-                        <button class=\"relative p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800\">
-                            <i data-lucide=\"bell\" class=\"w-5 h-5\"></i>
-                            <span class=\"absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full\"></span>
-                        </button>
-                    </div>
+                    
                 </div>
             </header>
 

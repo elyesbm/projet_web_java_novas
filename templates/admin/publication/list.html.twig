@@ -44,15 +44,62 @@
         </div>
     </div>
 
+    {# ✅ Recherche + Tri (BACK) #}
+    <form method="get" action="{{ path('app_admin_publications_list') }}"
+          class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-4">
+        <div class="flex flex-col md:flex-row md:items-center gap-4">
+
+            <div class="relative flex-1">
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ q ?? app.request.query.get('q') }}"
+                    placeholder="Rechercher (titre, contenu, auteur)..."
+                    class="w-full h-12 bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700 rounded-xl pl-12 pr-4
+                           text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500 transition-all"
+                />
+                <button type="submit"
+                        class="absolute left-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-violet-600 transition-colors"
+                        title="Rechercher">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="md:w-72 w-full">
+                <select
+                    name="sort"
+                    onchange="this.form.submit()"
+                    class="w-full h-12 bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700 rounded-xl px-4
+                           text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500 transition-all"
+                >
+                    <option value="created_desc" {{ (sort ?? app.request.query.get('sort')) == 'created_desc' ? 'selected' : '' }}>
+                        Dernière création
+                    </option>
+                    <option value="updated_desc" {{ (sort ?? app.request.query.get('sort')) == 'updated_desc' ? 'selected' : '' }}>
+                        Dernière modification
+                    </option>
+                </select>
+            </div>
+
+            <a href="{{ path('app_admin_publications_list') }}"
+               class="h-12 inline-flex items-center justify-center px-4 rounded-xl text-sm font-semibold
+                      bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition">
+                Réinitialiser
+            </a>
+        </div>
+    </form>
+
     {# Tabs #}
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700">
         <div class="border-b border-slate-200 dark:border-slate-700 px-6 flex items-center justify-between">
             <div class="flex gap-6">
-                <button onclick="switchTab('publications')" id="tab-publications" class="py-4 text-sm font-semibold text-violet-600 border-b-2 border-violet-600">
+                <button onclick="switchTab('publications')" id="tab-publications"
+                        class="py-4 text-sm font-semibold text-violet-600 border-b-2 border-violet-600">
                     Publications
                 </button>
 
-                <button onclick="switchTab('signales')" id="tab-signales" class="py-4 text-sm font-semibold text-rose-500 hover:text-rose-600 flex items-center gap-2">
+                <button onclick="switchTab('signales')" id="tab-signales"
+                        class="py-4 text-sm font-semibold text-rose-500 hover:text-rose-600 flex items-center gap-2">
                     Signalés
                     <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-xs">3</span>
                 </button>
@@ -81,6 +128,9 @@
                             </p>
                             <p class="text-sm text-slate-500">
                                 {{ pub.dateCreation ? pub.dateCreation|date('d/m/Y H:i') : '' }}
+                                {% if pub.dateModification %}
+                                    <span class="text-xs text-slate-400"> • modifié {{ pub.dateModification|date('d/m/Y H:i') }}</span>
+                                {% endif %}
                             </p>
                         </div>
 
@@ -88,6 +138,7 @@
                             {{ contexte == 'academic' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
                                contexte == 'personal' ? 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400' :
                                'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' }}">
+
                             {{ contexte == 'academic' ? 'Académique' : contexte == 'personal' ? 'Personnel' : 'Entraide' }}
                         </span>
                     </div>
@@ -231,4 +282,5 @@
         if (window.lucide) lucide.createIcons();
     });
 </script>
+
 {% endblock %}
