@@ -1,0 +1,57 @@
+{% set current_route = app.request.attributes.get('_route')|default('') %}
+
+<nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/85 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
+            <img src="{{ asset('images/logo.png') }}" alt="Novas" class="h-10 w-auto">
+        </a>
+
+        <div class="hidden md:flex items-center gap-6">
+            <a href="{{ path('app_learning_paths_index') }}" class="text-sm transition-colors {{ current_route starts with 'app_learning_path' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground' }}">Parcours</a>
+            <a href="{{ path('app_reservation_ateliers') }}" class="text-sm transition-colors {{ current_route starts with 'app_reservation_' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground' }}">Ateliers</a>
+            <a href="{{ path('app_skills_index') }}" class="text-sm transition-colors {{ current_route starts with 'app_skills_' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground' }}">Skills</a>
+            <a href="{{ path('app_marketplace_index') }}" class="text-sm transition-colors {{ current_route starts with 'app_marketplace_' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground' }}">Marketplace</a>
+            <a href="{{ path('front_jobs_index') }}" class="text-sm transition-colors {{ current_route starts with 'front_jobs_' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground' }}">Jobs</a>
+            {% if is_granted('ROLE_PSY') %}
+                <a href="{{ path('app_publications_index') }}" class="text-sm transition-colors {{ current_route starts with 'app_publication' or current_route starts with 'app_publications_' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground' }}">Forum</a>
+            {% endif %}
+        </div>
+
+        <div class="flex items-center gap-3">
+            {% if app.user %}
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_admin_dashboard') }}" class="hidden sm:inline-flex text-sm px-4 py-2 rounded-xl border border-white/15 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors">
+                        Admin
+                    </a>
+                {% endif %}
+                <a href="{{ path('app_user_profile') }}" class="hidden sm:inline-flex text-sm px-4 py-2 rounded-xl border border-white/15 {{ current_route starts with 'app_user_' ? 'text-primary border-primary/30 bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-white/5' }} transition-colors">
+                    Mon compte
+                </a>
+                <a href="{{ path('app_logout') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
+                    Deconnexion
+                </a>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="hidden sm:inline-flex text-sm px-4 py-2 rounded-xl border border-white/15 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors">
+                    Se connecter
+                </a>
+                <a href="{{ path('app_register') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
+                    Commencer
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="md:hidden border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-4 py-2 flex items-center gap-3 overflow-x-auto whitespace-nowrap no-scrollbar">
+            <a href="{{ path('app_learning_paths_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_learning_path' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Parcours</a>
+            <a href="{{ path('app_reservation_ateliers') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_reservation_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Ateliers</a>
+            <a href="{{ path('app_skills_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_skills_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Skills</a>
+            <a href="{{ path('app_marketplace_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_marketplace_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Marketplace</a>
+            <a href="{{ path('front_jobs_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'front_jobs_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Jobs</a>
+            {% if is_granted('ROLE_PSY') %}
+                <a href="{{ path('app_publications_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_publication' or current_route starts with 'app_publications_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Forum</a>
+            {% endif %}
+            <a href="{{ path('app_user_profile') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_user_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Profil</a>
+        </div>
+    </div>
+</nav>
