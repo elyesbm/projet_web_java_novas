@@ -1,0 +1,194 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Réservations - NOVAS Admin{% endblock %}
+{% block page_title %}Réservations{% endblock %}
+{% block page_subtitle %}Gestion des inscriptions aux ateliers{% endblock %}
+
+{% block body %}
+<div class="space-y-6">
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700 flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600">
+                <i data-lucide="ticket" class="w-7 h-7"></i>
+            </div>
+            <div>
+                <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ stats.total }}</p>
+                <p class="text-slate-500">Total</p>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700 flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600">
+                <i data-lucide="clock" class="w-7 h-7"></i>
+            </div>
+            <div>
+                <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ stats.en_attente }}</p>
+                <p class="text-slate-500">En attente</p>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700 flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600">
+                <i data-lucide="check-circle" class="w-7 h-7"></i>
+            </div>
+            <div>
+                <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ stats.acceptees }}</p>
+                <p class="text-slate-500">Acceptées</p>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700 flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600">
+                <i data-lucide="x-circle" class="w-7 h-7"></i>
+            </div>
+            <div>
+                <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ stats.refusees }}</p>
+                <p class="text-slate-500">Refusées</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche et filtres -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
+        <form method="GET" action="{{ path('app_admin_reservations_list') }}" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Recherche -->
+                <div class="md:col-span-2">
+                    <label for="search" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Rechercher
+                    </label>
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                        <input type="text"
+                               id="search"
+                               name="search"
+                               value="{{ search|default('') }}"
+                               placeholder="Nom d'atelier, participant, email..."
+                               class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <!-- Filtre par statut -->
+                <div>
+                    <label for="statut" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Statut
+                    </label>
+                    <select id="statut"
+                            name="statut"
+                            class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Tous</option>
+                        <option value="0" {{ statut == 0 ? 'selected' : '' }}>En attente</option>
+                        <option value="1" {{ statut == 1 ? 'selected' : '' }}>Acceptée</option>
+                        <option value="2" {{ statut == 2 ? 'selected' : '' }}>Refusée</option>
+                    </select>
+                </div>
+
+                <!-- Tri -->
+                <div>
+                    <label for="sort" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Trier par
+                    </label>
+                    <select id="sort"
+                            name="sort"
+                            class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="id_desc" {{ sort == 'id_desc' ? 'selected' : '' }}>Plus récent</option>
+                        <option value="id_asc" {{ sort == 'id_asc' ? 'selected' : '' }}>Plus ancien</option>
+                        <option value="date_asc" {{ sort == 'date_asc' ? 'selected' : '' }}>Date atelier (↑)</option>
+                        <option value="date_desc" {{ sort == 'date_desc' ? 'selected' : '' }}>Date atelier (↓)</option>
+                        <option value="nom_asc" {{ sort == 'nom_asc' ? 'selected' : '' }}>Nom (A-Z)</option>
+                        <option value="nom_desc" {{ sort == 'nom_desc' ? 'selected' : '' }}>Nom (Z-A)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button type="submit"
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                    <i data-lucide="filter" class="w-4 h-4"></i>
+                    Appliquer
+                </button>
+                {% if search or statut is not null %}
+                    <a href="{{ path('app_admin_reservations_list') }}"
+                       class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors flex items-center gap-2">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                        Réinitialiser
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Toutes les réservations ({{ reservations|length }})</h3>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 dark:bg-slate-700/50">
+                    <tr>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">#</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Participant</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Atelier</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Date atelier</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Statut</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                {% for reservation in reservations %}
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                        <td class="px-6 py-4 text-sm font-medium text-slate-600 dark:text-slate-400">
+                            {{ reservation.id }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div>
+                                <p class="font-semibold text-slate-900 dark:text-white">{{ reservation.nomUser }}</p>
+                                <p class="text-sm text-slate-500">{{ reservation.emailUser }}</p>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center">
+                                    <i data-lucide="calendar-days" class="w-5 h-5"></i>
+                                </div>
+                                <p class="font-medium text-slate-900 dark:text-white">
+                                    {{ reservation.atelier ? reservation.atelier.titreAtelier : '—' }}
+                                </p>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                            {{ reservation.atelier and reservation.atelier.dateAtelier ? reservation.atelier.dateAtelier|date('d M Y') : '—' }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if reservation.statutReservation == 0 %}
+                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">En attente</span>
+                            {% elseif reservation.statutReservation == 1 %}
+                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">Acceptée</span>
+                            {% else %}
+                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">Refusée</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{{ path('app_admin_reservations_edit', { id: reservation.id }) }}"
+                               class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                                Modifier
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-6 text-center text-slate-500">
+                            Aucune réservation en base
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

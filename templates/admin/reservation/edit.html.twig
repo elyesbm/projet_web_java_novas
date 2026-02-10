@@ -1,0 +1,43 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Modifier la réservation - NOVAS Admin{% endblock %}
+{% block page_title %}Modifier la réservation{% endblock %}
+{% block page_subtitle %}Changer le statut de l'inscription{% endblock %}
+
+{% block body %}
+{{ form_start(form, { attr: { class: 'max-w-3xl mx-auto' } }) }}
+
+<!-- HEADER -->
+<div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white mb-6 shadow-lg">
+    <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center">
+            <i data-lucide="ticket" class="w-8 h-8"></i>
+        </div>
+        <div>
+            <h2 class="text-2xl font-bold">Réservation #{{ reservation.id }}</h2>
+            <p class="text-indigo-100">{{ reservation.nomUser }} • {{ reservation.atelier ? reservation.atelier.titreAtelier : '—' }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="space-y-6">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
+        <h3 class="font-semibold text-slate-900 dark:text-white mb-4">Statut</h3>
+        {{ form_row(form.statut_reservation, {
+            label: false,
+            attr: { class: 'w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white' }
+        }) }}
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3">
+        <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium hover:opacity-90 transition-opacity">
+            Enregistrer
+        </button>
+        <a href="{{ path('app_admin_reservations_list') }}" class="px-6 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+            Annuler
+        </a>
+    </div>
+</div>
+
+{{ form_end(form) }}
+{% endblock %}

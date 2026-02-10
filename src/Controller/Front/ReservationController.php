@@ -2,197 +2,222 @@
 
 namespace App\Controller\Front;
 
+use App\Entity\Reservation;
+use App\Entity\User;
+use App\Form\ReservationType;
+use App\Repository\AtelierRepository;
+use App\Repository\ReservationRepository;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route('/reservation')]
 class ReservationController extends AbstractController
 {
-    #[Route('/ateliers', name: 'app_reservation_ateliers')]
-    public function ateliers(): Response
-    {
-        // Données exemples - remplacer par votre repository
-        $ateliers = [
-            [
-                'id' => 1,
-                'titre' => 'Atelier Prise de Parole en Public',
-                'description' => 'Apprenez à captiver votre audience et à communiquer avec confiance devant un public.',
-                'image' => 'workshop.jpg',
-                'date' => '15 Fevrier 2024',
-                'heure' => '14:00 - 17:00',
-                'lieu' => 'Salle A102',
-                'type' => 'soft',
-                'categorie' => 'Communication',
-                'places_total' => 20,
-                'places_restantes' => 5,
-                'formateur' => 'Dr. Marie Dupont',
-                'prix' => 0,
-            ],
-            [
-                'id' => 2,
-                'titre' => 'Workshop React & Next.js Avancé',
-                'description' => 'Maîtrisez les hooks, le SSR, et les patterns avancés de React pour des applications modernes.',
-                'image' => 'skills-learning.jpg',
-                'date' => '18 Fevrier 2024',
-                'heure' => '10:00 - 16:00',
-                'lieu' => 'Lab Informatique B201',
-                'type' => 'hard',
-                'categorie' => 'Developpement Web',
-                'places_total' => 25,
-                'places_restantes' => 12,
-                'formateur' => 'Prof. Jean Martin',
-                'prix' => 0,
-            ],
-            [
-                'id' => 3,
-                'titre' => 'Gestion du Stress et Bien-être',
-                'description' => 'Techniques pratiques de mindfulness et gestion émotionnelle pour le quotidien étudiant.',
-                'image' => 'community.jpg',
-                'date' => '22 Fevrier 2024',
-                'heure' => '15:00 - 17:00',
-                'lieu' => 'Espace Détente',
-                'type' => 'soft',
-                'categorie' => 'Bien-être',
-                'places_total' => 30,
-                'places_restantes' => 18,
-                'formateur' => 'Sophie Lambert',
-                'prix' => 0,
-            ],
-            [
-                'id' => 4,
-                'titre' => 'Introduction à l\'IA Générative',
-                'description' => 'Explorez ChatGPT, DALL-E, Midjourney et créez vos premiers projets avec l\'IA.',
-                'image' => 'student-hero.jpg',
-                'date' => '25 Fevrier 2024',
-                'heure' => '09:00 - 12:00',
-                'lieu' => 'Amphithéâtre C',
-                'type' => 'hard',
-                'categorie' => 'Intelligence Artificielle',
-                'places_total' => 100,
-                'places_restantes' => 45,
-                'formateur' => 'Dr. Alexandre Noir',
-                'prix' => 0,
-            ],
-            [
-                'id' => 5,
-                'titre' => 'Leadership et Gestion d\'Équipe',
-                'description' => 'Développez votre charisme naturel et apprenez à motiver vos collaborateurs.',
-                'image' => 'workshop.jpg',
-                'date' => '28 Fevrier 2024',
-                'heure' => '14:00 - 18:00',
-                'lieu' => 'Salle de Conférence',
-                'type' => 'soft',
-                'categorie' => 'Management',
-                'places_total' => 15,
-                'places_restantes' => 3,
-                'formateur' => 'Marc Dubois',
-                'prix' => 0,
-            ],
-            [
-                'id' => 6,
-                'titre' => 'Python pour la Data Science',
-                'description' => 'Pandas, NumPy, Matplotlib : analysez vos données comme un pro.',
-                'image' => 'skills-learning.jpg',
-                'date' => '2 Mars 2024',
-                'heure' => '09:00 - 17:00',
-                'lieu' => 'Lab Data B305',
-                'type' => 'hard',
-                'categorie' => 'Data Science',
-                'places_total' => 20,
-                'places_restantes' => 8,
-                'formateur' => 'Dr. Claire Fontaine',
-                'prix' => 0,
-            ],
-        ];
+    #[Route('/mes-reservations', name: 'app_reservation_mes', methods: ['GET'])]
+    #[Route('/mes-reservations/{id}', name: 'app_reservation_mes_legacy', requirements: ['id' => '\\d+'], methods: ['GET'])]
+    public function mesReservations(
+        Request $request,
+        ReservationRepository $reservationRepository,
+        UserRepository $userRepository,
+        ?int $id = null
+    ): Response {
+        $user = $this->resolveUser($userRepository, $id);
 
-        return $this->render('front/reservation/ateliers.html.twig', [
-            'ateliers' => $ateliers,
-        ]);
-    }
+        $search = $request->query->get('search', '');
+        $statut = $request->query->get('statut');
 
-    #[Route('/mes-reservations', name: 'app_reservation_mes')]
-    public function mesReservations(): Response
-    {
-        // Données exemples - remplacer par votre repository
-        $reservations = [
-            [
-                'id' => 101,
-                'atelier' => [
-                    'titre' => 'Atelier Prise de Parole en Public',
-                    'date' => '15 Fevrier 2024',
-                    'heure' => '14:00 - 17:00',
-                    'lieu' => 'Salle A102',
-                    'type' => 'soft',
-                    'formateur' => 'Dr. Marie Dupont',
-                ],
-                'date_reservation' => '10 Fevrier 2024',
-                'statut' => 'confirmee',
-                'qr_code' => 'QR-12345',
-            ],
-            [
-                'id' => 102,
-                'atelier' => [
-                    'titre' => 'Workshop React & Next.js Avancé',
-                    'date' => '18 Fevrier 2024',
-                    'heure' => '10:00 - 16:00',
-                    'lieu' => 'Lab Informatique B201',
-                    'type' => 'hard',
-                    'formateur' => 'Prof. Jean Martin',
-                ],
-                'date_reservation' => '12 Fevrier 2024',
-                'statut' => 'en-attente',
-                'qr_code' => 'QR-12346',
-            ],
-        ];
+        $statutInt = null;
+        if ($statut !== null && $statut !== '') {
+            $candidate = (int) $statut;
+            if (in_array($candidate, [0, 1], true)) {
+                $statutInt = $candidate;
+            }
+        }
 
-        $historique = [
-            [
-                'id' => 99,
-                'atelier' => [
-                    'titre' => 'Introduction à Python',
-                    'date' => '10 Janvier 2024',
-                    'type' => 'hard',
-                ],
-                'date_reservation' => '5 Janvier 2024',
-                'statut' => 'terminee',
-            ],
-        ];
+        $all = $reservationRepository->searchAndFilterByUser($user, $search, $statutInt);
+
+        $today = new \DateTimeImmutable('today');
+        $reservations = [];
+        $historique = [];
+
+        foreach ($all as $reservation) {
+            $atelier = $reservation->getAtelier();
+            if (!$atelier || !$atelier->getDateAtelier()) {
+                continue;
+            }
+
+            $dateAtelier = \DateTimeImmutable::createFromInterface($atelier->getDateAtelier());
+            if ($dateAtelier >= $today) {
+                $reservations[] = $reservation;
+                continue;
+            }
+
+            $historique[] = $reservation;
+        }
 
         return $this->render('front/reservation/mes_reservations.html.twig', [
+            'user' => $user,
             'reservations' => $reservations,
             'historique' => $historique,
+            'search' => $search,
+            'statut' => $statutInt,
         ]);
     }
 
-    #[Route('/{id}/reserver', name: 'app_reservation_reserver', methods: ['GET', 'POST'])]
-    public function reserver(Request $request, int $id): Response
-    {
-        // Récupérer l'atelier par ID - exemple statique
-        $atelier = [
-            'id' => $id,
-            'titre' => 'Atelier Prise de Parole en Public',
-            'description' => 'Apprenez à captiver votre audience et à communiquer avec confiance.',
-            'image' => 'workshop.jpg',
-            'date' => '15 Fevrier 2024',
-            'heure' => '14:00 - 17:00',
-            'lieu' => 'Salle A102',
-            'type' => 'soft',
-            'categorie' => 'Communication',
-            'places_total' => 20,
-            'places_restantes' => 5,
-            'formateur' => 'Dr. Marie Dupont',
-        ];
+    #[Route('/{id}/reserver', name: 'app_reservation_reserver', requirements: ['id' => '\\d+'], methods: ['GET', 'POST'])]
+    #[Route('/{id}/reserver/{userId}', name: 'app_reservation_reserver_legacy', requirements: ['id' => '\\d+', 'userId' => '\\d+'], methods: ['GET', 'POST'])]
+    public function reserver(
+        Request $request,
+        AtelierRepository $atelierRepository,
+        ReservationRepository $reservationRepository,
+        UserRepository $userRepository,
+        EntityManagerInterface $entityManager,
+        int $id,
+        ?int $userId = null
+    ): Response {
+        $atelier = $atelierRepository->find($id);
+        if (!$atelier) {
+            throw $this->createNotFoundException('Atelier introuvable.');
+        }
 
-        if ($request->isMethod('POST')) {
-            // Traiter la réservation
-            $this->addFlash('success', 'Votre réservation a été confirmée !');
+        $user = $this->resolveUser($userRepository, $userId);
+
+        if ($reservationRepository->existsForUserAndAtelier($user, $atelier)) {
+            $this->addFlash('warning', 'Vous avez deja une reservation pour cet atelier.');
+            return $this->redirectToRoute('app_reservation_mes');
+        }
+
+        $reservation = new Reservation();
+        $reservation->setAtelier($atelier);
+        $reservation->setUser($user);
+        $reservation->setStatutReservation(0);
+
+        $fullName = trim(sprintf('%s %s', (string) $user->getPrenom(), (string) $user->getNom()));
+        $reservation->setNomUser($fullName !== '' ? $fullName : ((string) $user->getNom() ?: 'Utilisateur'));
+        $reservation->setEmailUser((string) ($user->getEmail() ?? ''));
+
+        $form = $this->createForm(ReservationType::class, $reservation);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($reservation);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Votre reservation a ete enregistree avec succes.');
             return $this->redirectToRoute('app_reservation_mes');
         }
 
         return $this->render('front/reservation/reserver.html.twig', [
             'atelier' => $atelier,
+            'form' => $form->createView(),
         ]);
+    }
+
+    #[Route('/export-pdf/{id}', name: 'app_reservation_export_pdf', requirements: ['id' => '\\d+'])]
+    public function exportPdf(int $id, ReservationRepository $reservationRepository): Response
+    {
+        $reservation = $reservationRepository->find($id);
+        if (!$reservation) {
+            throw $this->createNotFoundException('Reservation introuvable.');
+        }
+
+        $html = $this->renderView('front/reservation/pdf_reservation.html.twig', [
+            'reservation' => $reservation,
+        ]);
+
+        if (class_exists(\Dompdf\Dompdf::class)) {
+            $dompdf = new \Dompdf\Dompdf();
+            $dompdf->getOptions()->set('isRemoteEnabled', true);
+            $dompdf->getOptions()->set('defaultFont', 'DejaVu Sans');
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            return new Response($dompdf->output(), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="reservation-' . $reservation->getId() . '.pdf"',
+            ]);
+        }
+
+        $printHtml = $this->renderView('front/reservation/pdf_reservation_print.html.twig', [
+            'reservation' => $reservation,
+            'content' => $html,
+        ]);
+
+        return new Response($printHtml, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+    }
+
+    #[Route('/qrcode/{id}', name: 'app_reservation_qrcode', requirements: ['id' => '\\d+'])]
+    public function qrcode(int $id, ReservationRepository $reservationRepository, UrlGeneratorInterface $urlGenerator): Response
+    {
+        $reservation = $reservationRepository->find($id);
+        if (!$reservation) {
+            throw $this->createNotFoundException('Reservation introuvable.');
+        }
+
+        $pdfUrl = $urlGenerator->generate('app_reservation_export_pdf', ['id' => $id], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        return $this->render('front/reservation/qrcode_reservation.html.twig', [
+            'reservation' => $reservation,
+            'qr_url' => $pdfUrl,
+        ]);
+    }
+
+    #[Route('/annuler/{id}', name: 'app_reservation_annuler', requirements: ['id' => '\\d+'], methods: ['POST'])]
+    public function annuler(
+        int $id,
+        Request $request,
+        ReservationRepository $reservationRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $reservation = $reservationRepository->find($id);
+        if (!$reservation) {
+            throw $this->createNotFoundException('Reservation introuvable.');
+        }
+
+        $token = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('annuler' . $id, $token)) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
+
+        $entityManager->remove($reservation);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Reservation annulee.');
+        return $this->redirectToRoute('app_reservation_mes');
+    }
+
+    private function resolveUser(UserRepository $userRepository, ?int $id = null): User
+    {
+        if ($id !== null) {
+            $user = $userRepository->find($id);
+            if ($user instanceof User) {
+                return $user;
+            }
+
+            throw $this->createNotFoundException('Utilisateur introuvable.');
+        }
+
+        $securityUser = $this->getUser();
+        if ($securityUser instanceof User) {
+            return $securityUser;
+        }
+
+        if ($securityUser !== null && method_exists($securityUser, 'getUserIdentifier')) {
+            $identifier = $securityUser->getUserIdentifier();
+            if ($identifier !== '') {
+                $user = $userRepository->findOneBy(['email' => $identifier]);
+                if ($user instanceof User) {
+                    return $user;
+                }
+            }
+        }
+
+        throw $this->createAccessDeniedException('Authentication required.');
     }
 }
