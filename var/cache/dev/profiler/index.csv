@@ -427,3 +427,9 @@ c9c53c,127.0.0.1,GET,http://127.0.0.1:8000/publications/?q=&sort=created_desc,17
 2af9f2,127.0.0.1,GET,http://127.0.0.1:8000/publications/?q=&sort=created_desc,1770759476,,200,request
 0acdbd,127.0.0.1,GET,http://127.0.0.1:8000/publications/?contexte=1,1770759493,,200,request
 a56ed5,127.0.0.1,GET,http://127.0.0.1:8000/publications/?contexte=2,1770759495,,200,request
+e8ea24,127.0.0.1,GET,http://127.0.0.1:8000/publications/?contexte=2,1770760640,,200,request
+369764,127.0.0.1,GET,http://127.0.0.1:8000/admin/publications/,1770760642,,200,request
+1a05c2,127.0.0.1,POST,http://127.0.0.1:8000/register,1770761746,,200,request
+ecc294,127.0.0.1,GET,http://127.0.0.1:8000/publications/,1770761754,,200,request
+5de51c,127.0.0.1,GET,http://127.0.0.1:8000/publications/nouvelle,1770761760,,200,request
+0085d4,127.0.0.1,GET,http://127.0.0.1:8000/publications/,1770761766,,200,request
