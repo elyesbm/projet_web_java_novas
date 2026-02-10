@@ -1,27 +1,11 @@
-ï»¿{% extends 'front/base_home.html.twig' %}
+{% extends 'front/base_home.html.twig' %}
 
 {% block title %}Candidatures - {{ offre.titreOffre|default('Offre') }} - NoVas{% endblock %}
 
 {% block body %}
 {% set can_manage = can_manage|default(false) %}
 <!-- Navigation -->
-<nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
-            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center glow-primary">
-                <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
-            </div>
-            <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
-        </a>
-
-        <div class="flex items-center gap-4">
-            <a href="{{ path('front_jobs_my_offres') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                <i data-lucide="arrow-left" class="w-4 h-4 inline mr-1"></i>
-                Mes offres
-            </a>
-        </div>
-    </div>
-</nav>
+{% include 'front/partials/_main_nav.html.twig' %}
 
 <!-- Content -->
 <section class="relative pt-32 pb-16 min-h-screen">
@@ -34,7 +18,7 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <span class="text-sm text-muted-foreground">Offre</span>
-                    <h1 class="text-xl font-semibold">{{ offre.titreOffre|default('â€”') }}</h1>
+                    <h1 class="text-xl font-semibold">{{ offre.titreOffre|default('—') }}</h1>
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
@@ -67,10 +51,10 @@
                                 {{ candidature.candidat ? (candidature.candidat.PRENOM ~ ' ' ~ candidature.candidat.NOM) : 'Candidat' }}
                             </h3>
                             <p class="text-sm text-muted-foreground">
-                                {{ candidature.candidat and candidature.candidat.EMAIL ? candidature.candidat.EMAIL : 'â€”' }}
+                                {{ candidature.candidat and candidature.candidat.EMAIL ? candidature.candidat.EMAIL : '—' }}
                             </p>
                             <p class="text-xs text-muted-foreground mt-2">
-                                Postule le {{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : 'â€”' }}
+                                Postule le {{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : '—' }}
                             </p>
                         </div>
                     </div>

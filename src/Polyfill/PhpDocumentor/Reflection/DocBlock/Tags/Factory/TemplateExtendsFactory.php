@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+namespace phpDocumentor\Reflection\DocBlock\Tags\Factory;
+
+use phpDocumentor\Reflection\DocBlock\DescriptionFactory;
+use phpDocumentor\Reflection\DocBlock\Tag;
+use phpDocumentor\Reflection\DocBlock\Tags\TemplateExtends;
+use phpDocumentor\Reflection\TypeResolver;
+use phpDocumentor\Reflection\Types\Context;
+use PHPStan\PhpDocParser\Ast\PhpDoc\ExtendsTagValueNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
+use Webmozart\Assert\Assert;
+
+use function is_string;
+
+/**
+ * Compatibility polyfill for reflection-docblock 5.6.6 where this class is missing.
+ *
+ * @internal
+ */
+if (!class_exists('phpDocumentor\\Reflection\\DocBlock\\Tags\\Factory\\TemplateExtendsFactory', false)) {
+    final class TemplateExtendsFactory implements PHPStanFactory
+    {
+        private DescriptionFactory $descriptionFactory;
+        private TypeResolver $typeResolver;
+
+        public function __construct(TypeResolver $typeResolver, DescriptionFactory $descriptionFactory)
+        {
+            $this->descriptionFactory = $descriptionFactory;
+            $this->typeResolver = $typeResolver;
+        }
+
+        public function supports(PhpDocTagNode $node, Context $context): bool
+        {
+            return $node->value instanceof ExtendsTagValueNode && $node->name === '@template-extends';
+        }
+
+        public function create(PhpDocTagNode $node, Context $context): Tag
+        {
+            $tagValue = $node->value;
+            Assert::isInstanceOf($tagValue, ExtendsTagValueNode::class);
+
+            $description = $tagValue->getAttribute('description');
+            if (!is_string($description)) {
+                $description = $tagValue->description;
+            }
+
+            return new TemplateExtends(
+                $this->typeResolver->createType($tagValue->type, $context),
+                $this->descriptionFactory->create($description, $context)
+            );
+        }
+    }
+}

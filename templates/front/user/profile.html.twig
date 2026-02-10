@@ -3,31 +3,7 @@
 {% block title %}Mon Profil - NoVas{% endblock %}
 
 {% block body %}
-<nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-border/30">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8">
-        <div class="flex items-center justify-between h-20">
-            <a href="{{ path('app_home') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Accueil</a>
-            <div class="hidden md:flex items-center gap-8">
-                <a href="{{ path('app_learning_paths_index') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Parcours</a>
-                <a href="{{ path('app_reservation_ateliers') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Ateliers</a>
-                <a href="{{ path('app_publications_index') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Publications</a>
-                <a href="{{ path('app_jobs_index') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Emplois</a>
-                <a href="{{ path('app_skills_index') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Compétences</a>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="hidden md:flex items-center gap-3 px-4 py-2 glass-card rounded-xl">
-                    {% if user.IMAGE %}
-                        <img src="{{ user.IMAGE }}" alt="" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/30">
-                    {% else %}
-                        <img src="https://ui-avatars.com/api/?name={{ user.PRENOM|url_encode }}+{{ user.NOM|url_encode }}" alt="" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/30">
-                    {% endif %}
-                    <span class="text-sm font-medium">{{ user.PRENOM }} {{ user.NOM }}</span>
-                </div>
-                <a href="{{ path('app_logout') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Déconnexion</a>
-            </div>
-        </div>
-    </div>
-</nav>
+{% include 'front/partials/_main_nav.html.twig' %}
 
 <section class="relative min-h-screen pt-32 pb-16">
     <div class="absolute inset-0 -z-10">

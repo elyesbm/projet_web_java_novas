@@ -4,28 +4,7 @@
 
 {% block body %}
 <!-- Navigation -->
-<nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
-            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center glow-primary">
-                <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
-            </div>
-            <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
-        </a>
-
-        <div class="hidden md:flex items-center gap-8">
-            <a href="{{ path('front_jobs_index') }}" class="text-sm text-primary font-medium">Jobs</a>
-            <a href="{{ path('app_marketplace_index') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Marketplace</a>
-        </div>
-
-        <div class="flex items-center gap-4">
-            <a href="{{ path('front_jobs_index') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                <i data-lucide="arrow-left" class="w-4 h-4 inline mr-1"></i>
-                Retour aux offres
-            </a>
-        </div>
-    </div>
-</nav>
+{% include 'front/partials/_main_nav.html.twig' %}
 
 <!-- Job Detail -->
 <section class="relative pt-32 pb-16">

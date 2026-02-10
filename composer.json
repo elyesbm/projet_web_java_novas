@@ -56,7 +56,12 @@
     "autoload": {
         "psr-4": {
             "App\\": "src/"
-        }
+        },
+        "files": [
+            "src/Polyfill/PhpDocumentor/Reflection/DocBlock/Tags/Factory/StaticMethod.php",
+            "src/Polyfill/PhpDocumentor/Reflection/DocBlock/Tags/Factory/TemplateImplementsFactory.php",
+            "src/Polyfill/PhpDocumentor/Reflection/DocBlock/Tags/Factory/TemplateExtendsFactory.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

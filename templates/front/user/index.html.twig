@@ -5,35 +5,7 @@
 
 {% block body %}
 <!-- Navigation -->
-<nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-border/30">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8">
-        <div class="flex items-center justify-between h-20">
-            <!-- Logo -->
-            <!-- Logo -->
-            <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
-                <img src="{{ asset('images/logo.png') }}" alt="Novas" class="h-10 w-auto">
-                <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
-            </a>
-
-            <!-- Desktop Navigation -->
-            <div class="hidden md:flex items-center gap-8">
-                <a href="#about" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">A propos</a>
-                <a href="#success-stories" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Success Stories</a>
-                <a href="#features" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Fonctionnalites</a>
-            </div>
-
-            <!-- Auth Buttons -->
-            <div class="flex items-center gap-4">
-                <button onclick="openLoginModal()" class="hidden sm:inline-flex items-center justify-center rounded-xl text-sm font-medium text-foreground hover:text-primary transition-colors h-10 px-4">
-                    Se connecter
-                </button>
-                <button onclick="openRegisterModal()" class="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-6 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all hover:-translate-y-0.5">
-                    Creer un compte
-                </button>
-            </div>
-        </div>
-    </div>
-</nav>
+{% include 'front/partials/_main_nav.html.twig' %}
 
 <!-- Hero Section -->
 <section class="relative min-h-screen flex items-center pt-20 overflow-hidden">

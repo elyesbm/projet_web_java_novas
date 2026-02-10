@@ -7,14 +7,7 @@
     <div class="absolute inset-0 gradient-orb"></div>
     
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="{{ path('app_marketplace_mes') }}" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                <span class="text-sm">Retour a mes articles</span>
-            </a>
-        </div>
-    </nav>
+    {% include 'front/partials/_main_nav.html.twig' %}
 
     <!-- Content -->
     <div class="pt-32 pb-24 px-6">

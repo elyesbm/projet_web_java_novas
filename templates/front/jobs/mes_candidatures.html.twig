@@ -17,39 +17,7 @@
 }) %}
 
 <!-- Navigation -->
-<nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
-            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center glow-primary">
-                <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
-            </div>
-            <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
-        </a>
-
-        <div class="hidden md:flex items-center gap-8">
-            <a href="{{ path('front_jobs_index') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Jobs</a>
-
-            {% if admin_view %}
-                <span class="text-sm text-primary font-medium">Candidatures reçues</span>
-            {% else %}
-                <a href="{{ path('front_jobs_my_candidatures') }}" class="text-sm text-primary font-medium">Mes candidatures</a>
-            {% endif %}
-        </div>
-
-        <div class="flex items-center gap-4">
-            {% if admin_view %}
-                <a href="{{ can_manage ? path('app_admin_jobs_list') : path('front_jobs_my_offres') }}"
-                   class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
-                    Mes offres
-                </a>
-            {% else %}
-                <a href="{{ path('front_jobs_index') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
-                    Trouver une offre
-                </a>
-            {% endif %}
-        </div>
-    </div>
-</nav>
+{% include 'front/partials/_main_nav.html.twig' %}
 
 <!-- Content -->
 <section class="relative pt-32 pb-16 min-h-screen">

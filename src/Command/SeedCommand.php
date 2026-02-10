@@ -66,6 +66,7 @@ class SeedCommand extends Command
             $user->setIMAGE('default.png');
             $user->setNUMERO(11111111 + random_int(0, 8888888));
             $user->setROLE('ROLE_USER');
+            $user->setPassword(password_hash('password', PASSWORD_BCRYPT));
             $this->em->persist($user);
             $createdUsers[] = $user;
         }

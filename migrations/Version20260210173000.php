@@ -16,6 +16,28 @@ final class Version20260210173000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        if ($this->tableExists('condidature_job') && ! $this->tableExists('candidature_job')) {
+            $this->addSql('RENAME TABLE condidature_job TO candidature_job');
+        }
+
+        if ($this->tableExists('candidature_job')) {
+            if (! $this->columnExists('candidature_job', 'id_candidature') && $this->columnExists('candidature_job', 'id_condidature')) {
+                $this->addSql('ALTER TABLE candidature_job CHANGE id_condidature id_candidature INT AUTO_INCREMENT NOT NULL');
+            }
+            if (! $this->columnExists('candidature_job', 'message') && $this->columnExists('candidature_job', 'message_condidature')) {
+                $this->addSql('ALTER TABLE candidature_job CHANGE message_condidature message TEXT DEFAULT NULL');
+            }
+            if (! $this->columnExists('candidature_job', 'statut') && $this->columnExists('candidature_job', 'statut_condidature')) {
+                $this->addSql("ALTER TABLE candidature_job CHANGE statut_condidature statut ENUM('EN_ATTENTE','ACCEPTEE','REFUSEE') NOT NULL");
+            }
+            if (! $this->columnExists('candidature_job', 'date_candidature') && $this->columnExists('candidature_job', 'date_condidature')) {
+                $this->addSql('ALTER TABLE candidature_job CHANGE date_condidature date_candidature DATETIME NOT NULL');
+            }
+            if (! $this->columnExists('candidature_job', 'candidat_id') && $this->columnExists('candidature_job', 'condidat_id')) {
+                $this->addSql('ALTER TABLE candidature_job CHANGE condidat_id candidat_id INT NOT NULL');
+            }
+        }
+
         if ($this->foreignKeyExists('candidature_job', 'fk_candidature_offre')) {
             $this->addSql('ALTER TABLE candidature_job DROP FOREIGN KEY fk_candidature_offre');
         }
@@ -80,6 +102,37 @@ WHERE TABLE_SCHEMA = DATABASE()
   AND CONSTRAINT_NAME = ?
 SQL,
             [$table, $constraint]
+        );
+
+        return $count > 0;
+    }
+
+    private function tableExists(string $table): bool
+    {
+        $count = (int) $this->connection->fetchOne(
+            <<<'SQL'
+SELECT COUNT(*)
+FROM information_schema.TABLES
+WHERE TABLE_SCHEMA = DATABASE()
+  AND TABLE_NAME = ?
+SQL,
+            [$table]
+        );
+
+        return $count > 0;
+    }
+
+    private function columnExists(string $table, string $column): bool
+    {
+        $count = (int) $this->connection->fetchOne(
+            <<<'SQL'
+SELECT COUNT(*)
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE()
+  AND TABLE_NAME = ?
+  AND COLUMN_NAME = ?
+SQL,
+            [$table, $column]
         );
 
         return $count > 0;

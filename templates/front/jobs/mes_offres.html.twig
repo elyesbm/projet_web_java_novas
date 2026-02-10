@@ -1,4 +1,4 @@
-ï»¿{% extends 'front/base_home.html.twig' %}
+{% extends 'front/base_home.html.twig' %}
 
 {% block title %}Mes offres - NoVas Jobs{% endblock %}
 
@@ -8,28 +8,7 @@
 {% set sort = sort|default('date') %}
 {% set dir = dir|default('desc') %}
 <!-- Navigation -->
-<nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
-            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center glow-primary">
-                <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
-            </div>
-            <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
-        </a>
-
-        <div class="hidden md:flex items-center gap-8">
-            <a href="{{ path('front_jobs_index') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Jobs</a>
-            <a href="{{ path('front_jobs_my_offres') }}" class="text-sm text-primary font-medium">Mes offres</a>
-        </div>
-
-        <div class="flex items-center gap-4">
-            <a href="{{ path('front_jobs_add') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
-                <i data-lucide="plus" class="w-4 h-4 inline mr-1"></i>
-                Nouvelle offre
-            </a>
-        </div>
-    </div>
-</nav>
+{% include 'front/partials/_main_nav.html.twig' %}
 
 <!-- Content -->
 <section class="relative pt-32 pb-16 min-h-screen">
@@ -151,7 +130,7 @@
                                     {{ st == 'OUVERTE' ? 'bg-accent/20 text-accent' : 'bg-primary/20 text-primary' }}">
                                     {{ st == 'OUVERTE' ? 'Ouverte' : 'Fermee' }}
                                 </span>
-                                <span class="text-xs text-muted-foreground">Publiee le {{ offre.dateCreationOffre ? offre.dateCreationOffre|date('d/m/Y') : 'â€”' }}</span>
+                                <span class="text-xs text-muted-foreground">Publiee le {{ offre.dateCreationOffre ? offre.dateCreationOffre|date('d/m/Y') : '—' }}</span>
                             </div>
                         </div>
 
@@ -161,11 +140,11 @@
                         <div class="flex flex-wrap gap-3 text-sm text-muted-foreground">
                             <span class="flex items-center gap-1">
                                 <i data-lucide="map-pin" class="w-4 h-4"></i>
-                                {{ offre.lieu|default('â€”') }}
+                                {{ offre.lieu|default('—') }}
                             </span>
                             <span class="flex items-center gap-1">
                                 <i data-lucide="tag" class="w-4 h-4"></i>
-                                {{ offre.categorieOffre|default('â€”') }}
+                                {{ offre.categorieOffre|default('—') }}
                             </span>
                             <span class="flex items-center gap-1">
                                 <i data-lucide="users" class="w-4 h-4"></i>

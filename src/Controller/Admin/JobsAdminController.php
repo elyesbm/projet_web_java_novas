@@ -19,7 +19,7 @@ class JobsAdminController extends AbstractController
     #[Route('', name: 'app_admin_jobs_list', methods: ['GET'])]
     public function list(Request $request, OffrejobRepository $repo): Response
     {
-        //$this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         $q = trim((string) $request->query->get('q', ''));
         $sort = (string) $request->query->get('sort', 'date');
@@ -40,7 +40,7 @@ class JobsAdminController extends AbstractController
     #[Route('/new', name: 'app_admin_jobs_new', methods: ['GET','POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
-        //$this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         $offre = new Offrejob();
 
@@ -88,11 +88,11 @@ class JobsAdminController extends AbstractController
         ]);
     }
 
-    // ✅ EDIT
+    // ✅ EDIT  
     #[Route('/{id}/edit', name: 'app_admin_jobs_edit', methods: ['GET','POST'], requirements: ['id' => '\d+'])]
     public function edit(Offrejob $offre, Request $request, EntityManagerInterface $em): Response
     {
-        //$this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         if ($request->isMethod('POST')) {
             if (! $this->isCsrfTokenValid('admin_jobs_form_edit_' . $offre->getId(), (string) $request->request->get('_token'))) {
@@ -136,7 +136,7 @@ class JobsAdminController extends AbstractController
     #[Route('/{id}/delete', name: 'app_admin_jobs_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Offrejob $offre, Request $request, EntityManagerInterface $em): Response
     {
-        //$this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         if (! $this->isCsrfTokenValid('admin_jobs_delete_' . $offre->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Jeton CSRF invalide.');
@@ -199,7 +199,7 @@ public function candidatures(
         CandidatureJobRepository $candRepo,
         EntityManagerInterface $em
     ): Response {
-        //$this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         $cand = $candRepo->find($id);
         if (!$cand) throw $this->createNotFoundException();

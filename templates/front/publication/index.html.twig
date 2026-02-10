@@ -5,24 +5,7 @@
 {% block body %}
 <div class="min-h-screen bg-background">
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="{{ path('app_home') }}" class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center glow-primary">
-                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
-                </div>
-                <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
-            </a>
-            
-            <div class="flex items-center gap-4">
-                <a href="{{ path('app_publication_nouvelle') }}" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    Nouvelle publication
-                </a>
-                
-            </div>
-        </div>
-    </nav>
+    {% include 'front/partials/_main_nav.html.twig' %}
 
     <!-- Header -->
     <section class="pt-32 pb-8 px-6 relative overflow-hidden">
