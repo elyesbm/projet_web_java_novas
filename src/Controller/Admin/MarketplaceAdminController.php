@@ -10,6 +10,8 @@ use App\Repository\CategorieRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -25,7 +27,7 @@ class MarketplaceAdminController extends AbstractController
         ArticleRepository $articleRepository,
         CategorieRepository $categorieRepository
     ): Response {
-        // Filtres & tri depuis la query string
+        // Filtres & tri ARTICLES depuis la query string
         $q = trim((string) $request->query->get('q', ''));
         $statutFilter = $request->query->get('statut');
         $typeFilter = $request->query->get('type');
@@ -66,12 +68,52 @@ class MarketplaceAdminController extends AbstractController
         // Utilise la méthode search() existante pour gérer q + critères + tri
         $articles = $articleRepository->search($q, $criteria, $order);
 
-        // Catégories pour le filtre dans la vue
+        // Catégories pour le filtre dans la vue (liste complète)
         $categoriesEntities = $categorieRepository->findAll();
+
+        // RECHERCHE / TRI CATEGORIES pour l'onglet catégories
+        $qCat = trim((string) $request->query->get('q_cat', ''));
+        $sortCat = $request->query->get('sort_cat', 'date_desc');
+
+        $qb = $categorieRepository->createQueryBuilder('c');
+
+        if ($qCat !== '') {
+            $isNumeric = ctype_digit($qCat);
+            $expr = 'c.nom_categorie LIKE :q OR c.description_categorie LIKE :q';
+            if ($isNumeric) {
+                $expr .= ' OR c.id = :qid';
+            }
+
+            $qb->andWhere('(' . $expr . ')')
+               ->setParameter('q', '%' . $qCat . '%');
+
+            if ($isNumeric) {
+                $qb->setParameter('qid', (int) $qCat);
+            }
+        }
+
+        switch ($sortCat) {
+            case 'name_asc':
+                $qb->orderBy('c.nom_categorie', 'ASC');
+                break;
+            case 'name_desc':
+                $qb->orderBy('c.nom_categorie', 'DESC');
+                break;
+            case 'date_asc':
+                $qb->orderBy('c.id', 'ASC');
+                break;
+            case 'date_desc':
+            default:
+                $qb->orderBy('c.id', 'DESC');
+                break;
+        }
+
+        $categoriesList = $qb->getQuery()->getResult();
 
         return $this->render('admin/marketplace/list.html.twig', [
             'articles' => $articles,
             'categories' => $categoriesEntities,
+            'categories_list' => $categoriesList,
         ]);
     }
 
@@ -94,6 +136,8 @@ class MarketplaceAdminController extends AbstractController
         $article = new Article();
 
         if ($request->isMethod('POST')) {
+            /** @var UploadedFile|null $uploadedFile */
+            $uploadedFile = $request->files->get('image');
             $data = [
                 'titre' => trim((string) $request->request->get('titre', '')),
                 'contenu' => trim((string) $request->request->get('contenu', '')),
@@ -162,6 +206,26 @@ class MarketplaceAdminController extends AbstractController
                     $this->addFlash('error', $violation->getMessage());
                 }
             } else {
+                // Gestion upload image si présente (sans utiliser FileValidator pour éviter fileinfo)
+                if ($uploadedFile instanceof UploadedFile) {
+                    $ext = strtolower($uploadedFile->getClientOriginalExtension() ?: '');
+                    $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                    if (!in_array($ext, $allowedExt, true)) {
+                        $this->addFlash('error', 'Le format de l\'image est invalide (jpg, png, gif, webp uniquement).');
+                        return $this->redirectToRoute('app_admin_marketplace_new');
+                    }
+
+                    $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/images';
+                    $newFilename = uniqid('article_', true) . '.' . ($ext ?: 'jpg');
+                    try {
+                        $uploadedFile->move($uploadsDir, $newFilename);
+                        $data['image_article'] = $newFilename;
+                    } catch (FileException $e) {
+                        $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+                        return $this->redirectToRoute('app_admin_marketplace_new');
+                    }
+                }
+
                 $categorieId = (int) $data['categorie'];
                 $categorie = $categorieRepository->find($categorieId);
 
@@ -232,6 +296,8 @@ class MarketplaceAdminController extends AbstractController
         }, $categoriesEntities);
 
         if ($request->isMethod('POST')) {
+            /** @var UploadedFile|null $uploadedFile */
+            $uploadedFile = $request->files->get('image');
             $data = [
                 'titre' => trim((string) $request->request->get('titre', '')),
                 'contenu' => trim((string) $request->request->get('contenu', '')),
@@ -274,6 +340,26 @@ class MarketplaceAdminController extends AbstractController
                     $this->addFlash('error', $violation->getMessage());
                 }
             } else {
+                // Gestion upload image si présente (sans FileValidator)
+                if ($uploadedFile instanceof UploadedFile) {
+                    $ext = strtolower($uploadedFile->getClientOriginalExtension() ?: '');
+                    $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                    if (!in_array($ext, $allowedExt, true)) {
+                        $this->addFlash('error', 'Le format de l\'image est invalide (jpg, png, gif, webp uniquement).');
+                        return $this->redirectToRoute('app_admin_marketplace_edit', ['id' => $id]);
+                    }
+
+                    $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/images';
+                    $newFilename = uniqid('article_', true) . '.' . ($ext ?: 'jpg');
+                    try {
+                        $uploadedFile->move($uploadsDir, $newFilename);
+                        $data['image_article'] = $newFilename;
+                    } catch (FileException $e) {
+                        $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+                        return $this->redirectToRoute('app_admin_marketplace_edit', ['id' => $id]);
+                    }
+                }
+
                 $categorieId = (int) $data['categorie'];
                 $categorie = $categorieRepository->find($categorieId);
 
@@ -326,5 +412,111 @@ class MarketplaceAdminController extends AbstractController
         }
 
         return $this->redirectToRoute('app_admin_marketplace_list');
+    }
+
+    #[Route('/categorie/new', name: 'categorie_new', methods: ['GET', 'POST'])]
+    public function categorieNew(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $categorie = new Categorie();
+
+        if ($request->isMethod('POST')) {
+            $nom = trim((string) $request->request->get('nom', ''));
+            $description = trim((string) $request->request->get('description', ''));
+
+            $errors = [];
+            if ($nom === '') {
+                $errors[] = 'Le nom de la catégorie est obligatoire.';
+            } else {
+                $len = mb_strlen($nom);
+                if ($len < 2) {
+                    $errors[] = 'Le nom doit contenir au moins 2 caractères.';
+                }
+                if ($len > 255) {
+                    $errors[] = 'Le nom ne doit pas dépasser 255 caractères.';
+                }
+            }
+            if (mb_strlen($description) > 1000) {
+                $errors[] = 'La description est trop longue (max 1000 caractères).';
+            }
+
+            if (!empty($errors)) {
+                foreach ($errors as $err) {
+                    $this->addFlash('error', $err);
+                }
+            } else {
+                $categorie
+                    ->setNomCategorie($nom)
+                    ->setDescriptionCategorie($description);
+
+                $entityManager->persist($categorie);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Catégorie créée avec succès.');
+                return $this->redirectToRoute('app_admin_marketplace_list', ['tab' => 'categories']);
+            }
+        }
+
+        return $this->render('admin/marketplace/categorie_form.html.twig', [
+            'mode' => 'create',
+            'categorie' => $categorie,
+        ]);
+    }
+
+    #[Route('/categorie/{id}/edit', name: 'categorie_edit', methods: ['GET', 'POST'])]
+    public function categorieEdit(Request $request, int $id, CategorieRepository $categorieRepository, EntityManagerInterface $entityManager): Response
+    {
+        $categorie = $categorieRepository->find($id);
+        if (!$categorie instanceof Categorie) {
+            throw $this->createNotFoundException('Catégorie introuvable.');
+        }
+
+        if ($request->isMethod('POST')) {
+            $nom = trim((string) $request->request->get('nom', ''));
+            $description = trim((string) $request->request->get('description', ''));
+
+            if ($nom === '') {
+                $this->addFlash('error', 'Le nom de la catégorie est obligatoire.');
+            } else {
+                $len = mb_strlen($nom);
+                if ($len < 2) {
+                    $this->addFlash('error', 'Le nom doit contenir au moins 2 caractères.');
+                } elseif ($len > 255) {
+                    $this->addFlash('error', 'Le nom ne doit pas dépasser 255 caractères.');
+                } elseif (mb_strlen($description) > 1000) {
+                    $this->addFlash('error', 'La description est trop longue (max 1000 caractères).');
+                } else {
+                    $categorie
+                        ->setNomCategorie($nom)
+                        ->setDescriptionCategorie($description);
+                    $entityManager->flush();
+
+                    $this->addFlash('success', 'Catégorie modifiée avec succès.');
+                    return $this->redirectToRoute('app_admin_marketplace_list', ['tab' => 'categories']);
+                }
+            }
+        }
+
+        return $this->render('admin/marketplace/categorie_form.html.twig', [
+            'mode' => 'edit',
+            'categorie' => $categorie,
+        ]);
+    }
+
+    #[Route('/categorie/{id}/delete', name: 'categorie_delete', methods: ['POST'])]
+    public function categorieDelete(Request $request, int $id, CategorieRepository $categorieRepository, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('delete_categorie_' . $id, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_admin_marketplace_list', ['tab' => 'categories']);
+        }
+
+        $categorie = $categorieRepository->find($id);
+        if ($categorie instanceof Categorie) {
+            $entityManager->remove($categorie);
+            $entityManager->flush();
+            $this->addFlash('success', 'Catégorie supprimée avec succès.');
+        }
+
+        return $this->redirectToRoute('app_admin_marketplace_list', ['tab' => 'categories']);
     }
 }
