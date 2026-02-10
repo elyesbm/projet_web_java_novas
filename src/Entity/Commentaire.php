@@ -23,11 +23,11 @@ class Commentaire
     private ?string $contenu = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'commentaires')]
-    #[ORM\JoinColumn(name: 'id_auteur', referencedColumnName: 'ID', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_auteur', referencedColumnName: 'ID', nullable: false, onDelete: 'CASCADE')]
     private ?User $auteur = null;
 
     #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'commentaires')]
-    #[ORM\JoinColumn(name: 'id_pub', referencedColumnName: 'id_pub', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_pub', referencedColumnName: 'id_pub', nullable: false, onDelete: 'CASCADE')]
     private ?Publication $publication = null;
 
     public function getId(): ?int { return $this->id; }

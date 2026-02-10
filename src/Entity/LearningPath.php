@@ -32,7 +32,7 @@ class LearningPath
     private ?int $niveau_path = null;
 
     #[ORM\ManyToOne(targetEntity: Skill::class, inversedBy: 'learningPaths')]
-    #[ORM\JoinColumn(name: 'id_skill', referencedColumnName: 'id_skill', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_skill', referencedColumnName: 'id_skill', nullable: false, onDelete: 'CASCADE')]
     private ?Skill $skill = null;
 
     public function getId(): ?int { return $this->id; }

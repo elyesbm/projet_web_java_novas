@@ -34,7 +34,7 @@ class Publication
     private ?int $contexte = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'publications')]
-    #[ORM\JoinColumn(name: 'id_auteur', referencedColumnName: 'ID', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_auteur', referencedColumnName: 'ID', nullable: false, onDelete: 'CASCADE')]
     private ?User $auteur = null;
 
     #[ORM\OneToMany(mappedBy: 'publication', targetEntity: Commentaire::class)]

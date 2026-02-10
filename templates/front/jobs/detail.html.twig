@@ -1,6 +1,6 @@
 {% extends 'front/base_home.html.twig' %}
 
-{% block title %}{{ job.titre }} - NoVas Jobs{% endblock %}
+{% block title %}{{ offre.titreOffre }} - NoVas Jobs{% endblock %}
 
 {% block body %}
 <!-- Navigation -->
@@ -12,14 +12,14 @@
             </div>
             <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
         </a>
-        
+
         <div class="hidden md:flex items-center gap-8">
-            <a href="{{ path('app_jobs_index') }}" class="text-sm text-primary font-medium">Jobs</a>
+            <a href="{{ path('front_jobs_index') }}" class="text-sm text-primary font-medium">Jobs</a>
             <a href="{{ path('app_marketplace_index') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Marketplace</a>
         </div>
-        
+
         <div class="flex items-center gap-4">
-            <a href="{{ path('app_jobs_index') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <a href="{{ path('front_jobs_index') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 <i data-lucide="arrow-left" class="w-4 h-4 inline mr-1"></i>
                 Retour aux offres
             </a>
@@ -31,13 +31,13 @@
 <section class="relative pt-32 pb-16">
     <div class="absolute inset-0 gradient-orb"></div>
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]"></div>
-    
+
     <div class="relative max-w-5xl mx-auto px-6">
         <!-- Breadcrumb -->
         <div class="flex items-center gap-2 text-sm text-muted-foreground mb-8">
             <a href="{{ path('app_home') }}" class="hover:text-foreground">Accueil</a>
             <i data-lucide="chevron-right" class="w-4 h-4"></i>
-            <a href="{{ path('app_jobs_index') }}" class="hover:text-foreground">Jobs</a>
+            <a href="{{ path('front_jobs_index') }}" class="hover:text-foreground">Jobs</a>
             <i data-lucide="chevron-right" class="w-4 h-4"></i>
             <span class="text-foreground">Détail</span>
         </div>
@@ -49,23 +49,25 @@
                     <div class="flex items-start justify-between mb-6">
                         <div class="flex items-center gap-4">
                             <div class="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center">
-                                {% if job.type == 'tutorat' %}
+                                {% if offre.categorieOffre == 'TUTORAT' %}
                                     <i data-lucide="book-open" class="w-8 h-8 text-primary"></i>
-                                {% elseif job.type == 'aide' %}
+                                {% elseif offre.categorieOffre == 'AIDE' %}
                                     <i data-lucide="help-circle" class="w-8 h-8 text-primary"></i>
                                 {% else %}
-                                    <i data-lucide="wrench" class="w-8 h-8 text-primary"></i>
+                                    <i data-lucide="briefcase" class="w-8 h-8 text-primary"></i>
                                 {% endif %}
                             </div>
                             <div>
                                 <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary mb-2">
-                                    {{ job.type|capitalize }}
+                                    {{ offre.categorieOffre }}
                                 </span>
-                                <h1 class="text-2xl md:text-3xl font-bold">{{ job.titre }}</h1>
+                                <h1 class="text-2xl md:text-3xl font-bold">{{ offre.titreOffre }}</h1>
                             </div>
                         </div>
+
+                        {# DB n'a pas rémunération => on garde UI "—" #}
                         <div class="text-right">
-                            <p class="text-3xl font-bold text-primary">{{ job.remuneration }}€</p>
+                            <p class="text-3xl font-bold text-primary">—</p>
                             <p class="text-sm text-muted-foreground">/heure</p>
                         </div>
                     </div>
@@ -73,19 +75,23 @@
                     <div class="flex flex-wrap gap-4 mb-8 text-sm">
                         <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5">
                             <i data-lucide="map-pin" class="w-4 h-4 text-primary"></i>
-                            <span>{{ job.localisation }}</span>
+                            <span>{{ offre.lieu }}</span>
                         </div>
+
+                        {# DB n'a pas durée => placeholder #}
                         <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5">
                             <i data-lucide="clock" class="w-4 h-4 text-primary"></i>
-                            <span>{{ job.duree }}</span>
+                            <span>—</span>
                         </div>
+
                         <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5">
                             <i data-lucide="calendar" class="w-4 h-4 text-primary"></i>
-                            <span>Publié le {{ job.datePublication|date('d/m/Y') }}</span>
+                            <span>Publié le {{ offre.dateCreationOffre ? offre.dateCreationOffre|date('d/m/Y') : '—' }}</span>
                         </div>
+
                         <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5">
                             <i data-lucide="users" class="w-4 h-4 text-primary"></i>
-                            <span>{{ job.nbCandidatures }} candidature(s)</span>
+                            <span>{{ offre.candidatures|length }} candidature(s)</span>
                         </div>
                     </div>
 
@@ -95,34 +101,10 @@
                                 <i data-lucide="file-text" class="w-5 h-5 text-primary"></i>
                                 Description
                             </h3>
-                            <p class="text-muted-foreground leading-relaxed whitespace-pre-line">{{ job.description }}</p>
+                            <p class="text-muted-foreground leading-relaxed whitespace-pre-line">{{ offre.descriptionOffre }}</p>
                         </div>
 
-                        {% if job.competencesRequises %}
-                        <div>
-                            <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
-                                <i data-lucide="check-circle" class="w-5 h-5 text-primary"></i>
-                                Compétences requises
-                            </h3>
-                            <div class="flex flex-wrap gap-2">
-                                {% for competence in job.competencesRequises %}
-                                <span class="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm border border-primary/20">
-                                    {{ competence }}
-                                </span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if job.matiere %}
-                        <div>
-                            <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
-                                <i data-lucide="book" class="w-5 h-5 text-primary"></i>
-                                Matière concernée
-                            </h3>
-                            <p class="text-muted-foreground">{{ job.matiere }}</p>
-                        </div>
-                        {% endif %}
+                        {# champs non existants dans DB => on les enlève sans casser le design #}
                     </div>
                 </div>
 
@@ -131,24 +113,27 @@
                     <h3 class="text-lg font-semibold mb-4">À propos du créateur</h3>
                     <div class="flex items-center gap-4">
                         <div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-xl font-bold text-primary">
-                            {{ job.createur.nom|first }}
+                            {{ (offre.createur and offre.createur.email) ? offre.createur.email|first : '?' }}
                         </div>
                         <div class="flex-1">
-                            <p class="font-semibold text-lg">{{ job.createur.nom }}</p>
-                            <p class="text-sm text-muted-foreground">{{ job.createur.niveau }}</p>
+                            <p class="font-semibold text-lg">{{ (offre.createur and offre.createur.email) ? offre.createur.email : 'Utilisateur' }}</p>
+                            <p class="text-sm text-muted-foreground">Créateur de l'offre</p>
+
                             <div class="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                                 <span class="flex items-center gap-1">
                                     <i data-lucide="award" class="w-4 h-4"></i>
-                                    Membre depuis {{ job.createur.membreDepuis }}
+                                    Offre publiée
                                 </span>
                                 <span class="flex items-center gap-1">
                                     <i data-lucide="star" class="w-4 h-4 text-primary fill-primary"></i>
-                                    {{ job.createur.note }}/5
+                                    —/5
                                 </span>
                             </div>
                         </div>
-                        <a href="#" class="px-4 py-2 rounded-xl border border-white/20 hover:bg-white/5 transition text-sm">
-                            Voir le profil
+
+                        <a href="mailto:{{ (offre.createur and offre.createur.email) ? offre.createur.email : '' }}"
+                           class="px-4 py-2 rounded-xl border border-white/20 hover:bg-white/5 transition text-sm">
+                            Contacter
                         </a>
                     </div>
                 </div>
@@ -158,6 +143,14 @@
             <div class="space-y-6">
                 <!-- Apply Card -->
                 <div class="glass-card rounded-2xl p-6 sticky top-24">
+                    {% for label, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="mb-4 p-4 rounded-xl border border-white/10 bg-background/40 text-sm">
+                                <b class="text-primary">{{ label|upper }}</b> — {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+
                     {% if dejaPostule %}
                     <div class="text-center py-4">
                         <div class="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-4">
@@ -165,10 +158,11 @@
                         </div>
                         <h3 class="font-semibold mb-2">Candidature envoyée !</h3>
                         <p class="text-sm text-muted-foreground mb-4">Vous avez déjà postulé à cette offre.</p>
-                        <a href="{{ path('app_jobs_mes_candidatures') }}" class="block w-full py-3 rounded-xl bg-primary/10 text-primary text-center font-medium hover:bg-primary/20 transition">
+                        <a href="{{ path('front_jobs_my_candidatures') }}" class="block w-full py-3 rounded-xl bg-primary/10 text-primary text-center font-medium hover:bg-primary/20 transition">
                             Voir mes candidatures
                         </a>
                     </div>
+
                     {% elseif isCreateur %}
                     <div class="text-center py-4">
                         <div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
@@ -176,25 +170,35 @@
                         </div>
                         <h3 class="font-semibold mb-2">Votre offre</h3>
                         <p class="text-sm text-muted-foreground mb-4">Gérez les candidatures reçues.</p>
-                        <a href="{{ path('app_jobs_candidatures', {'id': job.id}) }}" class="block w-full py-3 rounded-xl bg-primary text-white text-center font-medium hover:bg-primary/90 transition mb-3">
+
+                        {# Creator side: see candidatures for this offer #}
+                        <a href="{{ path('front_jobs_candidatures', {'id': offre.id}) }}"
+                           class="block w-full py-3 rounded-xl bg-primary text-white text-center font-medium hover:bg-primary/90 transition mb-3">
                             Voir les candidatures
                         </a>
-                        <a href="{{ path('app_jobs_modifier', {'id': job.id}) }}" class="block w-full py-3 rounded-xl border border-white/20 text-center font-medium hover:bg-white/5 transition">
+
+                        <a href="{{ path('front_jobs_edit', {'id': offre.id}) }}"
+                           class="block w-full py-3 rounded-xl border border-white/20 text-center font-medium hover:bg-white/5 transition">
                             Modifier l'offre
                         </a>
                     </div>
+
                     {% else %}
                     <h3 class="text-lg font-semibold mb-4">Postuler à cette offre</h3>
-                    <form action="{{ path('app_jobs_postuler', {'id': job.id}) }}" method="POST" class="space-y-4">
+
+                    <form action="{{ path('front_jobs_apply', {'id': offre.id}) }}" method="POST" class="space-y-4">
+                        <input type="hidden" name="_token" value="{{ csrf_token('jobs_apply_' ~ offre.id) }}">
                         <div>
                             <label class="block text-sm font-medium mb-2">Votre message</label>
-                            <textarea name="message" rows="4" placeholder="Présentez-vous et expliquez pourquoi vous êtes intéressé..." 
-                                      class="w-full px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none resize-none text-sm"></textarea>
+                            <textarea name="message_candidature" rows="4"
+                                      placeholder="Présentez-vous et expliquez pourquoi vous êtes intéressé..."
+                                      class="w-full px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none resize-none text-sm" required></textarea>
                         </div>
                         <button type="submit" class="w-full py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition shadow-lg shadow-primary/25">
                             Envoyer ma candidature
                         </button>
                     </form>
+
                     <p class="text-xs text-muted-foreground text-center mt-4">
                         Le créateur recevra votre candidature et vous répondra sous 48h.
                     </p>
@@ -206,16 +210,19 @@
                     <h3 class="text-lg font-semibold mb-4">Offres similaires</h3>
                     <div class="space-y-4">
                         {% for similar in jobsSimilaires %}
-                        <a href="{{ path('app_jobs_detail', {'id': similar.id}) }}" class="block p-4 rounded-xl bg-white/5 hover:bg-white/10 transition group">
+                        <a href="{{ path('front_jobs_detail', {'id': similar.id}) }}" class="block p-4 rounded-xl bg-white/5 hover:bg-white/10 transition group">
                             <div class="flex justify-between items-start mb-2">
-                                <h4 class="font-medium text-sm group-hover:text-primary transition-colors">{{ similar.titre }}</h4>
-                                <span class="text-primary font-semibold text-sm">{{ similar.remuneration }}€</span>
+                                <h4 class="font-medium text-sm group-hover:text-primary transition-colors">{{ similar.titreOffre }}</h4>
+                                <span class="text-primary font-semibold text-sm">—</span>
                             </div>
-                            <p class="text-xs text-muted-foreground">{{ similar.type|capitalize }} • {{ similar.localisation }}</p>
+                            <p class="text-xs text-muted-foreground">{{ similar.categorieOffre }} • {{ similar.lieu }}</p>
                         </a>
+                        {% else %}
+                            <p class="text-sm text-muted-foreground">Aucune offre similaire.</p>
                         {% endfor %}
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

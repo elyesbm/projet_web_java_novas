@@ -1,8 +1,12 @@
-{% extends 'front/base_home.html.twig' %}
+﻿{% extends 'front/base_home.html.twig' %}
 
 {% block title %}Mes offres - NoVas Jobs{% endblock %}
 
 {% block body %}
+{% set q = q|default('') %}
+{% set statut_filter = statut_filter|default('') %}
+{% set sort = sort|default('date') %}
+{% set dir = dir|default('desc') %}
 <!-- Navigation -->
 <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -12,14 +16,14 @@
             </div>
             <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
         </a>
-        
+
         <div class="hidden md:flex items-center gap-8">
-            <a href="{{ path('app_jobs_index') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Jobs</a>
-            <a href="{{ path('app_jobs_mes_offres') }}" class="text-sm text-primary font-medium">Mes offres</a>
+            <a href="{{ path('front_jobs_index') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Jobs</a>
+            <a href="{{ path('front_jobs_my_offres') }}" class="text-sm text-primary font-medium">Mes offres</a>
         </div>
-        
+
         <div class="flex items-center gap-4">
-            <a href="{{ path('app_jobs_ajouter') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
+            <a href="{{ path('front_jobs_add') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
                 <i data-lucide="plus" class="w-4 h-4 inline mr-1"></i>
                 Nouvelle offre
             </a>
@@ -31,21 +35,59 @@
 <section class="relative pt-32 pb-16 min-h-screen">
     <div class="absolute inset-0 gradient-orb"></div>
     <div class="absolute top-0 left-1/4 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[120px]"></div>
-    
+
     <div class="relative max-w-6xl mx-auto px-6">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
                 <h1 class="font-serif text-3xl font-medium mb-2">Mes <span class="italic text-primary">offres</span></h1>
-                <p class="text-muted-foreground">Gérez vos opportunités et suivez les candidatures.</p>
+                <p class="text-muted-foreground">Gerez vos opportunites et suivez les candidatures.</p>
             </div>
-            
+
             <!-- Tabs -->
             <div class="flex p-1 rounded-xl bg-white/5 border border-white/10">
-                <button class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium">Actives</button>
-                <button class="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground transition">Pourvues</button>
-                <button class="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground transition">Archivées</button>
+                <a href="{{ path('front_jobs_my_offres') }}"
+                   class="px-4 py-2 rounded-lg text-sm font-medium {{ statut_filter is empty ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground transition' }}">
+                    Toutes
+                </a>
+                <a href="{{ path('front_jobs_my_offres', {'statut': 'OUVERTE'}) }}"
+                   class="px-4 py-2 rounded-lg text-sm font-medium {{ statut_filter == 'OUVERTE' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground transition' }}">
+                    Ouvertes
+                </a>
+                <a href="{{ path('front_jobs_my_offres', {'statut': 'FERMEE'}) }}"
+                   class="px-4 py-2 rounded-lg text-sm font-medium {{ statut_filter == 'FERMEE' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground transition' }}">
+                    Fermees
+                </a>
             </div>
         </div>
+
+        <!-- Search -->
+        <form method="get" action="{{ path('front_jobs_my_offres') }}" class="glass-card rounded-2xl p-6 mb-8">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1 relative">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
+                    <input type="text" name="q" value="{{ q }}"
+                           placeholder="Rechercher mes offres (titre, description, categorie, lieu)..."
+                           class="w-full pl-12 pr-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none text-sm" />
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <input type="hidden" name="statut" value="{{ statut_filter }}">
+                    <select name="sort" class="px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none text-sm">
+                        <option value="date" {{ sort == 'date' ? 'selected' : '' }}>Trier: Date</option>
+                        <option value="titre" {{ sort == 'titre' ? 'selected' : '' }}>Trier: Titre</option>
+                        <option value="categorie" {{ sort == 'categorie' ? 'selected' : '' }}>Trier: Categorie</option>
+                        <option value="lieu" {{ sort == 'lieu' ? 'selected' : '' }}>Trier: Lieu</option>
+                        <option value="statut" {{ sort == 'statut' ? 'selected' : '' }}>Trier: Statut</option>
+                    </select>
+                    <select name="dir" class="px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none text-sm">
+                        <option value="desc" {{ dir == 'desc' ? 'selected' : '' }}>Desc</option>
+                        <option value="asc" {{ dir == 'asc' ? 'selected' : '' }}>Asc</option>
+                    </select>
+                    <button class="px-6 py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition" type="submit">
+                        Rechercher
+                    </button>
+                </div>
+            </div>
+        </form>
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -56,7 +98,7 @@
                     </div>
                     <div>
                         <p class="text-2xl font-bold">{{ stats.total }}</p>
-                        <p class="text-xs text-muted-foreground">Offres publiées</p>
+                        <p class="text-xs text-muted-foreground">Offres publiees</p>
                     </div>
                 </div>
             </div>
@@ -89,7 +131,7 @@
                     </div>
                     <div>
                         <p class="text-2xl font-bold text-accent">{{ stats.pourvues }}</p>
-                        <p class="text-xs text-muted-foreground">Pourvues</p>
+                        <p class="text-xs text-muted-foreground">Fermees</p>
                     </div>
                 </div>
             </div>
@@ -97,63 +139,61 @@
 
         <!-- Jobs List -->
         <div class="space-y-4">
-            {% for job in jobs %}
+            {% for offre in offres %}
+            {% set st = offre.statutOffre|default('OUVERTE') %}
             <div class="glass-card rounded-2xl p-6 hover:border-primary/30 transition-all group">
                 <div class="flex flex-col lg:flex-row gap-6">
                     <!-- Info -->
                     <div class="flex-1">
                         <div class="flex items-start justify-between mb-2">
                             <div class="flex items-center gap-3">
-                                <span class="px-3 py-1 rounded-full text-xs font-medium 
-                                    {% if job.statut == 'active' %}bg-accent/20 text-accent
-                                    {% elseif job.statut == 'pourvue' %}bg-primary/20 text-primary
-                                    {% else %}bg-white/10 text-muted-foreground{% endif %}">
-                                    {{ job.statut|capitalize }}
+                                <span class="px-3 py-1 rounded-full text-xs font-medium
+                                    {{ st == 'OUVERTE' ? 'bg-accent/20 text-accent' : 'bg-primary/20 text-primary' }}">
+                                    {{ st == 'OUVERTE' ? 'Ouverte' : 'Fermee' }}
                                 </span>
-                                <span class="text-xs text-muted-foreground">Publié le {{ job.datePublication|date('d/m/Y') }}</span>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-xl font-bold text-primary">{{ job.remuneration }}€</p>
-                                <p class="text-xs text-muted-foreground">/heure</p>
+                                <span class="text-xs text-muted-foreground">Publiee le {{ offre.dateCreationOffre ? offre.dateCreationOffre|date('d/m/Y') : '—' }}</span>
                             </div>
                         </div>
-                        
-                        <h3 class="text-lg font-semibold mb-2">{{ job.titre }}</h3>
-                        <p class="text-sm text-muted-foreground mb-4 line-clamp-2">{{ job.description }}</p>
-                        
+
+                        <h3 class="text-lg font-semibold mb-2">{{ offre.titreOffre|default('Sans titre') }}</h3>
+                        <p class="text-sm text-muted-foreground mb-4 line-clamp-2">{{ offre.descriptionOffre|default('') }}</p>
+
                         <div class="flex flex-wrap gap-3 text-sm text-muted-foreground">
                             <span class="flex items-center gap-1">
                                 <i data-lucide="map-pin" class="w-4 h-4"></i>
-                                {{ job.localisation }}
+                                {{ offre.lieu|default('—') }}
                             </span>
                             <span class="flex items-center gap-1">
-                                <i data-lucide="clock" class="w-4 h-4"></i>
-                                {{ job.duree }}
+                                <i data-lucide="tag" class="w-4 h-4"></i>
+                                {{ offre.categorieOffre|default('—') }}
                             </span>
                             <span class="flex items-center gap-1">
                                 <i data-lucide="users" class="w-4 h-4"></i>
-                                {{ job.nbCandidatures }} candidature(s)
+                                {{ offre.candidatures|length }} candidature(s)
                             </span>
                         </div>
                     </div>
 
                     <!-- Actions -->
                     <div class="flex lg:flex-col gap-2 lg:border-l lg:border-white/10 lg:pl-6">
-                        <a href="{{ path('app_jobs_candidatures', {'id': job.id}) }}" 
+                        <a href="{{ path('front_jobs_candidatures', {'id': offre.id}) }}"
                            class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition text-sm font-medium">
                             <i data-lucide="users" class="w-4 h-4"></i>
                             Candidatures
                         </a>
-                        <a href="{{ path('app_jobs_modifier', {'id': job.id}) }}" 
+                        <a href="{{ path('front_jobs_edit', {'id': offre.id}) }}"
                            class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/20 hover:bg-white/5 transition text-sm">
                             <i data-lucide="edit" class="w-4 h-4"></i>
                             Modifier
                         </a>
-                        <button onclick="if(confirm('Supprimer cette offre ?')) window.location.href='{{ path('app_jobs_supprimer', {'id': job.id}) }}'" 
-                                class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition text-sm">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            Supprimer
-                        </button>
+                        <form method="post" action="{{ path('front_jobs_delete', {'id': offre.id}) }}" onsubmit="return confirm('Supprimer cette offre ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('jobs_delete_' ~ offre.id) }}">
+                            <button type="submit"
+                                    class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition text-sm w-full">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                Supprimer
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -162,11 +202,11 @@
                 <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                     <i data-lucide="inbox" class="w-8 h-8 text-primary"></i>
                 </div>
-                <h3 class="font-semibold mb-2">Aucune offre publiée</h3>
-                <p class="text-muted-foreground mb-6">Commencez par créer votre première opportunité.</p>
-                <a href="{{ path('app_jobs_ajouter') }}" class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-medium hover:bg-primary/90 transition">
+                <h3 class="font-semibold mb-2">Aucune offre publiee</h3>
+                <p class="text-muted-foreground mb-6">Commencez par creer votre premiere opportunite.</p>
+                <a href="{{ path('front_jobs_add') }}" class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-medium hover:bg-primary/90 transition">
                     <i data-lucide="plus" class="w-5 h-5"></i>
-                    Créer une offre
+                    Creer une offre
                 </a>
             </div>
             {% endfor %}

@@ -26,11 +26,11 @@ class Reservation
     private ?int $statut_reservation = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'reservations')]
-    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'ID', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'ID', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     #[ORM\ManyToOne(targetEntity: Atelier::class, inversedBy: 'reservations')]
-    #[ORM\JoinColumn(name: 'id_atelier', referencedColumnName: 'id_atelier', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_atelier', referencedColumnName: 'id_atelier', nullable: false, onDelete: 'CASCADE')]
     private ?Atelier $atelier = null;
 
     public function getId(): ?int { return $this->id; }

@@ -1,8 +1,9 @@
-{% extends 'front/base_home.html.twig' %}
+﻿{% extends 'front/base_home.html.twig' %}
 
-{% block title %}Candidatures - {{ job.titre }} - NoVas{% endblock %}
+{% block title %}Candidatures - {{ offre.titreOffre|default('Offre') }} - NoVas{% endblock %}
 
 {% block body %}
+{% set can_manage = can_manage|default(false) %}
 <!-- Navigation -->
 <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -12,9 +13,9 @@
             </div>
             <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
         </a>
-        
+
         <div class="flex items-center gap-4">
-            <a href="{{ path('app_jobs_mes_offres') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <a href="{{ path('front_jobs_my_offres') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 <i data-lucide="arrow-left" class="w-4 h-4 inline mr-1"></i>
                 Mes offres
             </a>
@@ -26,14 +27,14 @@
 <section class="relative pt-32 pb-16 min-h-screen">
     <div class="absolute inset-0 gradient-orb"></div>
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]"></div>
-    
+
     <div class="relative max-w-5xl mx-auto px-6">
         <!-- Job Info -->
         <div class="glass-card rounded-2xl p-6 mb-8">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <span class="text-sm text-muted-foreground">Offre</span>
-                    <h1 class="text-xl font-semibold">{{ job.titre }}</h1>
+                    <h1 class="text-xl font-semibold">{{ offre.titreOffre|default('—') }}</h1>
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
@@ -47,33 +48,29 @@
             </div>
         </div>
 
-        <!-- Filters -->
-        <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
-            <button class="px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium whitespace-nowrap">Toutes</button>
-            <button class="px-4 py-2 rounded-xl bg-white/5 text-muted-foreground hover:text-foreground text-sm whitespace-nowrap transition">En attente</button>
-            <button class="px-4 py-2 rounded-xl bg-white/5 text-muted-foreground hover:text-foreground text-sm whitespace-nowrap transition">Acceptées</button>
-            <button class="px-4 py-2 rounded-xl bg-white/5 text-muted-foreground hover:text-foreground text-sm whitespace-nowrap transition">Refusées</button>
-        </div>
-
         <!-- Candidatures List -->
         <div class="space-y-4">
             {% for candidature in candidatures %}
-            <div class="glass-card rounded-2xl p-6 {% if candidature.statut == 'acceptee' %}border-accent/30{% elseif candidature.statut == 'refusee' %}border-red-500/30 opacity-60{% endif %}">
+            {% set st = candidature.statutCandidature %}
+            {% set isWait = (st == 'EN_ATTENTE') %}
+            {% set isOk = (st == 'ACCEPTEE') %}
+            {% set isNo = (st == 'REFUSEE') %}
+            <div class="glass-card rounded-2xl p-6 {% if isOk %}border-accent/30{% elseif isNo %}border-red-500/30 opacity-60{% endif %}">
                 <div class="flex flex-col md:flex-row gap-6">
                     <!-- Candidate Info -->
                     <div class="flex items-start gap-4 md:w-1/3">
                         <div class="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center text-xl font-bold text-primary flex-shrink-0">
-                            {{ candidature.candidat.nom|first }}
+                            {{ candidature.candidat and candidature.candidat.NOM ? candidature.candidat.NOM|first : '?' }}
                         </div>
                         <div>
-                            <h3 class="font-semibold">{{ candidature.candidat.nom }}</h3>
-                            <p class="text-sm text-muted-foreground">{{ candidature.candidat.niveau }}</p>
-                            <div class="flex items-center gap-1 mt-1 text-sm text-primary">
-                                <i data-lucide="star" class="w-4 h-4 fill-primary"></i>
-                                <span>{{ candidature.candidat.note }}/5</span>
-                            </div>
+                            <h3 class="font-semibold">
+                                {{ candidature.candidat ? (candidature.candidat.PRENOM ~ ' ' ~ candidature.candidat.NOM) : 'Candidat' }}
+                            </h3>
+                            <p class="text-sm text-muted-foreground">
+                                {{ candidature.candidat and candidature.candidat.EMAIL ? candidature.candidat.EMAIL : '—' }}
+                            </p>
                             <p class="text-xs text-muted-foreground mt-2">
-                                Postulé le {{ candidature.date|date('d/m/Y') }}
+                                Postule le {{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : '—' }}
                             </p>
                         </div>
                     </div>
@@ -81,37 +78,25 @@
                     <!-- Message -->
                     <div class="flex-1 md:border-l md:border-white/10 md:pl-6">
                         <h4 class="text-sm font-medium mb-2 text-muted-foreground">Message du candidat</h4>
-                        <p class="text-sm leading-relaxed bg-white/5 rounded-xl p-4">{{ candidature.message }}</p>
+                        <p class="text-sm leading-relaxed bg-white/5 rounded-xl p-4">{{ candidature.messageCandidature|default('') }}</p>
                     </div>
 
-                    <!-- Actions -->
+                    <!-- Status -->
                     <div class="flex md:flex-col gap-2 md:w-48">
-                        {% if candidature.statut == 'en_attente' %}
-                        <form method="POST" action="{{ path('app_jobs_accepter_candidature', {'id': candidature.id}) }}" class="flex-1">
-                            <button type="submit" class="w-full py-2 rounded-xl bg-accent text-white font-medium hover:bg-accent/90 transition flex items-center justify-center gap-2">
-                                <i data-lucide="check" class="w-4 h-4"></i>
-                                Accepter
-                            </button>
-                        </form>
-                        <form method="POST" action="{{ path('app_jobs_refuser_candidature', {'id': candidature.id}) }}" class="flex-1">
-                            <button type="submit" class="w-full py-2 rounded-xl border border-white/20 hover:bg-white/5 transition flex items-center justify-center gap-2">
-                                <i data-lucide="x" class="w-4 h-4"></i>
-                                Refuser
-                            </button>
-                        </form>
-                        {% elseif candidature.statut == 'acceptee' %}
+                        {% if isWait %}
+                        <div class="w-full py-2 rounded-xl bg-yellow-500/20 text-yellow-500 text-center font-medium flex items-center justify-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4"></i>
+                            En attente
+                        </div>
+                        {% elseif isOk %}
                         <div class="w-full py-2 rounded-xl bg-accent/20 text-accent text-center font-medium flex items-center justify-center gap-2">
                             <i data-lucide="check-circle" class="w-4 h-4"></i>
-                            Acceptée
+                            Acceptee
                         </div>
-                        <a href="mailto:{{ candidature.candidat.email }}" class="w-full py-2 rounded-xl bg-primary text-white text-center font-medium hover:bg-primary/90 transition flex items-center justify-center gap-2">
-                            <i data-lucide="mail" class="w-4 h-4"></i>
-                            Contacter
-                        </a>
                         {% else %}
                         <div class="w-full py-2 rounded-xl bg-red-500/20 text-red-400 text-center font-medium flex items-center justify-center gap-2">
                             <i data-lucide="x-circle" class="w-4 h-4"></i>
-                            Refusée
+                            Refusee
                         </div>
                         {% endif %}
                     </div>
@@ -123,7 +108,7 @@
                     <i data-lucide="inbox" class="w-8 h-8 text-primary"></i>
                 </div>
                 <h3 class="font-semibold mb-2">Aucune candidature</h3>
-                <p class="text-muted-foreground">Les candidatures apparaîtront ici.</p>
+                <p class="text-muted-foreground">Les candidatures apparaitront ici.</p>
             </div>
             {% endfor %}
         </div>

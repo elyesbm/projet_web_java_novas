@@ -33,11 +33,11 @@ class Article
 
     // 🔗 CLÉS ÉTRANGÈRES
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'articles')]
-    #[ORM\JoinColumn(name: 'id_etudiant', referencedColumnName: 'ID', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_etudiant', referencedColumnName: 'ID', nullable: false, onDelete: 'CASCADE')]
     private ?User $auteur = null;
 
     #[ORM\ManyToOne(targetEntity: Categorie::class, inversedBy: 'articles')]
-    #[ORM\JoinColumn(name: 'id_categorie', referencedColumnName: 'id_categorie', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_categorie', referencedColumnName: 'id_categorie', nullable: false, onDelete: 'CASCADE')]
     private ?Categorie $categorie = null;
 
     public function getId(): ?int { return $this->id; }
