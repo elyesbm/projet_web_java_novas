@@ -488,9 +488,46 @@ class MarketplaceController extends AbstractController
     }
 
     #[Route('/categories', name: 'app_marketplace_categories')]
-    public function categories(CategorieRepository $categorieRepository): Response
+    public function categories(Request $request, CategorieRepository $categorieRepository): Response
     {
-        $categories = $categorieRepository->findAll();
+        // Support search (q) and sort similar to marketplace
+        $q = trim((string) $request->query->get('q', ''));
+        $sort = $request->query->get('sort', 'date_desc');
+
+        $qb = $categorieRepository->createQueryBuilder('c');
+
+        if ($q !== '') {
+            $isNumeric = ctype_digit($q);
+            $expr = 'c.nom_categorie LIKE :q OR c.description_categorie LIKE :q';
+            if ($isNumeric) {
+                $expr .= ' OR c.id = :qid';
+            }
+
+            $qb->andWhere('(' . $expr . ')')
+               ->setParameter('q', '%' . $q . '%');
+
+            if ($isNumeric) {
+                $qb->setParameter('qid', (int) $q);
+            }
+        }
+
+        switch ($sort) {
+            case 'name_asc':
+                $qb->orderBy('c.nom_categorie', 'ASC');
+                break;
+            case 'name_desc':
+                $qb->orderBy('c.nom_categorie', 'DESC');
+                break;
+            case 'date_asc':
+                $qb->orderBy('c.id', 'ASC');
+                break;
+            case 'date_desc':
+            default:
+                $qb->orderBy('c.id', 'DESC');
+                break;
+        }
+
+        $categories = $qb->getQuery()->getResult();
 
         return $this->render('front/marketplace/categories/index.html.twig', [
             'categories' => $categories,
@@ -500,28 +537,45 @@ class MarketplaceController extends AbstractController
     #[Route('/categorie/ajouter', name: 'app_marketplace_categorie_ajouter', methods: ['GET', 'POST'])]
     public function ajouterCategorie(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $user = $this->getUser();
-        if (!$user instanceof User) {
-            $this->addFlash('error', 'Vous devez être connecté pour créer une catégorie.');
-            return $this->redirectToRoute('app_login');
-        }
+        // public category creation: no authentication required
 
         if ($request->isMethod('POST')) {
             $nom = trim((string) $request->request->get('nom', ''));
             $description = trim((string) $request->request->get('description', ''));
 
-            if (!$nom) {
-                $this->addFlash('error', 'Le nom de la catégorie est obligatoire.');
+            $errors = [];
+            if ($nom === '') {
+                $errors[] = 'Le nom de la catégorie est obligatoire.';
             } else {
-                $categorie = new Categorie();
-                $categorie->setNomCategorie($nom)->setDescriptionCategorie($description);
-
-                $entityManager->persist($categorie);
-                $entityManager->flush();
-
-                $this->addFlash('success', 'Catégorie créée avec succès.');
-                return $this->redirectToRoute('app_marketplace_categories');
+                $len = mb_strlen($nom);
+                if ($len < 2) {
+                    $errors[] = 'Le nom doit contenir au moins 2 caractères.';
+                }
+                if ($len > 255) {
+                    $errors[] = 'Le nom ne doit pas dépasser 255 caractères.';
+                }
             }
+            if (mb_strlen($description) > 1000) {
+                $errors[] = 'La description est trop longue (max 1000 caractères).';
+            }
+
+            if (!empty($errors)) {
+                foreach ($errors as $err) {
+                    $this->addFlash('error', $err);
+                }
+                return $this->render('front/marketplace/categories/ajouter.html.twig', [
+                    'data' => ['nom' => $nom, 'description' => $description],
+                ]);
+            }
+
+            $categorie = new Categorie();
+            $categorie->setNomCategorie($nom)->setDescriptionCategorie($description);
+
+            $entityManager->persist($categorie);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Catégorie créée avec succès.');
+            return $this->redirectToRoute('app_marketplace_categories');
         }
 
         return $this->render('front/marketplace/categories/ajouter.html.twig');
@@ -530,11 +584,7 @@ class MarketplaceController extends AbstractController
     #[Route('/categorie/{id}/modifier', name: 'app_marketplace_categorie_modifier', methods: ['GET', 'POST'], requirements: ['id' => '\\d+'])]
     public function modifierCategorie(Request $request, int $id, CategorieRepository $categorieRepository, EntityManagerInterface $entityManager): Response
     {
-        $user = $this->getUser();
-        if (!$user instanceof User) {
-            $this->addFlash('error', 'Vous devez être connecté pour modifier une catégorie.');
-            return $this->redirectToRoute('app_login');
-        }
+        // public category modification: no authentication required
 
         $categorie = $categorieRepository->find($id);
         if (!$categorie instanceof Categorie) {
@@ -564,11 +614,7 @@ class MarketplaceController extends AbstractController
     #[Route('/categorie/{id}/supprimer', name: 'app_marketplace_categorie_supprimer', methods: ['POST'], requirements: ['id' => '\\d+'])]
     public function supprimerCategorie(Request $request, int $id, CategorieRepository $categorieRepository, EntityManagerInterface $entityManager): Response
     {
-        $user = $this->getUser();
-        if (!$user instanceof User) {
-            $this->addFlash('error', 'Vous devez être connecté pour supprimer une catégorie.');
-            return $this->redirectToRoute('app_marketplace_categories');
-        }
+        // public category deletion: no authentication required (CSRF check remains)
 
         if (!$this->isCsrfTokenValid('supprimer_categorie_' . $id, $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
