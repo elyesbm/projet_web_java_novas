@@ -12,10 +12,19 @@
                 <span class="text-sm">Retour au catalogue</span>
             </a>
             
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
                     <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
                 </div>
+                <button
+                    id="cartToggle"
+                    type="button"
+                    class="relative w-10 h-10 rounded-xl bg-secondary border border-white/10 flex items-center justify-center hover:bg-white/5 transition-colors"
+                    title="Voir le panier"
+                >
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                    <span id="cartCount" class="hidden absolute -top-1 -right-1 min-w-[1.15rem] h-[1.15rem] px-1 rounded-full bg-primary text-white text-[10px] leading-[1.15rem] font-bold">0</span>
+                </button>
             </div>
         </div>
     </nav>
@@ -28,7 +37,7 @@
                 <div class="space-y-4">
                     <div class="glass-card rounded-3xl p-4">
                         <div class="aspect-square rounded-2xl overflow-hidden">
-                            <img id="mainImage" src="{{ asset('images/' ~ article.image) }}" alt="{{ article.titre }}" class="w-full h-full object-cover">
+                            <img id="mainImage" src="{{ asset('images/' ~ article.image) }}" alt="{{ article.titre }}" onerror="this.onerror=null;this.style.display='none';" class="w-full h-full object-cover">
                         </div>
                     </div>
                     
@@ -36,7 +45,7 @@
                     <div class="flex gap-3">
                         {% for img in article.images %}
                         <button onclick="document.getElementById('mainImage').src = '{{ asset('images/' ~ img) }}'" class="w-20 h-20 rounded-xl overflow-hidden border-2 border-transparent hover:border-primary transition-all">
-                            <img src="{{ asset('images/' ~ img) }}" class="w-full h-full object-cover">
+                            <img src="{{ asset('images/' ~ img) }}" onerror="this.onerror=null;this.style.display='none';" class="w-full h-full object-cover">
                         </button>
                         {% endfor %}
                     </div>
@@ -94,42 +103,53 @@
                             Formulaire d'achat
                         </h3>
                         
-                        <form method="post" class="space-y-4">
+                        <form id="purchaseForm" method="post" class="space-y-4" novalidate>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium mb-2 text-muted-foreground">Prenom</label>
-                                    <input type="text" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="Jean">
+                                    <input id="buyerFirstName" name="prenom" type="text" required maxlength="40" class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="Jean">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium mb-2 text-muted-foreground">Nom</label>
-                                    <input type="text" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="Dupont">
+                                    <input id="buyerLastName" name="nom" type="text" required maxlength="40" class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="Dupont">
                                 </div>
                             </div>
                             
                             <div>
                                 <label class="block text-sm font-medium mb-2 text-muted-foreground">Email universitaire</label>
-                                <input type="email" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="jean.dupont@univ.fr">
+                                <input id="buyerEmail" name="email" type="email" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="jean.dupont@univ.fr">
                             </div>
                             
                             <div>
                                 <label class="block text-sm font-medium mb-2 text-muted-foreground">Telephone</label>
-                                <input type="tel" class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="06 12 34 56 78">
+                                <input id="buyerPhone" name="telephone" type="tel" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="06 12 34 56 78">
                             </div>
                             
                             <div>
                                 <label class="block text-sm font-medium mb-2 text-muted-foreground">Message au vendeur (optionnel)</label>
-                                <textarea rows="3" class="w-full bg-secondary border border-white/10 rounded-xl p-4 focus:outline-none focus:border-primary transition-all resize-none" placeholder="Bonjour, je suis interesse par votre article..."></textarea>
+                                <textarea id="buyerMessage" name="message" rows="3" maxlength="500" class="w-full bg-secondary border border-white/10 rounded-xl p-4 focus:outline-none focus:border-primary transition-all resize-none" placeholder="Bonjour, je suis interesse par votre article..."></textarea>
                             </div>
                             
                             <div class="flex items-center gap-3 p-4 bg-secondary/50 rounded-xl">
-                                <input type="checkbox" required class="w-5 h-5 rounded border-white/10 bg-secondary text-primary focus:ring-primary">
+                                <input id="buyerConfirm" name="confirm" type="checkbox" required class="w-5 h-5 rounded border-white/10 bg-secondary text-primary focus:ring-primary">
                                 <span class="text-sm text-muted-foreground">Je confirme etre etudiant et avoir lu les <a href="#" class="text-primary hover:underline">conditions de vente</a></span>
                             </div>
+                            <p id="purchaseFormError" class="hidden text-center text-xs text-red-400"></p>
                             
-                            <button type="submit" class="w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
-                                <i data-lucide="credit-card" class="w-5 h-5"></i>
-                                Contacter le vendeur
+                            <button
+                                id="addToCartBtn"
+                                type="button"
+                                class="w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
+                                data-article-id="{{ article.id }}"
+                                data-article-title="{{ article.titre }}"
+                                data-article-price="{{ article.prix }}"
+                                data-article-image="{{ asset('images/' ~ article.image) }}"
+                                data-article-url="{{ path('app_marketplace_detail', {id: article.id}) }}"
+                            >
+                                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                                Ajouter au panier
                             </button>
+                            <p id="cartMessage" class="hidden text-center text-xs text-green-400">Article ajoute au panier</p>
                             
                             <p class="text-center text-xs text-muted-foreground">
                                 Le paiement se fait en main propre sur le campus
@@ -147,10 +167,6 @@
                             <i data-lucide="clock" class="w-4 h-4"></i>
                             Publie le {{ article.date|date('d M Y') }}
                         </span>
-                        <button class="flex items-center gap-2 hover:text-primary transition-colors">
-                            <i data-lucide="flag" class="w-4 h-4"></i>
-                            Signaler
-                        </button>
                     </div>
                 </div>
             </div>
@@ -162,7 +178,7 @@
                     {% for sim in articles_similaires %}
                     <a href="{{ path('app_marketplace_detail', {id: sim.id}) }}" class="glass-card rounded-2xl overflow-hidden hover:border-primary/30 transition-all group">
                         <div class="h-40 overflow-hidden">
-                            <img src="{{ asset('images/' ~ sim.image) }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                            <img src="{{ asset('images/' ~ sim.image) }}" onerror="this.onerror=null;this.style.display='none';" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
                         </div>
                         <div class="p-4">
                             <h3 class="font-medium mb-2 group-hover:text-primary transition-colors">{{ sim.titre }}</h3>
@@ -175,4 +191,235 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const STORAGE_KEY = 'marketplace_cart';
+            const addBtn = document.getElementById('addToCartBtn');
+            const purchaseForm = document.getElementById('purchaseForm');
+            const cartToggle = document.getElementById('cartToggle');
+            const cartCount = document.getElementById('cartCount');
+            const cartMessage = document.getElementById('cartMessage');
+            const purchaseFormError = document.getElementById('purchaseFormError');
+            const buyerFirstName = document.getElementById('buyerFirstName');
+            const buyerLastName = document.getElementById('buyerLastName');
+            const buyerEmail = document.getElementById('buyerEmail');
+            const buyerPhone = document.getElementById('buyerPhone');
+            const buyerMessage = document.getElementById('buyerMessage');
+            const buyerConfirm = document.getElementById('buyerConfirm');
+            const navContainer = cartToggle ? cartToggle.parentElement : null;
+            let cartPanel = null;
+
+            function readCart() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    const parsed = raw ? JSON.parse(raw) : [];
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function writeCart(items) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+            }
+
+            function updateCount() {
+                const total = readCart().length;
+                if (!cartCount) return;
+                if (total > 0) {
+                    cartCount.classList.remove('hidden');
+                    cartCount.textContent = String(total);
+                } else {
+                    cartCount.classList.add('hidden');
+                    cartCount.textContent = '0';
+                }
+            }
+
+            function createPanelIfMissing() {
+                if (cartPanel || !navContainer) return;
+                cartPanel = document.createElement('div');
+                cartPanel.id = 'cartPanel';
+                cartPanel.className = 'hidden absolute top-16 right-0 w-80 max-w-[90vw] glass-card rounded-2xl p-4 border border-white/10 z-50';
+                cartPanel.innerHTML = '<h4 class="font-medium mb-3">Mon panier</h4><div id="cartPanelItems" class="space-y-2 text-sm text-muted-foreground"></div>';
+                navContainer.classList.add('relative');
+                navContainer.appendChild(cartPanel);
+            }
+
+            function renderPanel() {
+                createPanelIfMissing();
+                if (!cartPanel) return;
+                const itemsContainer = cartPanel.querySelector('#cartPanelItems');
+                const items = readCart();
+
+                if (!itemsContainer) return;
+
+                if (items.length === 0) {
+                    itemsContainer.innerHTML = '<p>Votre panier est vide.</p>';
+                    return;
+                }
+
+                itemsContainer.innerHTML = items.map(function (item) {
+                    const safeTitle = String(item.title || '');
+                    const safePrice = String(item.price || '');
+                    const safeUrl = String(item.url || '#');
+                    return '<a href="' + safeUrl + '" class="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors"><span class="truncate">' + safeTitle + '</span><span class="text-primary font-medium whitespace-nowrap">' + safePrice + ' EUR</span></a>';
+                }).join('');
+            }
+
+            function setFieldValidity(field, valid) {
+                if (!field) return;
+                field.classList.remove('border-red-500', 'focus:border-red-500');
+                if (!valid) {
+                    field.classList.add('border-red-500', 'focus:border-red-500');
+                }
+            }
+
+            function validatePurchaseForm() {
+                if (!purchaseForm) return false;
+
+                const firstName = (buyerFirstName ? buyerFirstName.value : '').trim();
+                const lastName = (buyerLastName ? buyerLastName.value : '').trim();
+                const email = (buyerEmail ? buyerEmail.value : '').trim();
+                const rawPhone = (buyerPhone ? buyerPhone.value : '').trim();
+                const phone = rawPhone.replace(/[\s.\-]/g, '');
+                const message = (buyerMessage ? buyerMessage.value : '').trim();
+                const isConfirmed = !!(buyerConfirm && buyerConfirm.checked);
+
+                const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]{2,40}$/;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const phoneRegex = /^(?:\+33|0)[1-9]\d{8}$/;
+
+                let formIsValid = true;
+                let firstError = '';
+
+                const firstNameValid = nameRegex.test(firstName);
+                setFieldValidity(buyerFirstName, firstNameValid);
+                if (!firstNameValid && !firstError) {
+                    firstError = 'Prenom invalide (2 a 40 lettres).';
+                    formIsValid = false;
+                }
+
+                const lastNameValid = nameRegex.test(lastName);
+                setFieldValidity(buyerLastName, lastNameValid);
+                if (!lastNameValid && !firstError) {
+                    firstError = 'Nom invalide (2 a 40 lettres).';
+                    formIsValid = false;
+                }
+
+                const emailValid = emailRegex.test(email);
+                setFieldValidity(buyerEmail, emailValid);
+                if (!emailValid && !firstError) {
+                    firstError = 'Email invalide.';
+                    formIsValid = false;
+                }
+
+                const phoneValid = phoneRegex.test(phone);
+                setFieldValidity(buyerPhone, phoneValid);
+                if (!phoneValid && !firstError) {
+                    firstError = 'Telephone invalide (ex: 06 12 34 56 78).';
+                    formIsValid = false;
+                }
+
+                const messageValid = (message === '') || message.length >= 10;
+                setFieldValidity(buyerMessage, messageValid);
+                if (!messageValid && !firstError) {
+                    firstError = 'Le message doit contenir au moins 10 caracteres.';
+                    formIsValid = false;
+                }
+
+                setFieldValidity(buyerConfirm, isConfirmed);
+                if (!isConfirmed && !firstError) {
+                    firstError = 'Veuillez confirmer les conditions de vente.';
+                    formIsValid = false;
+                }
+
+                if (purchaseFormError) {
+                    if (formIsValid) {
+                        purchaseFormError.textContent = '';
+                        purchaseFormError.classList.add('hidden');
+                    } else {
+                        purchaseFormError.textContent = firstError;
+                        purchaseFormError.classList.remove('hidden');
+                    }
+                }
+
+                return formIsValid;
+            }
+
+            [buyerFirstName, buyerLastName, buyerEmail, buyerPhone, buyerMessage, buyerConfirm].forEach(function (field) {
+                if (!field) return;
+                field.addEventListener('input', function () {
+                    if (purchaseFormError) {
+                        purchaseFormError.textContent = '';
+                        purchaseFormError.classList.add('hidden');
+                    }
+                    setFieldValidity(field, true);
+                });
+                field.addEventListener('change', function () {
+                    if (purchaseFormError) {
+                        purchaseFormError.textContent = '';
+                        purchaseFormError.classList.add('hidden');
+                    }
+                    setFieldValidity(field, true);
+                });
+            });
+
+            if (addBtn) {
+                addBtn.addEventListener('click', function () {
+                    if (!validatePurchaseForm()) {
+                        return;
+                    }
+
+                    const article = {
+                        id: addBtn.dataset.articleId,
+                        title: addBtn.dataset.articleTitle,
+                        price: addBtn.dataset.articlePrice,
+                        image: addBtn.dataset.articleImage,
+                        url: addBtn.dataset.articleUrl
+                    };
+
+                    const cart = readCart();
+                    const exists = cart.some(function (item) { return String(item.id) === String(article.id); });
+                    if (!exists) {
+                        cart.push(article);
+                        writeCart(cart);
+                    }
+
+                    updateCount();
+                    renderPanel();
+
+                    if (cartMessage) {
+                        cartMessage.classList.remove('hidden');
+                        setTimeout(function () {
+                            cartMessage.classList.add('hidden');
+                        }, 1800);
+                    }
+                });
+            }
+
+            if (cartToggle) {
+                cartToggle.addEventListener('click', function () {
+                    createPanelIfMissing();
+                    renderPanel();
+                    if (!cartPanel) return;
+                    cartPanel.classList.toggle('hidden');
+                });
+            }
+
+            document.addEventListener('click', function (event) {
+                if (!cartPanel || !cartToggle) return;
+                const clickedInsidePanel = cartPanel.contains(event.target);
+                const clickedToggle = cartToggle.contains(event.target);
+                if (!clickedInsidePanel && !clickedToggle) {
+                    cartPanel.classList.add('hidden');
+                }
+            });
+
+            updateCount();
+        })();
+    </script>
 {% endblock %}

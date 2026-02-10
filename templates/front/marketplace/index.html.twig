@@ -19,6 +19,19 @@
                     <i data-lucide="shopping-bag" class="w-4 h-4"></i>
                     Produits
                 </a>
+                <a href="{{ path('app_marketplace_categories') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <i data-lucide="folder-tree" class="w-4 h-4"></i>
+                    Categories
+                </a>
+                <button
+                    id="cartToggle"
+                    type="button"
+                    class="relative w-10 h-10 rounded-xl bg-secondary border border-white/10 flex items-center justify-center hover:bg-white/5 transition-colors"
+                    title="Voir le panier"
+                >
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                    <span id="cartCount" class="hidden absolute -top-1 -right-1 min-w-[1.15rem] h-[1.15rem] px-1 rounded-full bg-primary text-white text-[10px] leading-[1.15rem] font-bold">0</span>
+                </button>
             </div>
         </div>
     </nav>
@@ -113,7 +126,7 @@
                     {% for article in articles %}
                     <div class="group glass-card rounded-2xl overflow-hidden hover:border-primary/30 transition-all duration-300">
                         <div class="relative h-48 overflow-hidden">
-                            <img src="{{ asset('images/' ~ article.image) }}" alt="{{ article.titre }}" onerror="this.onerror=null;this.src='{{ asset('images/skills-learning.jpg') }}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <img src="{{ asset('images/' ~ article.image) }}" alt="{{ article.titre }}" onerror="this.onerror=null;this.style.display='none';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                             <div class="absolute top-3 left-3">
                                 <span class="px-2 py-1 rounded-lg text-xs font-medium {{ article.type == 'academic' ? 'bg-academic/90 text-white' : 'bg-personal/90 text-white' }}">
                                     {{ article.type == 'academic' ? 'Academic' : 'Personal' }}
@@ -165,4 +178,88 @@
         </div>
     </section>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const STORAGE_KEY = 'marketplace_cart';
+            const cartToggle = document.getElementById('cartToggle');
+            const cartCount = document.getElementById('cartCount');
+            const navContainer = cartToggle ? cartToggle.parentElement : null;
+            let cartPanel = null;
+
+            function readCart() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    const parsed = raw ? JSON.parse(raw) : [];
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function updateCount() {
+                if (!cartCount) return;
+                const total = readCart().length;
+                if (total > 0) {
+                    cartCount.classList.remove('hidden');
+                    cartCount.textContent = String(total);
+                } else {
+                    cartCount.classList.add('hidden');
+                    cartCount.textContent = '0';
+                }
+            }
+
+            function createPanelIfMissing() {
+                if (cartPanel || !navContainer) return;
+                cartPanel = document.createElement('div');
+                cartPanel.id = 'cartPanel';
+                cartPanel.className = 'hidden absolute top-16 right-0 w-80 max-w-[90vw] glass-card rounded-2xl p-4 border border-white/10 z-50';
+                cartPanel.innerHTML = '<h4 class="font-medium mb-3">Mon panier</h4><div id="cartPanelItems" class="space-y-2 text-sm text-muted-foreground"></div>';
+                navContainer.classList.add('relative');
+                navContainer.appendChild(cartPanel);
+            }
+
+            function renderPanel() {
+                createPanelIfMissing();
+                if (!cartPanel) return;
+                const itemsContainer = cartPanel.querySelector('#cartPanelItems');
+                const items = readCart();
+                if (!itemsContainer) return;
+
+                if (items.length === 0) {
+                    itemsContainer.innerHTML = '<p>Votre panier est vide.</p>';
+                    return;
+                }
+
+                itemsContainer.innerHTML = items.map(function (item) {
+                    const safeTitle = String(item.title || '');
+                    const safePrice = String(item.price || '');
+                    const safeUrl = String(item.url || '#');
+                    return '<a href="' + safeUrl + '" class="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors"><span class="truncate">' + safeTitle + '</span><span class="text-primary font-medium whitespace-nowrap">' + safePrice + ' EUR</span></a>';
+                }).join('');
+            }
+
+            if (cartToggle) {
+                cartToggle.addEventListener('click', function () {
+                    renderPanel();
+                    if (!cartPanel) return;
+                    cartPanel.classList.toggle('hidden');
+                });
+            }
+
+            document.addEventListener('click', function (event) {
+                if (!cartPanel || !cartToggle) return;
+                const clickedInsidePanel = cartPanel.contains(event.target);
+                const clickedToggle = cartToggle.contains(event.target);
+                if (!clickedInsidePanel && !clickedToggle) {
+                    cartPanel.classList.add('hidden');
+                }
+            });
+
+            updateCount();
+        })();
+    </script>
 {% endblock %}
