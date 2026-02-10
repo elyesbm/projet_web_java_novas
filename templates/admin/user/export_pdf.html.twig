@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #000;
+            margin-bottom: 5px;
+        }
+        .header p {
+            font-size: 10px;
+            color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        thead {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+        th {
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #ddd;
+            background-color: #e8e8e8;
+        }
+        td {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+        }
+        tbody tr:nth-child(odd) {
+            background-color: #fafafa;
+        }
+        .role-admin {
+            color: #7c3aed;
+            font-weight: bold;
+        }
+        .role-psy {
+            color: #0d9488;
+            font-weight: bold;
+        }
+        .role-user {
+            color: #2563eb;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            font-size: 9px;
+            color: #999;
+            text-align: center;
+        }
+        .total {
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Liste des Utilisateurs NoVas</h1>
+        <p>Exporté le {{ generatedAt|date('d/m/Y à H:i:s') }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 5%">#ID</th>
+                <th style="width: 25%">Nom et Prénom</th>
+                <th style="width: 30%">Email</th>
+                <th style="width: 15%">Téléphone</th>
+                <th style="width: 15%">Rôle</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.PRENOM }} {{ user.NOM }}</td>
+                <td>{{ user.EMAIL }}</td>
+                <td>{{ user.NUMERO|default('-') }}</td>
+                <td>
+                    {% if user.ROLE == 'ROLE_ADMIN' %}
+                        <span class="role-admin">Admin</span>
+                    {% elseif user.ROLE == 'ROLE_PSY' %}
+                        <span class="role-psy">Psy</span>
+                    {% else %}
+                        <span class="role-user">Étudiant</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total">
+        Total : {{ users|length }} utilisateur(s)
+    </div>
+
+    <div class="footer">
+        <p>NoVas - Système de Gestion</p>
+        <p>Ce document a été généré automatiquement.</p>
+    </div>
+</body>
+</html>

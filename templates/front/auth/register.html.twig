@@ -34,9 +34,6 @@
             {# ⬇️ IMPORTANT : 'novalidate' désactive la validation HTML5 pour forcer la validation serveur #}
             {{ form_start(registrationForm, { 'attr': { 'class': 'space-y-5', 'novalidate': 'novalidate' } }) }}
                 
-                {# Erreurs globales du formulaire #}
-                {{ form_errors(registrationForm) }}
-                
                 {# Ligne Prénom + Nom #}
                 <div class="grid grid-cols-2 gap-4">
                     {# Prénom #}

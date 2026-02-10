@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Dompdf\Dompdf;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Route('/admin/users', name: 'app_admin_users_')]
 class UserAdminController extends AbstractController
@@ -28,6 +30,7 @@ class UserAdminController extends AbstractController
     {
         $roleFilter = $request->query->get('role', '');
         $searchQ = $request->query->get('q', '');
+        $sort = $request->query->get('sort', 'asc'); // asc ou desc
 
         if ($searchQ !== '') {
             $users = $this->userRepository->searchByQuery($searchQ);
@@ -40,6 +43,15 @@ class UserAdminController extends AbstractController
             $users = $this->userRepository->findAllOrderedByNom();
         }
 
+        // Appliquer le tri alphabétique
+        usort($users, function(User $a, User $b) use ($sort) {
+            $nomA = $a->getNOM() ?? '';
+            $nomB = $b->getNOM() ?? '';
+            $comparison = strcasecmp($nomA, $nomB);
+            
+            return $sort === 'desc' ? -$comparison : $comparison;
+        });
+
         $total = $this->userRepository->count([]);
         $totalAdmins = $this->userRepository->countByRole('ROLE_ADMIN');
         $totalPsy = $this->userRepository->countByRole('ROLE_PSY');
@@ -51,6 +63,7 @@ class UserAdminController extends AbstractController
             'total_psy' => $totalPsy,
             'role_filter' => $roleFilter,
             'search_q' => $searchQ,
+            'sort' => $sort,
         ]);
     }
 
@@ -125,4 +138,45 @@ class UserAdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_users_list');
     }
-}
+
+    #[Route('/export/pdf', name: 'export_pdf')]
+    public function exportPdf(Request $request): Response
+    {
+        $roleFilter = $request->query->get('role', '');
+        $searchQ = $request->query->get('q', '');
+
+        if ($searchQ !== '') {
+            $users = $this->userRepository->searchByQuery($searchQ);
+            if ($roleFilter !== '') {
+                $users = array_filter($users, fn(User $u) => $u->getROLE() === $roleFilter);
+            }
+        } elseif ($roleFilter !== '') {
+            $users = $this->userRepository->findByRole($roleFilter);
+        } else {
+            $users = $this->userRepository->findAllOrderedByNom();
+        }
+
+        // Tri alphabétique
+        usort($users, fn(User $a, User $b) => strcasecmp($a->getNOM() ?? '', $b->getNOM() ?? ''));
+
+        // Générer le HTML pour le PDF
+        $html = $this->renderView('admin/user/export_pdf.html.twig', [
+            'users' => $users,
+            'generatedAt' => new \DateTime(),
+        ]);
+
+        // Créer le PDF
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="utilisateurs_' . date('Y-m-d_H-i-s') . '.pdf"',
+            ]
+        );
+    }}

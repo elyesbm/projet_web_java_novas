@@ -31,6 +31,7 @@ return [
         '/admin/skills/new' => [[['_route' => 'app_admin_skills_new', '_controller' => 'App\\Controller\\Admin\\SkillAdminController::new'], null, null, null, false, false, null]],
         '/admin/users' => [[['_route' => 'app_admin_users_list', '_controller' => 'App\\Controller\\Admin\\UserAdminController::list'], null, null, null, true, false, null]],
         '/admin/users/new' => [[['_route' => 'app_admin_users_new', '_controller' => 'App\\Controller\\Admin\\UserAdminController::new'], null, null, null, false, false, null]],
+        '/admin/users/export/pdf' => [[['_route' => 'app_admin_users_export_pdf', '_controller' => 'App\\Controller\\Admin\\UserAdminController::exportPdf'], null, null, null, false, false, null]],
         '/login' => [[['_route' => 'app_login', '_controller' => 'App\\Controller\\Front\\AuthController::login'], null, null, null, false, false, null]],
         '/register' => [[['_route' => 'app_register', '_controller' => 'App\\Controller\\Front\\AuthController::register'], null, null, null, false, false, null]],
         '/home' => [[['_route' => 'app_home', '_controller' => 'App\\Controller\\Front\\HomeController::index'], null, null, null, false, false, null]],

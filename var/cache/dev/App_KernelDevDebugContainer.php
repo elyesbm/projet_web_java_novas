@@ -16,7 +16,7 @@ if (!\class_exists(App_KernelDevDebugContainer::class, false)) {
 
 return new \ContainerBeaZrmi\App_KernelDevDebugContainer([
     'container.build_hash' => 'BeaZrmi',
-    'container.build_id' => 'e743e07d',
-    'container.build_time' => 1770675982,
+    'container.build_id' => '5bf963d6',
+    'container.build_time' => 1770747646,
     'container.runtime_mode' => \in_array(\PHP_SAPI, ['cli', 'phpdbg', 'embed'], true) ? 'web=0' : 'web=1',
 ], __DIR__.\DIRECTORY_SEPARATOR.'ContainerBeaZrmi');
