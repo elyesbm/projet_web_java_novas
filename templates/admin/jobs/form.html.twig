@@ -1,0 +1,179 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% set mode = mode|default('create') %}
+{% set isCreate = (mode == 'create') %}
+
+{% block title %}{{ isCreate ? 'Nouvelle' : 'Modifier' }} offre - NOVAS Admin{% endblock %}
+{% block page_title %}{{ isCreate ? 'Nouvelle offre' : 'Modifier l\'offre' }}{% endblock %}
+{% block page_subtitle %}Détails de l'offre d'emploi{% endblock %}
+
+{% block body %}
+<div class="max-w-5xl mx-auto">
+    <div class="bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl p-8 text-white mb-6 shadow-lg shadow-amber-500/25">
+        <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <i data-lucide="briefcase" class="w-8 h-8"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold">Détails de l'offre</h2>
+                <p class="text-amber-100">Attirez les meilleurs candidats</p>
+            </div>
+        </div>
+    </div>
+
+    {# ✅ FORM START: action depends on mode #}
+    <form method="post"
+          action="{% if isCreate %}{{ path('admin_jobs_new') }}{% else %}{{ path('admin_jobs_edit', {id: offre.id}) }}{% endif %}">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
+                    <div class="space-y-6">
+
+                        {# ✅ Titre #}
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                                Titre <span class="text-rose-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="titre_offre"
+                                required
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500 text-lg"
+                                placeholder="ex: Tutorat Mathématiques L1-L2"
+                                value="{{ offre.titreOffre|default('') }}"
+                            >
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            {# ✅ Catégorie (radio) #}
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Catégorie</label>
+
+                                {% set cat = offre.categorieOffre|default('Tutorat') %}
+
+                                <div class="grid grid-cols-3 gap-2">
+
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="categorie_offre" value="Tutorat" class="peer sr-only"
+                                               {{ cat == 'Tutorat' ? 'checked' : '' }}>
+                                        <div class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-900/20 text-center transition-all">
+                                            <i data-lucide="book-open" class="w-5 h-5 mx-auto mb-1 text-amber-500"></i>
+                                            <span class="text-xs font-medium">Tutorat</span>
+                                        </div>
+                                    </label>
+
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="categorie_offre" value="Aide" class="peer sr-only"
+                                               {{ cat == 'Aide' ? 'checked' : '' }}>
+                                        <div class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-900/20 text-center transition-all">
+                                            <i data-lucide="help-circle" class="w-5 h-5 mx-auto mb-1 text-amber-500"></i>
+                                            <span class="text-xs font-medium">Aide</span>
+                                        </div>
+                                    </label>
+
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="categorie_offre" value="Création" class="peer sr-only"
+                                               {{ cat == 'Création' ? 'checked' : '' }}>
+                                        <div class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-900/20 text-center transition-all">
+                                            <i data-lucide="lightbulb" class="w-5 h-5 mx-auto mb-1 text-amber-500"></i>
+                                            <span class="text-xs font-medium">Création</span>
+                                        </div>
+                                    </label>
+
+                                </div>
+                            </div>
+
+                            {# ✅ Lieu (select) #}
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Lieu</label>
+
+                                {% set lieuVal = offre.lieu|default('Sur le campus') %}
+
+                                <select name="lieu"
+                                        class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500">
+                                    <option value="Sur le campus" {{ lieuVal == 'Sur le campus' ? 'selected' : '' }}>Sur le campus</option>
+                                    <option value="En ligne" {{ lieuVal == 'En ligne' ? 'selected' : '' }}>En ligne</option>
+                                    <option value="À domicile" {{ lieuVal == 'À domicile' ? 'selected' : '' }}>À domicile</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {# ✅ Statut (simple select) #}
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Statut</label>
+
+                            {% set st = offre.statutOffre|default('OUVERTE') %}
+
+                            <select name="statut_offre"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500">
+                                <option value="OUVERTE" {{ st == 'OUVERTE' ? 'selected' : '' }}>OUVERTE</option>
+                                <option value="EN_COURS" {{ st == 'EN_COURS' ? 'selected' : '' }}>EN_COURS</option>
+                                <option value="POURVUE" {{ st == 'POURVUE' ? 'selected' : '' }}>POURVUE</option>
+                                <option value="FERMEE" {{ st == 'FERMEE' ? 'selected' : '' }}>FERMEE</option>
+                            </select>
+                        </div>
+
+                        {# ✅ Description #}
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                                Description <span class="text-rose-500">*</span>
+                            </label>
+                            <textarea
+                                name="description_offre"
+                                rows="5"
+                                required
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500 resize-none"
+                                placeholder="Décrivez la mission...">{{ offre.descriptionOffre|default('') }}</textarea>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            {# Right column: keep your design (optional fields kept but ignored in backend) #}
+            <div class="space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Rémunération</h3>
+                    <div class="space-y-4">
+
+                        {# These inputs are UI only for now (your DB table doesn't have them) #}
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Tarif horaire</label>
+                            <div class="relative">
+                                <input type="number" min="0" step="0.50"
+                                       class="w-full pl-4 pr-12 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500 text-2xl font-bold text-amber-600"
+                                       placeholder="25" disabled>
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">€/h</span>
+                            </div>
+                            <p class="text-xs text-slate-400">Optionnel (non stocké dans la DB actuelle).</p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Durée estimée</label>
+                            <input type="text"
+                                   class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500"
+                                   placeholder="ex: 2h/semaine" disabled>
+                            <p class="text-xs text-slate-400">Optionnel (non stocké dans la DB actuelle).</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button type="submit"
+                            class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-medium shadow-lg shadow-amber-500/25 transition-all">
+                        {{ isCreate ? 'Publier l\'offre' : 'Enregistrer' }}
+                    </button>
+
+                    <a href="{{ path('admin_jobs_list') }}"
+                       class="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium text-center transition-colors">
+                        Annuler
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+{% endblock %}

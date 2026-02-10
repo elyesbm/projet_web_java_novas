@@ -1,0 +1,117 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Publications - NOVAS Admin{% endblock %}
+{% block page_title %}Publications & Forum{% endblock %}
+{% block page_subtitle %}Modération des contenus{% endblock %}
+
+{% block body %}
+<div class="space-y-6">
+    
+    {# Stats #}
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-600"><i data-lucide="message-square" class="w-6 h-6"></i></div>
+                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">+15%</span>
+            </div>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white">1,245</p>
+            <p class="text-sm text-slate-500">Publications</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
+            <div class="p-3 rounded-xl bg-pink-100 dark:bg-pink-900/30 text-pink-600 mb-4"><i data-lucide="message-circle" class="w-6 h-6"></i></div>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white">3,678</p>
+            <p class="text-sm text-slate-500">Commentaires</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
+            <div class="p-3 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 mb-4"><i data-lucide="flag" class="w-6 h-6"></i></div>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white">12</p>
+            <p class="text-sm text-slate-500">Signalés</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
+            <div class="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 mb-4"><i data-lucide="heart" class="w-6 h-6"></i></div>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white">8.9k</p>
+            <p class="text-sm text-slate-500">Likes</p>
+        </div>
+    </div>
+
+    {# Tabs #}
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700">
+        <div class="border-b border-slate-200 dark:border-slate-700 px-6 flex items-center justify-between">
+            <div class="flex gap-6">
+                <button onclick="switchTab('publications')" id="tab-publications" class="py-4 text-sm font-semibold text-violet-600 border-b-2 border-violet-600">Publications</button>
+                <button onclick="switchTab('commentaires')" id="tab-commentaires" class="py-4 text-sm font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">Commentaires</button>
+                <button onclick="switchTab('signales')" id="tab-signales" class="py-4 text-sm font-semibold text-rose-500 hover:text-rose-600 flex items-center gap-2">
+                    Signalés
+                    <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-xs">3</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6 space-y-6" id="content-publications">
+            {# Publication Card #}
+            <div class="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 hover-card">
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="https://ui-avatars.com/api/?name=Marie+Dubois&background=random" class="w-12 h-12 rounded-full">
+                    <div>
+                        <p class="font-semibold text-slate-900 dark:text-white">Marie Dubois</p>
+                        <p class="text-sm text-slate-500">L3 Informatique • Il y a 2 heures</p>
+                    </div>
+                    <span class="ml-auto px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Académique</span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Conseils pour réussir les examens de ML ?</h3>
+                <p class="text-slate-600 dark:text-slate-400 mb-4">Les examens approchent et j'aimerais avoir vos conseils pour bien réviser...</p>
+                <div class="flex items-center gap-6 text-sm text-slate-500 border-t border-slate-200 dark:border-slate-700 pt-4">
+                    <span class="flex items-center gap-2"><i data-lucide="heart" class="w-4 h-4"></i>24 likes</span>
+                    <span class="flex items-center gap-2"><i data-lucide="message-circle" class="w-4 h-4"></i>12 commentaires</span>
+                    <div class="ml-auto flex gap-2">
+                        <a href="{{ path('app_admin_publications_edit', {id: 1}) }}" class="px-3 py-2 rounded-lg bg-violet-50 dark:bg-violet-900/20 text-violet-600 text-sm font-medium hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors">Modérer</a>
+                        <button onclick="if(confirm('Supprimer ?')) showToast('Publication supprimée', 'success')" class="p-2 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/30 text-rose-600 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 hidden" id="content-commentaires">
+            <p class="text-slate-500 text-center py-8">Commentaires à implémenter</p>
+        </div>
+
+        <div class="p-6 hidden space-y-6" id="content-signales">
+            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center shrink-0"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h3 class="font-semibold text-amber-900 dark:text-amber-400">Publication signalée</h3>
+                            <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-xs">3 signalements</span>
+                        </div>
+                        <p class="text-amber-700 dark:text-amber-300 text-sm mb-4">Cette publication a été signalée pour "contenu inapproprié"</p>
+                        <div class="bg-white dark:bg-slate-800 rounded-xl p-4 mb-4">
+                            <p class="text-slate-600 dark:text-slate-400 text-sm">"Ce contenu est offensant et ne respecte pas les règles de la communauté..."</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="showToast('Publication approuvée', 'success')" class="px-4 py-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 text-sm font-medium hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors">Approuver</button>
+                            <button onclick="showToast('Publication masquée', 'warning')" class="px-4 py-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 text-sm font-medium hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">Masquer</button>
+                            <a href="{{ path('app_admin_publications_edit', {id: 1}) }}" class="px-4 py-2 rounded-lg bg-violet-100 dark:bg-violet-900/30 text-violet-700 text-sm font-medium hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors">Examiner</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block javascripts %}
+<script>
+    function switchTab(tab) {
+        ['publications', 'commentaires', 'signales'].forEach(t => {
+            document.getElementById('content-' + t).classList.toggle('hidden', t !== tab);
+            const btn = document.getElementById('tab-' + t);
+            const isActive = t === tab;
+            const baseClass = t === 'signales' ? 'text-rose-500 hover:text-rose-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300';
+            const activeClass = t === 'signales' ? 'text-rose-600 border-b-2 border-rose-600' : 'text-violet-600 border-b-2 border-violet-600';
+            btn.className = 'py-4 text-sm font-semibold ' + (isActive ? activeClass : baseClass) + (t === 'signales' ? ' flex items-center gap-2' : '');
+        });
+    }
+</script>
+{% endblock %}
+{% endblock %}

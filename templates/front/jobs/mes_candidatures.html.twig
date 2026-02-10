@@ -1,0 +1,221 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Mes candidatures - NoVas Jobs{% endblock %}
+
+{% block body %}
+
+{% set admin_view = admin_view|default(false) %}
+{% set can_manage = can_manage|default(false) %}
+{% set manage_route = manage_route|default('') %}
+
+{# stats safe defaults #}
+{% set stats = stats|default({
+    total: candidatures|length,
+    enAttente: 0,
+    acceptees: 0,
+    refusees: 0
+}) %}
+
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center glow-primary">
+                <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+            </div>
+            <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
+        </a>
+
+        <div class="hidden md:flex items-center gap-8">
+            <a href="{{ path('front_jobs_index') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Jobs</a>
+
+            {% if admin_view %}
+                <span class="text-sm text-primary font-medium">Candidatures reçues</span>
+            {% else %}
+                <a href="{{ path('front_jobs_my_candidatures') }}" class="text-sm text-primary font-medium">Mes candidatures</a>
+            {% endif %}
+        </div>
+
+        <div class="flex items-center gap-4">
+            {% if admin_view %}
+                <a href="{{ can_manage ? path('admin_jobs_list') : path('front_jobs_my_offres') }}"
+                   class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
+                    Mes offres
+                </a>
+            {% else %}
+                <a href="{{ path('front_jobs_index') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
+                    Trouver une offre
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<!-- Content -->
+<section class="relative pt-32 pb-16 min-h-screen">
+    <div class="absolute inset-0 gradient-orb"></div>
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]"></div>
+
+    <div class="relative max-w-5xl mx-auto px-6">
+        <div class="mb-8">
+            {% if admin_view %}
+                <h1 class="font-serif text-3xl font-medium mb-2">Candidatures <span class="italic text-primary">reçues</span></h1>
+                <p class="text-muted-foreground">
+                    {% if offre is defined and offre %}
+                        Pour l'offre : <b>{{ offre.titreOffre }}</b>
+                    {% else %}
+                        Gérez les candidatures.
+                    {% endif %}
+                </p>
+            {% else %}
+                <h1 class="font-serif text-3xl font-medium mb-2">Mes <span class="italic text-primary">candidatures</span></h1>
+                <p class="text-muted-foreground">Suivez l'état de vos demandes.</p>
+            {% endif %}
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass-card rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold">{{ stats.total }}</p>
+                <p class="text-xs text-muted-foreground">Total</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold text-yellow-500">{{ stats.enAttente }}</p>
+                <p class="text-xs text-muted-foreground">En attente</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold text-accent">{{ stats.acceptees }}</p>
+                <p class="text-xs text-muted-foreground">Acceptées</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold text-red-400">{{ stats.refusees }}</p>
+                <p class="text-xs text-muted-foreground">Refusées</p>
+            </div>
+        </div>
+
+        <!-- Candidatures List -->
+        <div class="space-y-4">
+            {% for candidature in candidatures %}
+
+            {% set st = candidature.statutCandidature %}
+            {% set isWait = (st == 'EN_ATTENTE') %}
+            {% set isOk = (st == 'ACCEPTEE') %}
+            {% set isNo = (st == 'REFUSEE') %}
+
+            <div class="glass-card rounded-2xl p-6
+                {% if isOk %}border-l-4 border-accent
+                {% elseif isNo %}border-l-4 border-red-500 opacity-60
+                {% else %}border-l-4 border-yellow-500{% endif %}">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Job Info -->
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between mb-2">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium
+                                {% if isWait %}bg-yellow-500/20 text-yellow-500
+                                {% elseif isOk %}bg-accent/20 text-accent
+                                {% else %}bg-red-500/20 text-red-400{% endif %}">
+                                {% if isWait %}En attente
+                                {% elseif isOk %}Acceptée
+                                {% else %}Refusée{% endif %}
+                            </span>
+
+                            <span class="text-xs text-muted-foreground">
+                                {{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : '—' }}
+                            </span>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mb-2">{{ candidature.offre.titreOffre }}</h3>
+
+                        <p class="text-sm text-muted-foreground mb-3">
+                            {% if admin_view %}
+                                Candidat: {{ candidature.candidat ? (candidature.candidat.PRENOM ~ ' ' ~ candidature.candidat.NOM) : '—' }}
+                                {% if candidature.candidat and candidature.candidat.EMAIL %} • {{ candidature.candidat.EMAIL }}{% endif %}
+                                {% if candidature.candidat and candidature.candidat.NUMERO %} • {{ candidature.candidat.NUMERO }}{% endif %}
+                            {% else %}
+                                {{ candidature.offre.createur ? candidature.offre.createur.email : '—' }} • {{ candidature.offre.lieu }}
+                            {% endif %}
+                        </p>
+
+                        <div class="flex items-center gap-4 text-sm">
+                            <span class="text-primary font-semibold">{{ candidature.offre.categorieOffre }}</span>
+                            <span class="text-muted-foreground">{{ candidature.offre.statutOffre }}</span>
+                        </div>
+
+                        {% if candidature.messageCandidature %}
+                            <p class="mt-3 text-sm text-muted-foreground">
+                                <span class="font-medium text-foreground/80">Message :</span>
+                                {{ candidature.messageCandidature }}
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex md:flex-col gap-2 md:justify-center">
+                        <a href="{{ path('front_jobs_detail', {'id': candidature.offre.id}) }}"
+                           class="px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition text-sm font-medium text-center">
+                            Voir l'offre
+                        </a>
+
+                        {# USER: contact only if accepted #}
+                        {% if (not admin_view) and isOk and candidature.offre.createur and candidature.offre.createur.email %}
+                            <a href="mailto:{{ candidature.offre.createur.email }}"
+                               class="px-4 py-2 rounded-xl bg-accent text-white hover:bg-accent/90 transition text-sm font-medium text-center flex items-center justify-center gap-2">
+                                <i data-lucide="mail" class="w-4 h-4"></i>
+                                Contacter
+                            </a>
+                        {% endif %}
+
+                        {# ADMIN: accept/refuse buttons #}
+                        {% if can_manage and manage_route and isWait %}
+                            <form method="post" action="{{ path(manage_route, {id: candidature.id, status: 'ACCEPTEE'}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cand_status_' ~ candidature.id ~ '_ACCEPTEE') }}">
+                                <button type="submit"
+                                        class="px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white transition text-sm font-medium text-center w-full">
+                                    Accepter
+                                </button>
+                            </form>
+
+                            <form method="post" action="{{ path(manage_route, {id: candidature.id, status: 'REFUSEE'}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cand_status_' ~ candidature.id ~ '_REFUSEE') }}">
+                                <button type="submit"
+                                        class="px-4 py-2 rounded-xl bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white transition text-sm font-medium text-center w-full">
+                                    Refuser
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <div class="text-center py-16 glass-card rounded-2xl">
+                <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="search" class="w-8 h-8 text-primary"></i>
+                </div>
+                <h3 class="font-semibold mb-2">
+                    {% if admin_view %}Aucune candidature{% else %}Aucune candidature{% endif %}
+                </h3>
+                <p class="text-muted-foreground mb-6">
+                    {% if admin_view %}
+                        Cette offre n'a reçu aucune candidature pour le moment.
+                    {% else %}
+                        Commencez à postuler aux offres qui vous intéressent.
+                    {% endif %}
+                </p>
+
+                {% if not admin_view %}
+                    <a href="{{ path('front_jobs_index') }}" class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-medium hover:bg-primary/90 transition">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        Parcourir les offres
+                    </a>
+                {% else %}
+                    <a href="{{ can_manage ? path('admin_jobs_list') : path('front_jobs_my_offres') }}" class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-medium hover:bg-primary/90 transition">
+                        Retour aux offres
+                    </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
