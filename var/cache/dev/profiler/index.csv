@@ -1,4 +1,0 @@
-678a1f,127.0.0.1,GET,http://127.0.0.1:8000/admin/users/,1770747651,,200,request
-5ee6f3,127.0.0.1,GET,http://127.0.0.1:8000/admin/users/?q=&role=&sort=desc,1770747657,,200,request
-5013c5,127.0.0.1,GET,http://127.0.0.1:8000/admin/users/?q=&role=&sort=asc,1770747659,,200,request
-cfff61,127.0.0.1,GET,http://127.0.0.1:8000/admin/users/export/pdf?q=&role=,1770747662,,200,request
