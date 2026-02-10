@@ -133,7 +133,7 @@ class __TwigTemplate_028223cef87c63860598d25c7700db05 extends Template
             
             ";
         // line 37
-        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 37, $this->source); })()), 'form_start', ["attr" => ["class" => "glass-card rounded-3xl p-8 space-y-6"]]);
+        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 37, $this->source); })()), 'form_start', ["attr" => ["class" => "glass-card rounded-3xl p-8 space-y-6", "id" => "skill-form", "novalidate" => "novalidate"]]);
         yield "
                 ";
         // line 38
@@ -168,6 +168,106 @@ class __TwigTemplate_028223cef87c63860598d25c7700db05 extends Template
         // line 52
         yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 52, $this->source); })()), 'form_end');
         yield "
+
+            <!-- Container pour les notifications -->
+            <div id=\"toast-container\" class=\"fixed bottom-6 right-6 z-50 space-y-3 pointer-events-none\"></div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const form = document.getElementById('skill-form');
+                    if (!form) return;
+
+                    const nomInput = document.getElementById('";
+        // line 62
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 62, $this->source); })()), "nom_skill", [], "any", false, false, false, 62), "vars", [], "any", false, false, false, 62), "id", [], "any", false, false, false, 62), "html", null, true);
+        yield "');
+                    const categorieInput = document.getElementById('";
+        // line 63
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 63, $this->source); })()), "categorie", [], "any", false, false, false, 63), "vars", [], "any", false, false, false, 63), "id", [], "any", false, false, false, 63), "html", null, true);
+        yield "');
+                    const contexteInput = document.getElementById('";
+        // line 64
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 64, $this->source); })()), "contexte_skill", [], "any", false, false, false, 64), "vars", [], "any", false, false, false, 64), "id", [], "any", false, false, false, 64), "html", null, true);
+        yield "');
+                    const descriptionInput = document.getElementById('";
+        // line 65
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 65, $this->source); })()), "description_skill", [], "any", false, false, false, 65), "vars", [], "any", false, false, false, 65), "id", [], "any", false, false, false, 65), "html", null, true);
+        yield "');
+
+                    function showToast(message, type = 'error') {
+                        const container = document.getElementById('toast-container');
+                        if (!container) return;
+
+                        const toast = document.createElement('div');
+                        const colors = {
+                            success: 'bg-emerald-500',
+                            error: 'bg-red-600',
+                            warning: 'bg-amber-500',
+                            info: 'bg-blue-500',
+                        };
+
+                        toast.className = 'pointer-events-auto flex items-center gap-3 px-6 py-4 rounded-xl shadow-lg text-white transform translate-x-full transition-transform duration-300 ' + (colors[type] || colors.error);
+                        toast.innerHTML = `
+                            <i data-lucide=\"\${type === 'success' ? 'check-circle' : type === 'warning' ? 'alert-triangle' : type === 'info' ? 'info' : 'x-circle'}\" class=\"w-5 h-5\"></i>
+                            <span class=\"font-medium text-sm\">\${message}</span>
+                        `;
+
+                        container.appendChild(toast);
+                        if (window.lucide) {
+                            window.lucide.createIcons();
+                        }
+
+                        // Animation d'apparition
+                        requestAnimationFrame(() => {
+                            toast.classList.remove('translate-x-full');
+                        });
+
+                        // Disparition automatique
+                        setTimeout(() => {
+                            toast.classList.add('translate-x-full');
+                            setTimeout(() => toast.remove(), 300);
+                        }, 4000);
+                    }
+
+                    form.addEventListener('submit', function (e) {
+                        const errors = [];
+
+                        const nom = nomInput.value.trim();
+                        const categorie = categorieInput.value;
+                        const contexte = contexteInput.value;
+                        const description = descriptionInput.value.trim();
+
+                        // Nom du skill
+                        if (!nom) {
+                            errors.push('Le nom du skill est obligatoire.');
+                        } else if (nom.length < 3) {
+                            errors.push('Le nom du skill doit contenir au moins 3 caractères.');
+                        } else if (nom.length > 255) {
+                            errors.push('Le nom du skill ne peut pas dépasser 255 caractères.');
+                        }
+
+                        // Catégorie
+                        if (!categorie) {
+                            errors.push('La catégorie est obligatoire.');
+                        }
+
+                        // Type de compétence
+                        if (!contexte) {
+                            errors.push('Le type de compétence est obligatoire.');
+                        }
+
+                        // Description (optionnelle mais limitée)
+                        if (description.length > 255) {
+                            errors.push('La description ne peut pas dépasser 255 caractères.');
+                        }
+
+                        if (errors.length > 0) {
+                            e.preventDefault();
+                            errors.forEach(message => showToast(message, 'error'));
+                        }
+                    });
+                });
+            </script>
         </div>
     </div>
 </div>
@@ -202,7 +302,7 @@ class __TwigTemplate_028223cef87c63860598d25c7700db05 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  169 => 52,  158 => 44,  152 => 41,  148 => 40,  144 => 39,  140 => 38,  136 => 37,  109 => 13,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
+        return array (  194 => 65,  190 => 64,  186 => 63,  182 => 62,  169 => 52,  158 => 44,  152 => 41,  148 => 40,  144 => 39,  140 => 38,  136 => 37,  109 => 13,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -243,7 +343,7 @@ class __TwigTemplate_028223cef87c63860598d25c7700db05 extends Template
                 <p class=\"text-muted-foreground\">Identifiez et ajoutez une compétence à votre profil</p>
             </div>
             
-            {{ form_start(form, { 'attr': { 'class': 'glass-card rounded-3xl p-8 space-y-6' } }) }}
+            {{ form_start(form, { 'attr': { 'class': 'glass-card rounded-3xl p-8 space-y-6', 'id': 'skill-form', 'novalidate': 'novalidate' } }) }}
                 {{ form_row(form.nom_skill) }}
                 {{ form_row(form.contexte_skill) }}
                 {{ form_row(form.categorie) }}
@@ -259,6 +359,94 @@ class __TwigTemplate_028223cef87c63860598d25c7700db05 extends Template
                     </button>
                 </div>
             {{ form_end(form) }}
+
+            <!-- Container pour les notifications -->
+            <div id=\"toast-container\" class=\"fixed bottom-6 right-6 z-50 space-y-3 pointer-events-none\"></div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const form = document.getElementById('skill-form');
+                    if (!form) return;
+
+                    const nomInput = document.getElementById('{{ form.nom_skill.vars.id }}');
+                    const categorieInput = document.getElementById('{{ form.categorie.vars.id }}');
+                    const contexteInput = document.getElementById('{{ form.contexte_skill.vars.id }}');
+                    const descriptionInput = document.getElementById('{{ form.description_skill.vars.id }}');
+
+                    function showToast(message, type = 'error') {
+                        const container = document.getElementById('toast-container');
+                        if (!container) return;
+
+                        const toast = document.createElement('div');
+                        const colors = {
+                            success: 'bg-emerald-500',
+                            error: 'bg-red-600',
+                            warning: 'bg-amber-500',
+                            info: 'bg-blue-500',
+                        };
+
+                        toast.className = 'pointer-events-auto flex items-center gap-3 px-6 py-4 rounded-xl shadow-lg text-white transform translate-x-full transition-transform duration-300 ' + (colors[type] || colors.error);
+                        toast.innerHTML = `
+                            <i data-lucide=\"\${type === 'success' ? 'check-circle' : type === 'warning' ? 'alert-triangle' : type === 'info' ? 'info' : 'x-circle'}\" class=\"w-5 h-5\"></i>
+                            <span class=\"font-medium text-sm\">\${message}</span>
+                        `;
+
+                        container.appendChild(toast);
+                        if (window.lucide) {
+                            window.lucide.createIcons();
+                        }
+
+                        // Animation d'apparition
+                        requestAnimationFrame(() => {
+                            toast.classList.remove('translate-x-full');
+                        });
+
+                        // Disparition automatique
+                        setTimeout(() => {
+                            toast.classList.add('translate-x-full');
+                            setTimeout(() => toast.remove(), 300);
+                        }, 4000);
+                    }
+
+                    form.addEventListener('submit', function (e) {
+                        const errors = [];
+
+                        const nom = nomInput.value.trim();
+                        const categorie = categorieInput.value;
+                        const contexte = contexteInput.value;
+                        const description = descriptionInput.value.trim();
+
+                        // Nom du skill
+                        if (!nom) {
+                            errors.push('Le nom du skill est obligatoire.');
+                        } else if (nom.length < 3) {
+                            errors.push('Le nom du skill doit contenir au moins 3 caractères.');
+                        } else if (nom.length > 255) {
+                            errors.push('Le nom du skill ne peut pas dépasser 255 caractères.');
+                        }
+
+                        // Catégorie
+                        if (!categorie) {
+                            errors.push('La catégorie est obligatoire.');
+                        }
+
+                        // Type de compétence
+                        if (!contexte) {
+                            errors.push('Le type de compétence est obligatoire.');
+                        }
+
+                        // Description (optionnelle mais limitée)
+                        if (description.length > 255) {
+                            errors.push('La description ne peut pas dépasser 255 caractères.');
+                        }
+
+                        if (errors.length > 0) {
+                            e.preventDefault();
+                            errors.forEach(message => showToast(message, 'error'));
+                        }
+                    });
+                });
+            </script>
         </div>
     </div>
 </div>

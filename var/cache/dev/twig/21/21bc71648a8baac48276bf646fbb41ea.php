@@ -34,6 +34,7 @@ class __TwigTemplate_0e6bcfbd9af48ab6564a05729415dc5f extends Template
             'page_title' => [$this, 'block_page_title'],
             'page_subtitle' => [$this, 'block_page_subtitle'],
             'body' => [$this, 'block_body'],
+            'javascripts' => [$this, 'block_javascripts'],
         ];
     }
 
@@ -166,7 +167,7 @@ class __TwigTemplate_0e6bcfbd9af48ab6564a05729415dc5f extends Template
     <div class=\"bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-8\">
         ";
         // line 20
-        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 20, $this->source); })()), 'form_start', ["attr" => ["class" => "space-y-8"]]);
+        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 20, $this->source); })()), 'form_start', ["attr" => ["class" => "space-y-8", "id" => "admin-skill-form", "novalidate" => "novalidate"]]);
         yield "
             <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">
                 <div class=\"space-y-2\">
@@ -248,6 +249,92 @@ class __TwigTemplate_0e6bcfbd9af48ab6564a05729415dc5f extends Template
         yield "
     </div>
 </div>
+
+";
+        // line 57
+        yield from $this->unwrap()->yieldBlock('javascripts', $context, $blocks);
+        
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
+
+        
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->leave($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof);
+
+        yield from [];
+    }
+
+    /**
+     * @return iterable<null|scalar|\Stringable>
+     */
+    public function block_javascripts(array $context, array $blocks = []): iterable
+    {
+        $macros = $this->macros;
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2 = $this->extensions["Symfony\\Bundle\\WebProfilerBundle\\Twig\\WebProfilerExtension"];
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->enter($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
+
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
+
+        // line 58
+        yield "    ";
+        yield from $this->yieldParentBlock("javascripts", $context, $blocks);
+        yield "
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('admin-skill-form');
+            if (!form || typeof showToast === 'undefined') return;
+
+            const nomInput = document.getElementById('";
+        // line 64
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 64, $this->source); })()), "nom_skill", [], "any", false, false, false, 64), "vars", [], "any", false, false, false, 64), "id", [], "any", false, false, false, 64), "html", null, true);
+        yield "');
+            const categorieInput = document.getElementById('";
+        // line 65
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 65, $this->source); })()), "categorie", [], "any", false, false, false, 65), "vars", [], "any", false, false, false, 65), "id", [], "any", false, false, false, 65), "html", null, true);
+        yield "');
+            const contexteInput = document.getElementById('";
+        // line 66
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 66, $this->source); })()), "contexte_skill", [], "any", false, false, false, 66), "vars", [], "any", false, false, false, 66), "id", [], "any", false, false, false, 66), "html", null, true);
+        yield "');
+            const descriptionInput = document.getElementById('";
+        // line 67
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 67, $this->source); })()), "description_skill", [], "any", false, false, false, 67), "vars", [], "any", false, false, false, 67), "id", [], "any", false, false, false, 67), "html", null, true);
+        yield "');
+
+            form.addEventListener('submit', function (e) {
+                const errors = [];
+
+                const nom = nomInput.value.trim();
+                const categorie = categorieInput.value;
+                const contexte = contexteInput.value;
+                const description = descriptionInput.value.trim();
+
+                if (!nom) {
+                    errors.push('Le nom de la compétence est obligatoire.');
+                } else if (nom.length < 3) {
+                    errors.push('Le nom de la compétence doit contenir au moins 3 caractères.');
+                } else if (nom.length > 255) {
+                    errors.push('Le nom de la compétence ne peut pas dépasser 255 caractères.');
+                }
+
+                if (!categorie) {
+                    errors.push('La catégorie est obligatoire.');
+                }
+
+                if (!contexte) {
+                    errors.push('Le type de compétence est obligatoire.');
+                }
+
+                if (description.length > 255) {
+                    errors.push('La description ne peut pas dépasser 255 caractères.');
+                }
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    errors.forEach(msg => showToast(msg, 'error'));
+                }
+            });
+        });
+    </script>
 ";
         
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
@@ -279,7 +366,7 @@ class __TwigTemplate_0e6bcfbd9af48ab6564a05729415dc5f extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  247 => 53,  241 => 50,  235 => 47,  228 => 43,  224 => 42,  220 => 41,  213 => 37,  209 => 36,  205 => 35,  197 => 30,  193 => 29,  189 => 28,  183 => 25,  179 => 24,  175 => 23,  169 => 20,  160 => 14,  156 => 13,  149 => 8,  136 => 7,  113 => 5,  90 => 4,  66 => 3,  43 => 1,);
+        return array (  300 => 67,  296 => 66,  292 => 65,  288 => 64,  278 => 58,  255 => 57,  248 => 53,  242 => 50,  236 => 47,  229 => 43,  225 => 42,  221 => 41,  214 => 37,  210 => 36,  206 => 35,  198 => 30,  194 => 29,  190 => 28,  184 => 25,  180 => 24,  176 => 23,  170 => 20,  161 => 14,  157 => 13,  150 => 8,  137 => 7,  114 => 5,  91 => 4,  67 => 3,  44 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -303,7 +390,7 @@ class __TwigTemplate_0e6bcfbd9af48ab6564a05729415dc5f extends Template
     </div>
 
     <div class=\"bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-8\">
-        {{ form_start(form, { 'attr': { 'class': 'space-y-8' } }) }}
+        {{ form_start(form, { 'attr': { 'class': 'space-y-8', 'id': 'admin-skill-form', 'novalidate': 'novalidate' } }) }}
             <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">
                 <div class=\"space-y-2\">
                     {{ form_label(form.nom_skill) }}
@@ -339,6 +426,55 @@ class __TwigTemplate_0e6bcfbd9af48ab6564a05729415dc5f extends Template
         {{ form_end(form) }}
     </div>
 </div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('admin-skill-form');
+            if (!form || typeof showToast === 'undefined') return;
+
+            const nomInput = document.getElementById('{{ form.nom_skill.vars.id }}');
+            const categorieInput = document.getElementById('{{ form.categorie.vars.id }}');
+            const contexteInput = document.getElementById('{{ form.contexte_skill.vars.id }}');
+            const descriptionInput = document.getElementById('{{ form.description_skill.vars.id }}');
+
+            form.addEventListener('submit', function (e) {
+                const errors = [];
+
+                const nom = nomInput.value.trim();
+                const categorie = categorieInput.value;
+                const contexte = contexteInput.value;
+                const description = descriptionInput.value.trim();
+
+                if (!nom) {
+                    errors.push('Le nom de la compétence est obligatoire.');
+                } else if (nom.length < 3) {
+                    errors.push('Le nom de la compétence doit contenir au moins 3 caractères.');
+                } else if (nom.length > 255) {
+                    errors.push('Le nom de la compétence ne peut pas dépasser 255 caractères.');
+                }
+
+                if (!categorie) {
+                    errors.push('La catégorie est obligatoire.');
+                }
+
+                if (!contexte) {
+                    errors.push('Le type de compétence est obligatoire.');
+                }
+
+                if (description.length > 255) {
+                    errors.push('La description ne peut pas dépasser 255 caractères.');
+                }
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    errors.forEach(msg => showToast(msg, 'error'));
+                }
+            });
+        });
+    </script>
+{% endblock %}
 {% endblock %}
 ", "admin/skill/form.html.twig", "C:\\Users\\MSI\\Desktop\\projetweb\\projet_web_java_novas\\templates\\admin\\skill\\form.html.twig");
     }

@@ -17,7 +17,7 @@
     </div>
 
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-8">
-        {{ form_start(form, { 'attr': { 'class': 'space-y-8' } }) }}
+        {{ form_start(form, { 'attr': { 'class': 'space-y-8', 'id': 'admin-learning-path-form', 'novalidate': 'novalidate' } }) }}
             <div class="space-y-2">
                 {{ form_label(form.titre_path) }}
                 {{ form_widget(form.titre_path) }}
@@ -78,4 +78,79 @@
         {{ form_end(form) }}
     </div>
 </div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('admin-learning-path-form');
+            if (!form || typeof showToast === 'undefined') return;
+
+            const titreInput = document.getElementById('{{ form.titre_path.vars.id }}');
+            const skillInput = document.getElementById('{{ form.skill.vars.id }}');
+            const descriptionInput = document.getElementById('{{ form.description_skill.vars.id }}');
+            const dureeInput = document.getElementById('{{ form.duree_estimee.vars.id }}');
+            const niveauInput = document.getElementById('{{ form.niveau_path.vars.id }}');
+            const statutInput = document.getElementById('{{ form.statut_path.vars.id }}');
+            const contexteInput = document.getElementById('{{ form.contexte_path.vars.id }}');
+            const typeEtapeInput = document.getElementById('{{ form.type_etape.vars.id }}');
+            const urlInput = document.getElementById('{{ form.url.vars.id }}');
+
+            form.addEventListener('submit', function (e) {
+                const errors = [];
+
+                const titre = titreInput.value.trim();
+                const skill = skillInput.value;
+                const description = descriptionInput.value.trim();
+                const duree = dureeInput.value;
+                const niveau = niveauInput.value;
+                const statut = statutInput.value;
+                const contexte = contexteInput.value;
+                const typeEtape = typeEtapeInput.value;
+                const url = urlInput.value.trim();
+
+                if (!titre) {
+                    errors.push('Le titre du parcours est obligatoire.');
+                } else if (titre.length < 3) {
+                    errors.push('Le titre du parcours doit contenir au moins 3 caractères.');
+                } else if (titre.length > 255) {
+                    errors.push('Le titre du parcours ne peut pas dépasser 255 caractères.');
+                }
+
+                if (!skill) {
+                    errors.push('La compétence associée est obligatoire.');
+                }
+
+                if (description.length > 255) {
+                    errors.push('La description ne peut pas dépasser 255 caractères.');
+                }
+
+                if (!duree || duree <= 0) {
+                    errors.push('La durée estimée doit être un nombre positif.');
+                }
+
+                if (niveau && (niveau < 1 || niveau > 3)) {
+                    errors.push('Le niveau doit être compris entre 1 et 3.');
+                }
+
+                if (statut && (statut < 0 || statut > 1)) {
+                    errors.push('Le statut doit être 0 (inactif) ou 1 (actif).');
+                }
+
+                if (!contexte) {
+                    errors.push('Le contexte est obligatoire.');
+                }
+
+                if (url && !/^https?:\/\/.+/i.test(url)) {
+                    errors.push('L’URL doit commencer par http:// ou https://');
+                }
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    errors.forEach(msg => showToast(msg, 'error'));
+                }
+            });
+        });
+    </script>
+{% endblock %}
 {% endblock %}

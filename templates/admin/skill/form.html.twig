@@ -17,7 +17,7 @@
     </div>
 
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-8">
-        {{ form_start(form, { 'attr': { 'class': 'space-y-8' } }) }}
+        {{ form_start(form, { 'attr': { 'class': 'space-y-8', 'id': 'admin-skill-form', 'novalidate': 'novalidate' } }) }}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
                     {{ form_label(form.nom_skill) }}
@@ -53,4 +53,53 @@
         {{ form_end(form) }}
     </div>
 </div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('admin-skill-form');
+            if (!form || typeof showToast === 'undefined') return;
+
+            const nomInput = document.getElementById('{{ form.nom_skill.vars.id }}');
+            const categorieInput = document.getElementById('{{ form.categorie.vars.id }}');
+            const contexteInput = document.getElementById('{{ form.contexte_skill.vars.id }}');
+            const descriptionInput = document.getElementById('{{ form.description_skill.vars.id }}');
+
+            form.addEventListener('submit', function (e) {
+                const errors = [];
+
+                const nom = nomInput.value.trim();
+                const categorie = categorieInput.value;
+                const contexte = contexteInput.value;
+                const description = descriptionInput.value.trim();
+
+                if (!nom) {
+                    errors.push('Le nom de la compétence est obligatoire.');
+                } else if (nom.length < 3) {
+                    errors.push('Le nom de la compétence doit contenir au moins 3 caractères.');
+                } else if (nom.length > 255) {
+                    errors.push('Le nom de la compétence ne peut pas dépasser 255 caractères.');
+                }
+
+                if (!categorie) {
+                    errors.push('La catégorie est obligatoire.');
+                }
+
+                if (!contexte) {
+                    errors.push('Le type de compétence est obligatoire.');
+                }
+
+                if (description.length > 255) {
+                    errors.push('La description ne peut pas dépasser 255 caractères.');
+                }
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    errors.forEach(msg => showToast(msg, 'error'));
+                }
+            });
+        });
+    </script>
+{% endblock %}
 {% endblock %}

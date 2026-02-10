@@ -34,7 +34,7 @@
                 <p class="text-muted-foreground">Identifiez et ajoutez une compétence à votre profil</p>
             </div>
             
-            {{ form_start(form, { 'attr': { 'class': 'glass-card rounded-3xl p-8 space-y-6' } }) }}
+            {{ form_start(form, { 'attr': { 'class': 'glass-card rounded-3xl p-8 space-y-6', 'id': 'skill-form', 'novalidate': 'novalidate' } }) }}
                 {{ form_row(form.nom_skill) }}
                 {{ form_row(form.contexte_skill) }}
                 {{ form_row(form.categorie) }}
@@ -50,6 +50,94 @@
                     </button>
                 </div>
             {{ form_end(form) }}
+
+            <!-- Container pour les notifications -->
+            <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-3 pointer-events-none"></div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const form = document.getElementById('skill-form');
+                    if (!form) return;
+
+                    const nomInput = document.getElementById('{{ form.nom_skill.vars.id }}');
+                    const categorieInput = document.getElementById('{{ form.categorie.vars.id }}');
+                    const contexteInput = document.getElementById('{{ form.contexte_skill.vars.id }}');
+                    const descriptionInput = document.getElementById('{{ form.description_skill.vars.id }}');
+
+                    function showToast(message, type = 'error') {
+                        const container = document.getElementById('toast-container');
+                        if (!container) return;
+
+                        const toast = document.createElement('div');
+                        const colors = {
+                            success: 'bg-emerald-500',
+                            error: 'bg-red-600',
+                            warning: 'bg-amber-500',
+                            info: 'bg-blue-500',
+                        };
+
+                        toast.className = 'pointer-events-auto flex items-center gap-3 px-6 py-4 rounded-xl shadow-lg text-white transform translate-x-full transition-transform duration-300 ' + (colors[type] || colors.error);
+                        toast.innerHTML = `
+                            <i data-lucide="${type === 'success' ? 'check-circle' : type === 'warning' ? 'alert-triangle' : type === 'info' ? 'info' : 'x-circle'}" class="w-5 h-5"></i>
+                            <span class="font-medium text-sm">${message}</span>
+                        `;
+
+                        container.appendChild(toast);
+                        if (window.lucide) {
+                            window.lucide.createIcons();
+                        }
+
+                        // Animation d'apparition
+                        requestAnimationFrame(() => {
+                            toast.classList.remove('translate-x-full');
+                        });
+
+                        // Disparition automatique
+                        setTimeout(() => {
+                            toast.classList.add('translate-x-full');
+                            setTimeout(() => toast.remove(), 300);
+                        }, 4000);
+                    }
+
+                    form.addEventListener('submit', function (e) {
+                        const errors = [];
+
+                        const nom = nomInput.value.trim();
+                        const categorie = categorieInput.value;
+                        const contexte = contexteInput.value;
+                        const description = descriptionInput.value.trim();
+
+                        // Nom du skill
+                        if (!nom) {
+                            errors.push('Le nom du skill est obligatoire.');
+                        } else if (nom.length < 3) {
+                            errors.push('Le nom du skill doit contenir au moins 3 caractères.');
+                        } else if (nom.length > 255) {
+                            errors.push('Le nom du skill ne peut pas dépasser 255 caractères.');
+                        }
+
+                        // Catégorie
+                        if (!categorie) {
+                            errors.push('La catégorie est obligatoire.');
+                        }
+
+                        // Type de compétence
+                        if (!contexte) {
+                            errors.push('Le type de compétence est obligatoire.');
+                        }
+
+                        // Description (optionnelle mais limitée)
+                        if (description.length > 255) {
+                            errors.push('La description ne peut pas dépasser 255 caractères.');
+                        }
+
+                        if (errors.length > 0) {
+                            e.preventDefault();
+                            errors.forEach(message => showToast(message, 'error'));
+                        }
+                    });
+                });
+            </script>
         </div>
     </div>
 </div>

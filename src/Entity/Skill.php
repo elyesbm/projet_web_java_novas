@@ -6,6 +6,7 @@ use App\Repository\SkillRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SkillRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -17,15 +18,28 @@ class Skill
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom du skill est obligatoire.')]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: 'Le nom du skill doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le nom du skill ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $nom_skill = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $description_skill = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La catégorie est obligatoire.')]
     private ?string $categorie = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le type de compétence est obligatoire.')]
     private ?string $contexte_skill = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'skills')]
