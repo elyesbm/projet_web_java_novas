@@ -357,8 +357,13 @@ class MarketplaceController extends AbstractController
     }
 
     #[Route('/article/ajouter-public', name: 'app_marketplace_ajouter_public', methods: ['GET', 'POST'])]
-    public function ajouterPublic(Request $request, CategorieRepository $categorieRepository, EntityManagerInterface $entityManager, \App\Repository\UserRepository $userRepository): Response
-    {
+    public function ajouterPublic(
+        Request $request,
+        CategorieRepository $categorieRepository,
+        EntityManagerInterface $entityManager,
+        \App\Repository\UserRepository $userRepository,
+        ValidatorInterface $validator
+    ): Response {
         // Formulaire public : ne nécessite pas d'utilisateur connecté
         $categoriesEntities = $categorieRepository->findAll();
         $categories = array_map(static function (Categorie $categorie): array {
@@ -398,7 +403,7 @@ class MarketplaceController extends AbstractController
                 'allowExtraFields' => true,
             ]);
 
-            $violations = $this->container->get('validator')->validate($data, $constraints);
+            $violations = $validator->validate($data, $constraints);
             $errors = [];
             if (count($violations) > 0) {
                 foreach ($violations as $v) {
@@ -407,15 +412,13 @@ class MarketplaceController extends AbstractController
             }
 
             if ($uploadedFile instanceof UploadedFile) {
-                $fileConstraints = new Assert\File(['maxSize' => '2M', 'mimeTypes' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp']]);
-                $fileViolations = $this->container->get('validator')->validate($uploadedFile, $fileConstraints);
-                if (count($fileViolations) > 0) {
-                    foreach ($fileViolations as $fv) {
-                        $errors[] = $fv->getMessage();
-                    }
+                $ext = strtolower($uploadedFile->getClientOriginalExtension() ?: '');
+                $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                if (!in_array($ext, $allowedExt, true)) {
+                    $errors[] = 'Le format de l\'image est invalide (jpg, png, gif, webp uniquement).';
                 } else {
                     $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/images';
-                    $newFilename = uniqid('article_', true) . '.' . ($uploadedFile->getClientOriginalExtension() ?: 'jpg');
+                    $newFilename = uniqid('article_', true) . '.' . ($ext ?: 'jpg');
                     try {
                         $uploadedFile->move($uploadsDir, $newFilename);
                         $data['image_article'] = $newFilename;
@@ -699,8 +702,26 @@ class MarketplaceController extends AbstractController
             $nom = trim((string) $request->request->get('nom', ''));
             $description = trim((string) $request->request->get('description', ''));
 
-            if (!$nom) {
-                $this->addFlash('error', 'Le nom de la catégorie est obligatoire.');
+            $errors = [];
+            if ($nom === '') {
+                $errors[] = 'Le nom de la catégorie est obligatoire.';
+            } else {
+                $len = mb_strlen($nom);
+                if ($len < 2) {
+                    $errors[] = 'Le nom doit contenir au moins 2 caractères.';
+                }
+                if ($len > 255) {
+                    $errors[] = 'Le nom ne doit pas dépasser 255 caractères.';
+                }
+            }
+            if (mb_strlen($description) > 1000) {
+                $errors[] = 'La description est trop longue (max 1000 caractères).';
+            }
+
+            if (!empty($errors)) {
+                foreach ($errors as $err) {
+                    $this->addFlash('error', $err);
+                }
             } else {
                 $categorie->setNomCategorie($nom)->setDescriptionCategorie($description);
                 $entityManager->flush();
