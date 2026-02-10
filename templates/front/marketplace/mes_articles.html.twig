@@ -93,7 +93,7 @@
                             <tr class="hover:bg-secondary/30 transition-colors">
                                 <td class="p-4">
                                     <div class="flex items-center gap-4">
-                                        <img src="{{ asset('images/' ~ article.image) }}" class="w-16 h-16 rounded-xl object-cover">
+                                        <img src="{{ asset('images/' ~ article.image) }}" onerror="this.onerror=null;this.src='{{ asset('images/skills-learning.jpg') }}';" class="w-16 h-16 rounded-xl object-cover">
                                         <div>
                                             <h4 class="font-medium hover:text-primary transition-colors cursor-pointer">{{ article.titre }}</h4>
                                             <p class="text-xs text-muted-foreground">Publie le 15 Feb 2024</p>

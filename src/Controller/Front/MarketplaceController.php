@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class MarketplaceController extends AbstractController
 {
     #[Route('/', name: 'app_marketplace_index')]
-    public function index(ArticleRepository $articleRepository, CategorieRepository $categorieRepository): Response
+    public function index(Request $request, ArticleRepository $articleRepository, CategorieRepository $categorieRepository): Response
     {
         // Catégories depuis la base
         $categoriesEntities = $categorieRepository->findAll();
@@ -43,17 +43,61 @@ class MarketplaceController extends AbstractController
             ];
         }, $categoriesEntities);
 
-        // Articles depuis la base (les plus récents en premier)
-        $articlesEntities = $articleRepository->findBy([], ['id' => 'DESC']);
-        $articles = array_map(static function (Article $article): array {
+        // Build filter criteria and sort from query params
+        $criteria = [];
+        $order = ['id' => 'DESC'];
+
+        $categorieFilter = $request->query->get('categorie');
+        $typeFilter = $request->query->get('type');
+        $statutFilter = $request->query->get('statut');
+        $sort = $request->query->get('sort');
+
+        if ($categorieFilter) {
+            $catEntity = $categorieRepository->find((int) $categorieFilter);
+            if ($catEntity) {
+                $criteria['categorie'] = $catEntity;
+            }
+        }
+        if ($typeFilter) {
+            $criteria['type_article'] = $typeFilter;
+        }
+        if ($statutFilter) {
+            $criteria['statut_article'] = $statutFilter;
+        }
+        if ($sort) {
+            match ($sort) {
+                'price_asc' => $order = ['prix_article' => 'ASC'],
+                'price_desc' => $order = ['prix_article' => 'DESC'],
+                'date_asc' => $order = ['id' => 'ASC'],
+                'date_desc' => $order = ['id' => 'DESC'],
+                default => $order = ['id' => 'DESC'],
+            };
+        }
+
+        // Articles depuis la base selon critères ou recherche libre
+        $q = trim((string) $request->query->get('q', ''));
+        if ($q !== '') {
+            $articlesEntities = $articleRepository->search($q, $criteria, $order);
+        } else {
+            $articlesEntities = $articleRepository->findBy($criteria, $order);
+        }
+        $articles = array_map(function (Article $article): array {
             $categorie = $article->getCategorie();
             $auteur = $article->getAuteur();
+
+            // Ensure image file exists, otherwise use fallback
+            $image = $article->getImageArticle() ?: 'skills-learning.jpg';
+            $imagesDir = $this->getParameter('kernel.project_dir') . '/public/images';
+            $imagePath = $imagesDir . '/' . $image;
+            if (!is_file($imagePath)) {
+                $image = 'skills-learning.jpg';
+            }
 
             return [
                 'id' => $article->getId(),
                 'titre' => $article->getTitreArticle(),
                 'contenu' => $article->getContenueArticle(),
-                'image' => $article->getImageArticle() ?: 'skills-learning.jpg',
+                'image' => $image,
                 'type' => $article->getTypeArticle() ?: 'academic',
                 'prix' => $article->getPrixArticle() ?? 0,
                 'statut' => $article->getStatutArticle() ?? 'disponible',
@@ -85,12 +129,19 @@ class MarketplaceController extends AbstractController
         }
         $categorie = $articleEntity->getCategorie();
         $auteur = $articleEntity->getAuteur();
+        // Detail image handling: prefer stored image if file exists
+        $detailImage = $articleEntity->getImageArticle() ?: 'skills-learning.jpg';
+        $imagesDir = $this->getParameter('kernel.project_dir') . '/public/images';
+        if (!is_file($imagesDir . '/' . $detailImage)) {
+            $detailImage = 'skills-learning.jpg';
+        }
+
         $article = [
             'id' => $articleEntity->getId(),
             'titre' => $articleEntity->getTitreArticle(),
             'contenu' => $articleEntity->getContenueArticle(),
-            'image' => $articleEntity->getImageArticle() ?: 'skills-learning.jpg',
-            'images' => [$articleEntity->getImageArticle() ?: 'skills-learning.jpg', 'workshop.jpg', 'student-hero.jpg'],
+            'image' => $detailImage,
+            'images' => [$detailImage, 'workshop.jpg', 'student-hero.jpg'],
             'type' => $articleEntity->getTypeArticle() ?: 'academic',
             'prix' => $articleEntity->getPrixArticle() ?? 0,
             'statut' => $articleEntity->getStatutArticle() ?? 'disponible',
@@ -129,14 +180,19 @@ class MarketplaceController extends AbstractController
         // À terme, filtrer par utilisateur connecté
         // Afficher les articles du plus récent au plus ancien
         $articlesEntities = $articleRepository->findBy([], ['id' => 'DESC']);
-        $mesArticles = array_map(static function (Article $article): array {
+        $mesArticles = array_map(function (Article $article): array {
             $categorie = $article->getCategorie();
+            $imagesDir = $this->getParameter('kernel.project_dir') . '/public/images';
+            $image = $article->getImageArticle() ?: 'skills-learning.jpg';
+            if (!is_file($imagesDir . '/' . $image)) {
+                $image = 'skills-learning.jpg';
+            }
 
             return [
                 'id' => $article->getId(),
                 'titre' => $article->getTitreArticle(),
                 'prix' => $article->getPrixArticle() ?? 0,
-                'image' => $article->getImageArticle() ?: 'skills-learning.jpg',
+                'image' => $image,
                 'statut' => $article->getStatutArticle() ?? 'disponible',
                 'categorie' => $categorie instanceof Categorie ? $categorie->getNomCategorie() : 'Autre',
                 'vues' => 0,
@@ -336,11 +392,7 @@ class MarketplaceController extends AbstractController
         CategorieRepository $categorieRepository,
         EntityManagerInterface $entityManager
     ): Response {
-        $user = $this->getUser();
-        if (!$user instanceof User) {
-            $this->addFlash('error', 'Vous devez être connecté pour modifier un article.');
-            return $this->redirectToRoute('app_login');
-        }
+        // Allow public modification: no authentication required here
 
         $article = $articleRepository->find($id);
         if (!$article instanceof Article) {
@@ -418,11 +470,7 @@ class MarketplaceController extends AbstractController
         ArticleRepository $articleRepository,
         EntityManagerInterface $entityManager
     ): Response {
-        $user = $this->getUser();
-        if (!$user instanceof User) {
-            $this->addFlash('error', 'Vous devez être connecté pour supprimer un article.');
-            return $this->redirectToRoute('app_login');
-        }
+        // Allow public deletion: no authentication required here (CSRF check remains)
 
         if (!$this->isCsrfTokenValid('supprimer_article_' . $id, $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
