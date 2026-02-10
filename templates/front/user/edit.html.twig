@@ -1,0 +1,190 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Modifier mon Profil - NoVas{% endblock %}
+
+{% block body %}
+<nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-border/30">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+            <a href="{{ path('app_home') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Accueil</a>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="{{ path('app_learning_paths_index') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Parcours</a>
+                <a href="{{ path('app_reservation_ateliers') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Ateliers</a>
+                <a href="{{ path('app_publications_index') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Publications</a>
+                <a href="{{ path('app_jobs_index') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Emplois</a>
+                <a href="{{ path('app_skills_index') }}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Compétences</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center gap-3 px-4 py-2 glass-card rounded-xl">
+                    {% if user.IMAGE %}
+                        <img src="{{ user.IMAGE }}" alt="" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/30">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ user.PRENOM|url_encode }}+{{ user.NOM|url_encode }}" alt="" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/30">
+                    {% endif %}
+                    <span class="text-sm font-medium">{{ user.PRENOM }} {{ user.NOM }}</span>
+                </div>
+                <a href="{{ path('app_logout') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Déconnexion</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<section class="relative min-h-screen pt-32 pb-16">
+    <div class="absolute inset-0 -z-10">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-academic/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="max-w-3xl mx-auto px-6">
+        <div class="glass-card rounded-3xl p-8 md:p-12">
+            <h2 class="font-serif text-2xl font-semibold text-foreground mb-8 flex items-center gap-2">
+                <i data-lucide="edit" class="w-6 h-6 text-primary"></i>
+                Modifier mon profil
+            </h2>
+
+            {% if app.flashes %}
+                {% for type, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="mb-6 p-4 rounded-xl bg-{{ type }}-500/20 text-{{ type }}-400 border border-{{ type }}-500/30">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+
+            {{ form_start(form, { 'attr': { 'class': 'space-y-5', 'novalidate': 'novalidate' } }) }}
+            
+            {# Erreurs globales du formulaire #}
+            {{ form_errors(form) }}
+            
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-8 mb-10">
+                <div class="flex-shrink-0">
+                    {% if user.IMAGE %}
+                        <img src="{{ user.IMAGE }}" alt="" class="w-32 h-32 rounded-2xl object-cover ring-4 ring-primary/20 shadow-xl" onerror="this.src='https://ui-avatars.com/api/?name={{ user.PRENOM|url_encode }}+{{ user.NOM|url_encode }}&size=128'">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ user.PRENOM|url_encode }}+{{ user.NOM|url_encode }}&size=128" alt="" class="w-32 h-32 rounded-2xl object-cover ring-4 ring-primary/20 shadow-xl">
+                    {% endif %}
+                </div>
+
+                <div class="flex-1 w-full space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {# Nom #}
+                        <div class="space-y-2">
+                            {{ form_label(form.NOM, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
+                            {{ form_widget(form.NOM, {'errors': false}) }}
+                            <div class="text-rose-400 text-xs mt-1">
+                                {{ form_errors(form.NOM) }}
+                            </div>
+                        </div>
+                        
+                        {# Prénom #}
+                        <div class="space-y-2">
+                            {{ form_label(form.PRENOM, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
+                            {{ form_widget(form.PRENOM, {'errors': false}) }}
+                            <div class="text-rose-400 text-xs mt-1">
+                                {{ form_errors(form.PRENOM) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Email #}
+                    <div class="space-y-2">
+                        {{ form_label(form.EMAIL, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
+                        {{ form_widget(form.EMAIL, {'errors': false}) }}
+                        <div class="text-rose-400 text-xs mt-1">
+                            {{ form_errors(form.EMAIL) }}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {# Téléphone #}
+                        <div class="space-y-2">
+                            {{ form_label(form.NUMERO, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
+                            {{ form_widget(form.NUMERO, {'errors': false}) }}
+                            <div class="text-rose-400 text-xs mt-1">
+                                {{ form_errors(form.NUMERO) }}
+                            </div>
+                        </div>
+                        
+                        {# Rôle #}
+                        <div class="space-y-2">
+                            {{ form_label(form.ROLE, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
+                            {{ form_widget(form.ROLE, {'errors': false}) }}
+                            <div class="text-rose-400 text-xs mt-1">
+                                {{ form_errors(form.ROLE) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-border/50 pt-8 space-y-5">
+                {# Photo #}
+                <div class="space-y-2">
+                    {{ form_label(form.IMAGE, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
+                    {{ form_widget(form.IMAGE, {'errors': false}) }}
+                    <div class="text-rose-400 text-xs mt-1">
+                        {{ form_errors(form.IMAGE) }}
+                    </div>
+                </div>
+
+                {# Nouvelle mot de passe #}
+                <div class="space-y-2">
+                    {{ form_label(form.plainPassword, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
+                    <p class="text-xs text-muted-foreground mb-2">(laisser vide pour ne pas changer)</p>
+                    <div class="relative">
+                        {{ form_widget(form.plainPassword, {'errors': false}) }}
+                        <button type="button" onclick="togglePassword(this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                            <i data-lucide="eye" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div class="text-rose-400 text-xs mt-1">
+                        {{ form_errors(form.plainPassword) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 flex flex-wrap gap-4">
+                <button type="submit" class="inline-flex items-center gap-2 px-6 py-3.5 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    Enregistrer les modifications
+                </button>
+                <a href="{{ path('app_user_profile') }}" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/20 hover:bg-white/5 transition-colors font-medium">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    Retour au profil
+                </a>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</section>
+
+<style>
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="password"],
+    select,
+    textarea {
+        color: #000 !important;
+    }
+</style>
+
+<script>
+    function togglePassword(btn) {
+        const input = btn.parentElement.querySelector('input');
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            input.type = 'password';
+            icon.setAttribute('data-lucide', 'eye');
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+{% endblock %}

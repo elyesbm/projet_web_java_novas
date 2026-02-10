@@ -16,6 +16,56 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
+    /**
+     * @return User[]
+     */
+    public function findAllOrderedByNom(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->orderBy('u.NOM', 'ASC')
+            ->addOrderBy('u.PRENOM', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return User[]
+     */
+    public function findByRole(string $role): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.ROLE = :role')
+            ->setParameter('role', $role)
+            ->orderBy('u.NOM', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countByRole(string $role): int
+    {
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->andWhere('u.ROLE = :role')
+            ->setParameter('role', $role)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @return User[]
+     */
+    public function searchByQuery(string $q): array
+    {
+        $term = '%' . trim($q) . '%';
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.NOM LIKE :q OR u.PRENOM LIKE :q OR u.EMAIL LIKE :q')
+            ->setParameter('q', $term)
+            ->orderBy('u.NOM', 'ASC')
+            ->addOrderBy('u.PRENOM', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

@@ -9,7 +9,7 @@
         <!-- Logo -->
        <!-- Logo -->
             <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
-                <img src="{{ asset('images/logo.png') }}" alt="EduVie" class="h-10 w-auto">
+                <img src="{{ asset('images/logo.png') }}" alt="Novas" class="h-10 w-auto">
                 
             </a>
         
@@ -22,12 +22,21 @@
         
         <!-- Auth Buttons -->
         <div class="flex items-center gap-4">
-            <a href="{{ path('app_login') }}" class="hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2">
-                Se connecter
-            </a>
-            <a href="{{ path('app_register') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
-                Commencer
-            </a>
+            {% if app.user %}
+                <a href="{{ path('app_user_profile') }}" class="hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2">
+                    Mon compte
+                </a>
+                <a href="{{ path('app_logout') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
+                    Déconnexion
+                </a>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2">
+                    Se connecter
+                </a>
+                <a href="{{ path('app_register') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
+                    Commencer
+                </a>
+            {% endif %}
         </div>
     </div>
 </nav>
@@ -59,6 +68,7 @@
         </p>
         
         <!-- CTA Buttons -->
+        {% if not app.user %}
         <div class="flex flex-wrap justify-center gap-4 mb-16">
             <a href="{{ path('app_register') }}" class="group inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-2xl font-medium hover:bg-primary/90 transition-all shadow-xl shadow-primary/30 hover:shadow-primary/50">
                 Creer un compte gratuit
@@ -68,6 +78,17 @@
                 Se connecter
             </a>
         </div>
+        {% else %}
+        <div class="flex flex-wrap justify-center gap-4 mb-16">
+            <a href="{{ path('app_learning_paths_index') }}" class="group inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-2xl font-medium hover:bg-primary/90 transition-all shadow-xl shadow-primary/30 hover:shadow-primary/50">
+                Explorer les parcours
+                <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+            </a>
+            <a href="{{ path('app_user_profile') }}" class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-medium border border-white/20 hover:bg-white/5 transition-all">
+                Mon profil
+            </a>
+        </div>
+        {% endif %}
         
         <!-- Mockup Dashboard -->
         <div class="relative max-w-5xl mx-auto animate-float">

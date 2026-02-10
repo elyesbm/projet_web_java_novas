@@ -6,39 +6,71 @@
 
 {% block body %}
 <div class="space-y-6">
-    
+    {% for message in app.flashes('success') %}
+        <div class="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 px-4 py-3">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 px-4 py-3">
+            {{ message }}
+        </div>
+    {% endfor %}
+
     {# Stats #}
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-soft border border-slate-100 dark:border-slate-700">
-            <p class="text-2xl font-bold text-slate-900 dark:text-white">1,234</p>
+            <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ total }}</p>
             <p class="text-sm text-slate-500">Total utilisateurs</p>
         </div>
         <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-soft border border-slate-100 dark:border-slate-700">
-            <p class="text-2xl font-bold text-emerald-600">1,180</p>
-            <p class="text-sm text-slate-500">Actifs ce mois</p>
+            <p class="text-2xl font-bold text-emerald-600">{{ users|length }}</p>
+            <p class="text-sm text-slate-500">Affichés</p>
         </div>
         <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-soft border border-slate-100 dark:border-slate-700">
-            <p class="text-2xl font-bold text-amber-600">+45</p>
-            <p class="text-sm text-slate-500">Nouveaux (7j)</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-soft border border-slate-100 dark:border-slate-700">
-            <p class="text-2xl font-bold text-purple-600">12</p>
+            <p class="text-2xl font-bold text-purple-600">{{ total_admins }}</p>
             <p class="text-sm text-slate-500">Administrateurs</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-soft border border-slate-100 dark:border-slate-700">
+            <p class="text-2xl font-bold text-teal-600">{{ total_psy|default(0) }}</p>
+            <p class="text-sm text-slate-500">Psy</p>
         </div>
     </div>
 
     {# Toolbar #}
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-4 flex flex-col md:flex-row gap-4 justify-between">
-        <div class="flex-1 max-w-md relative">
-            <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" placeholder="Rechercher un utilisateur..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-primary-500">
-        </div>
-        <div class="flex gap-3">
-            <select class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm">
-                <option>Tous les rôles</option>
-                <option>Étudiant</option>
-                <option>Admin</option>
+        <form method="get" action="{{ path('app_admin_users_list') }}" class="flex flex-1 max-w-md gap-3 flex-wrap items-center">
+            <div class="flex-1 min-w-[200px] relative">
+                <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" name="q" placeholder="Rechercher (nom, prénom, email)..." value="{{ search_q|default('') }}" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-primary-500">
+            </div>
+            <select name="role" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm" onchange="this.form.submit()">
+                <option value="">Tous les rôles</option>
+                <option value="ROLE_USER" {{ role_filter == 'ROLE_USER' ? 'selected' : '' }}>Étudiant</option>
+                <option value="ROLE_ADMIN" {{ role_filter == 'ROLE_ADMIN' ? 'selected' : '' }}>Admin</option>
+                <option value="ROLE_PSY" {{ role_filter == 'ROLE_PSY' ? 'selected' : '' }}>Psy</option>
             </select>
+        </form>
+        <div class="flex gap-3 flex-wrap">
+            {# Boutons de tri #}
+            <div class="flex gap-2">
+                <a href="{{ path('app_admin_users_list', {q: search_q, role: role_filter, sort: 'asc'}) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-xl {% if sort == 'asc' %}bg-blue-600 text-white{% else %}bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600{% endif %} transition-colors" title="Tri A→Z">
+                    <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                    <span class="text-xs font-medium hidden sm:inline">A→Z</span>
+                </a>
+                <a href="{{ path('app_admin_users_list', {q: search_q, role: role_filter, sort: 'desc'}) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-xl {% if sort == 'desc' %}bg-blue-600 text-white{% else %}bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600{% endif %} transition-colors" title="Tri Z→A">
+                    <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                    <span class="text-xs font-medium hidden sm:inline">Z→A</span>
+                </a>
+            </div>
+            
+            {# Export PDF #}
+            <a href="{{ path('app_admin_users_export_pdf', {q: search_q, role: role_filter}) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-colors shadow-lg shadow-red-500/25" title="Exporter en PDF">
+                <i data-lucide="file-pdf" class="w-4 h-4"></i>
+                <span class="text-xs font-medium hidden sm:inline">PDF</span>
+            </a>
+            
+            {# Ajouter #}
             <a href="{{ path('app_admin_users_new') }}" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white transition-colors shadow-lg shadow-primary-500/25">
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 <span>Ajouter</span>
@@ -54,65 +86,59 @@
                     <tr>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Utilisateur</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Email</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Téléphone</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Rôle</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Statut</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                    {% for user in users %}
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <img src="https://ui-avatars.com/api/?name=Marie+Dupont&background=random" class="w-10 h-10 rounded-full">
+                                {% if user.IMAGE %}
+                                    <img src="{{ user.IMAGE }}" alt="" class="w-10 h-10 rounded-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name={{ user.NOM|url_encode }}+{{ user.PRENOM|url_encode }}&background=random'">
+                                {% else %}
+                                    <img src="https://ui-avatars.com/api/?name={{ user.NOM|url_encode }}+{{ user.PRENOM|url_encode }}&background=random" class="w-10 h-10 rounded-full">
+                                {% endif %}
                                 <div>
-                                    <p class="font-semibold text-slate-900 dark:text-white">Marie Dupont</p>
-                                    <p class="text-xs text-slate-500">L3 Informatique</p>
+                                    <p class="font-semibold text-slate-900 dark:text-white">{{ user.PRENOM }} {{ user.NOM }}</p>
+                                    <p class="text-xs text-slate-500">#{{ user.id }}</p>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">marie.dupont@univ-lyon.fr</td>
-                        <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Étudiant</span></td>
-                        <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Actif</span></td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-2">
-                                <a href="{{ path('app_admin_users_edit', {id: 1}) }}" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-blue-600"><i data-lucide="pencil" class="w-4 h-4"></i></a>
-                                <button onclick="if(confirm('Supprimer ?')) showToast('Utilisateur supprimé', 'success')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ user.EMAIL }}</td>
+                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ user.NUMERO }}</td>
                         <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <img src="https://ui-avatars.com/api/?name=Thomas+Martin&background=random" class="w-10 h-10 rounded-full">
-                                <div>
-                                    <p class="font-semibold text-slate-900 dark:text-white">Thomas Martin</p>
-                                    <p class="text-xs text-slate-500">M1 Mathématiques</p>
-                                </div>
-                            </div>
+                            {% if user.ROLE == 'ROLE_ADMIN' %}
+                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">Admin</span>
+                            {% elseif user.ROLE == 'ROLE_PSY' %}
+                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400">Psy</span>
+                            {% else %}
+                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Étudiant</span>
+                            {% endif %}
                         </td>
-                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">thomas.martin@univ-lyon.fr</td>
-                        <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">Admin</span></td>
-                        <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Actif</span></td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ path('app_admin_users_edit', {id: 2}) }}" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-blue-600"><i data-lucide="pencil" class="w-4 h-4"></i></a>
-                                <button onclick="if(confirm('Supprimer ?')) showToast('Utilisateur supprimé', 'success')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                <a href="{{ path('app_admin_users_edit', {id: user.id}) }}" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-blue-600" title="Modifier"><i data-lucide="pencil" class="w-4 h-4"></i></a>
+                                <form method="post" action="{{ path('app_admin_users_delete', {id: user.id}) }}" class="inline" onsubmit="return confirm('Supprimer cet utilisateur ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('user_delete_' ~ user.id) }}">
+                                    <button type="submit" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-rose-600" title="Supprimer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                </form>
                             </div>
                         </td>
                     </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-500">Aucun utilisateur.</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
-        
-        {# Pagination #}
-        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
-            <p class="text-sm text-slate-500">Affichage de 1-10 sur 1,234</p>
-            <div class="flex gap-2">
-                <button class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-                <button class="w-8 h-8 rounded-lg bg-primary-600 text-white text-sm font-medium">1</button>
-                <button class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium">2</button>
-                <button class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-            </div>
+
+        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700">
+            <p class="text-sm text-slate-500">Affichage de 1 à {{ users|length }} sur {{ total }}</p>
         </div>
     </div>
 </div>

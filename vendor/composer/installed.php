@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-master',
-        'version' => 'dev-master',
-        'reference' => '88a9fe7923cb1712058e650990c928286d2c2d8a',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '3c04dd1d4e7cf51fc1d898b05d41670ffa539950',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
-            'reference' => '88a9fe7923cb1712058e650990c928286d2c2d8a',
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '3c04dd1d4e7cf51fc1d898b05d41670ffa539950',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -145,6 +145,33 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'dompdf/dompdf' => array(
+            'pretty_version' => 'v3.1.4',
+            'version' => '3.1.4.0',
+            'reference' => 'db712c90c5b9868df3600e64e68da62e78a34623',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../dompdf/dompdf',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'dompdf/php-font-lib' => array(
+            'pretty_version' => '1.0.2',
+            'version' => '1.0.2.0',
+            'reference' => 'a6e9a688a2a80016ac080b97be73d3e10c444c9a',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../dompdf/php-font-lib',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'dompdf/php-svg-lib' => array(
+            'pretty_version' => '1.0.2',
+            'version' => '1.0.2.0',
+            'reference' => '8259ffb930817e72b1ff1caef5d226501f3dfeb1',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../dompdf/php-svg-lib',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'egulias/email-validator' => array(
             'pretty_version' => '4.0.4',
             'version' => '4.0.4.0',
@@ -179,7 +206,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../myclabs/deep-copy',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'nikic/php-parser' => array(
             'pretty_version' => 'v5.7.0',
@@ -188,7 +215,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../nikic/php-parser',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'phar-io/manifest' => array(
             'pretty_version' => '2.0.4',
@@ -197,7 +224,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../phar-io/manifest',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'phar-io/version' => array(
             'pretty_version' => '3.2.1',
@@ -206,7 +233,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../phar-io/version',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'php-http/async-client-implementation' => array(
             'dev_requirement' => false,
@@ -230,18 +257,18 @@
             'dev_requirement' => false,
         ),
         'phpdocumentor/reflection-docblock' => array(
-            'pretty_version' => '6.0.1',
-            'version' => '6.0.1.0',
-            'reference' => '2f5cbed597cb261d1ea458f3da3a9ad32e670b1e',
+            'pretty_version' => '5.6.6',
+            'version' => '5.6.6.0',
+            'reference' => '5cee1d3dfc2d2aa6599834520911d246f656bcb8',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpdocumentor/reflection-docblock',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
         'phpdocumentor/type-resolver' => array(
-            'pretty_version' => '2.0.0',
-            'version' => '2.0.0.0',
-            'reference' => '327a05bbee54120d4786a0dc67aad30226ad4cf9',
+            'pretty_version' => '1.12.0',
+            'version' => '1.12.0.0',
+            'reference' => '92a98ada2b93d9b201a613cb5a33584dde25f195',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpdocumentor/type-resolver',
             'aliases' => array(),
@@ -263,7 +290,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpunit/php-code-coverage',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'phpunit/php-file-iterator' => array(
             'pretty_version' => '5.1.1',
@@ -272,7 +299,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpunit/php-file-iterator',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'phpunit/php-invoker' => array(
             'pretty_version' => '5.0.1',
@@ -281,7 +308,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpunit/php-invoker',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'phpunit/php-text-template' => array(
             'pretty_version' => '4.0.1',
@@ -290,7 +317,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpunit/php-text-template',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'phpunit/php-timer' => array(
             'pretty_version' => '7.0.1',
@@ -299,7 +326,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpunit/php-timer',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'phpunit/phpunit' => array(
             'pretty_version' => '11.5.50',
@@ -308,7 +335,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpunit/phpunit',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'psr/cache' => array(
             'pretty_version' => '3.0.0',
@@ -413,6 +440,15 @@
                 0 => '1.0|2.0|3.0',
             ),
         ),
+        'sabberworm/php-css-parser' => array(
+            'pretty_version' => 'v9.1.0',
+            'version' => '9.1.0.0',
+            'reference' => '1b363fdbdc6dd0ca0f4bf98d3a4d7f388133f1fb',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../sabberworm/php-css-parser',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'sebastian/cli-parser' => array(
             'pretty_version' => '3.0.2',
             'version' => '3.0.2.0',
@@ -420,7 +456,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/cli-parser',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/code-unit' => array(
             'pretty_version' => '3.0.3',
@@ -429,7 +465,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/code-unit',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/code-unit-reverse-lookup' => array(
             'pretty_version' => '4.0.1',
@@ -438,7 +474,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/code-unit-reverse-lookup',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/comparator' => array(
             'pretty_version' => '6.3.3',
@@ -447,7 +483,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/comparator',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/complexity' => array(
             'pretty_version' => '4.0.1',
@@ -456,7 +492,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/complexity',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/diff' => array(
             'pretty_version' => '6.0.2',
@@ -465,7 +501,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/diff',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/environment' => array(
             'pretty_version' => '7.2.1',
@@ -474,7 +510,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/environment',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/exporter' => array(
             'pretty_version' => '6.3.2',
@@ -483,7 +519,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/exporter',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/global-state' => array(
             'pretty_version' => '7.0.2',
@@ -492,7 +528,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/global-state',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/lines-of-code' => array(
             'pretty_version' => '3.0.1',
@@ -501,7 +537,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/lines-of-code',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/object-enumerator' => array(
             'pretty_version' => '6.0.1',
@@ -510,7 +546,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/object-enumerator',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/object-reflector' => array(
             'pretty_version' => '4.0.1',
@@ -519,7 +555,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/object-reflector',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/recursion-context' => array(
             'pretty_version' => '6.0.3',
@@ -528,7 +564,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/recursion-context',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/type' => array(
             'pretty_version' => '5.1.3',
@@ -537,7 +573,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/type',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'sebastian/version' => array(
             'pretty_version' => '5.0.2',
@@ -546,7 +582,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../sebastian/version',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'staabm/side-effects-detector' => array(
             'pretty_version' => '1.0.5',
@@ -555,7 +591,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../staabm/side-effects-detector',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'symfony/asset' => array(
             'pretty_version' => 'v6.4.32',
@@ -582,7 +618,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/browser-kit',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'symfony/cache' => array(
             'pretty_version' => 'v6.4.33',
@@ -642,7 +678,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/css-selector',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'symfony/debug-bundle' => array(
             'pretty_version' => 'v6.4.27',
@@ -651,7 +687,7 @@
             'type' => 'symfony-bundle',
             'install_path' => __DIR__ . '/../symfony/debug-bundle',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'symfony/dependency-injection' => array(
             'pretty_version' => 'v6.4.32',
@@ -696,7 +732,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/dom-crawler',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'symfony/dotenv' => array(
             'pretty_version' => 'v6.4.30',
@@ -861,7 +897,7 @@
             'type' => 'symfony-bundle',
             'install_path' => __DIR__ . '/../symfony/maker-bundle',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'symfony/messenger' => array(
             'pretty_version' => 'v6.4.32',
@@ -1257,7 +1293,7 @@
             'type' => 'symfony-bundle',
             'install_path' => __DIR__ . '/../symfony/web-profiler-bundle',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'symfony/yaml' => array(
             'pretty_version' => 'v6.4.30',
@@ -1268,6 +1304,15 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'thecodingmachine/safe' => array(
+            'pretty_version' => 'v3.3.0',
+            'version' => '3.3.0.0',
+            'reference' => '2cdd579eeaa2e78e51c7509b50cc9fb89a956236',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../thecodingmachine/safe',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'theseer/tokenizer' => array(
             'pretty_version' => '1.3.1',
             'version' => '1.3.1.0',
@@ -1275,7 +1320,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../theseer/tokenizer',
             'aliases' => array(),
-            'dev_requirement' => false,
+            'dev_requirement' => true,
         ),
         'twig/extra-bundle' => array(
             'pretty_version' => 'v3.23.0',
