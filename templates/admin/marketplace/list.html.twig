@@ -7,23 +7,11 @@
 {% block body %}
 <div class="space-y-6">
     
-    {# Stats #}
+    {# Stats dynamiques simples #}
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-gradient-to-br from-rose-500 to-pink-600 rounded-xl p-6 text-white">
-            <p class="text-3xl font-bold">456</p>
+            <p class="text-3xl font-bold">{{ articles|length }}</p>
             <p class="text-rose-100">Articles totaux</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
-            <p class="text-3xl font-bold text-emerald-600">389</p>
-            <p class="text-sm text-slate-500">En ligne</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
-            <p class="text-3xl font-bold text-amber-600">42</p>
-            <p class="text-sm text-slate-500">En attente</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
-            <p class="text-3xl font-bold text-primary-600">12.4k€</p>
-            <p class="text-sm text-slate-500">Valeur totale</p>
         </div>
     </div>
 
@@ -38,41 +26,116 @@
 
         {# Articles Tab #}
         <div id="content-articles" class="p-6">
-            <div class="flex flex-col md:flex-row gap-4 justify-between mb-6">
-                <div class="flex-1 max-w-md relative">
-                    <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" placeholder="Rechercher un article..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-rose-500">
+            <form method="get" class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                <div class="flex-1 flex flex-col md:flex-row md:items-center md:gap-3">
+                    <div class="w-full md:flex-1 relative mb-3 md:mb-0">
+                        <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input
+                            type="text"
+                            name="q"
+                            value="{{ app.request.query.get('q') }}"
+                            placeholder="ID ou titre..."
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-rose-500"
+                        >
+                    </div>
+                    <div class="w-full md:w-40">
+                        <select name="statut" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
+                            {% set currentStatut = app.request.query.get('statut') %}
+                            <option value="">Tous les statuts</option>
+                            <option value="disponible" {{ currentStatut == 'disponible' ? 'selected' }}>Disponible</option>
+                            <option value="reserve" {{ currentStatut == 'reserve' ? 'selected' }}>Réservé</option>
+                            <option value="vendu" {{ currentStatut == 'vendu' ? 'selected' }}>Vendu</option>
+                        </select>
+                    </div>
+                    <div class="w-full md:w-40">
+                        <select name="type" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
+                            {% set currentType = app.request.query.get('type') %}
+                            <option value="">Tous les types</option>
+                            <option value="academic" {{ currentType == 'academic' ? 'selected' }}>Academic</option>
+                            <option value="commercial" {{ currentType == 'commercial' ? 'selected' }}>Commercial</option>
+                            <option value="service" {{ currentType == 'service' ? 'selected' }}>Service</option>
+                            <option value="other" {{ currentType == 'other' ? 'selected' }}>Autre</option>
+                        </select>
+                    </div>
+                    <div class="w-full md:w-48">
+                        <select name="categorie" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
+                            {% set currentCat = app.request.query.get('categorie') %}
+                            <option value="">Toutes catégories</option>
+                            {% if categories is defined %}
+                                {% for cat in categories %}
+                                    {% set catId = cat.idCategorie ?? cat.id %}
+                                    <option value="{{ catId }}" {{ currentCat is not null and currentCat == catId ? 'selected' : '' }}>
+                                        {{ cat.nomCategorie }}
+                                    </option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="w-full md:w-44 mt-3 md:mt-0">
+                        <select name="sort" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
+                        {% set currentSort = app.request.query.get('sort', 'date_desc') %}
+                        <option value="date_desc" {{ currentSort == 'date_desc' ? 'selected' }}>Plus récents</option>
+                        <option value="date_asc" {{ currentSort == 'date_asc' ? 'selected' }}>Plus anciens</option>
+                        <option value="price_asc" {{ currentSort == 'price_asc' ? 'selected' }}>Prix croissant</option>
+                        <option value="price_desc" {{ currentSort == 'price_desc' ? 'selected' }}>Prix décroissant</option>
+                    </select>
+                    </div>
                 </div>
-                <a href="{{ path('app_admin_marketplace_new') }}" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-lg shadow-rose-500/25">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    Ajouter un article
-                </a>
-            </div>
+                <div class="flex items-center gap-3">
+                    <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 text-sm font-semibold hover:bg-slate-900 dark:hover:bg-white transition-colors">
+                        Filtrer
+                    </button>
+                    <a href="{{ path('app_admin_marketplace_new') }}" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-lg shadow-rose-500/25">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Ajouter un article
+                    </a>
+                </div>
+            </form>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {# Article Card #}
-                <div class="bg-slate-50 dark:bg-slate-700/50 rounded-2xl overflow-hidden hover-card border border-slate-100 dark:border-slate-700 group">
-                    <div class="aspect-[4/3] bg-slate-200 dark:bg-slate-600 relative">
-                        <div class="absolute inset-0 flex items-center justify-center text-slate-400">
-                            <i data-lucide="image" class="w-12 h-12"></i>
+                {% for article in articles %}
+                    <div class="bg-slate-50 dark:bg-slate-700/50 rounded-2xl overflow-hidden hover-card border border-slate-100 dark:border-slate-700 group">
+                        <div class="aspect-[4/3] bg-slate-200 dark:bg-slate-600 relative">
+                            <div class="absolute inset-0 flex items-center justify-center text-slate-400">
+                                <i data-lucide="image" class="w-12 h-12"></i>
+                            </div>
+                            <div class="absolute top-3 right-3">
+                                <span class="px-2 py-1 rounded-lg text-xs font-medium {{ article.statutArticle == 'disponible' ? 'bg-emerald-500' : 'bg-slate-500' }} text-white">
+                                    {{ article.statutArticle|capitalize }}
+                                </span>
+                            </div>
                         </div>
-                        <div class="absolute top-3 right-3">
-                            <span class="px-2 py-1 rounded-lg text-xs font-medium bg-emerald-500 text-white">Publié</span>
+                        <div class="p-4">
+                            <div class="flex items-start justify-between mb-2">
+                                <span class="text-xs text-slate-500">
+                                    {{ article.categorie ? article.categorie.nomCategorie : 'Sans catégorie' }}
+                                </span>
+                                <span class="text-lg font-bold text-rose-600">
+                                    {{ article.prixArticle is not null ? (article.prixArticle|number_format(2, ',', ' ')) ~ ' €' : '-- €' }}
+                                </span>
+                            </div>
+                            <h3 class="font-semibold text-slate-900 dark:text-white mb-2 line-clamp-2">
+                                {{ article.titreArticle }}
+                            </h3>
+                            <p class="text-sm text-slate-500 mb-3 line-clamp-2">
+                                {{ article.contenueArticle }}
+                            </p>
+                            <div class="flex gap-2">
+                                <a href="{{ path('app_admin_marketplace_edit', {id: article.id}) }}" class="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-center text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
+                                    Modifier
+                                </a>
+                                <form method="post" action="{{ path('app_admin_marketplace_delete', {id: article.id}) }}" onsubmit="return confirm('Supprimer cet article ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_article_' ~ article.id) }}">
+                                    <button type="submit" class="px-3 py-2 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                    <div class="p-4">
-                        <div class="flex items-start justify-between mb-2">
-                            <span class="text-xs text-slate-500">Électronique</span>
-                            <span class="text-lg font-bold text-rose-600">899€</span>
-                        </div>
-                        <h3 class="font-semibold text-slate-900 dark:text-white mb-2 line-clamp-2">MacBook Pro M2 13 pouces</h3>
-                        <p class="text-sm text-slate-500 mb-3">Par Thomas B.</p>
-                        <div class="flex gap-2">
-                            <a href="{{ path('app_admin_marketplace_edit', {id: 1}) }}" class="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-center text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">Modifier</a>
-                            <button onclick="if(confirm('Supprimer ?')) showToast('Article supprimé', 'success')" class="px-3 py-2 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    </div>
-                </div>
+                {% else %}
+                    <p class="text-sm text-slate-500">Aucun article pour le moment.</p>
+                {% endfor %}
             </div>
         </div>
 

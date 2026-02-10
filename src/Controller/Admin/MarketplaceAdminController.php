@@ -2,33 +2,329 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\Article;
+use App\Entity\Categorie;
+use App\Entity\User;
+use App\Repository\ArticleRepository;
+use App\Repository\CategorieRepository;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/admin/marketplace', name: 'app_admin_marketplace_')]
 class MarketplaceAdminController extends AbstractController
 {
     #[Route('/', name: 'list')]
-    public function list(): Response
-    {
-        return $this->render('admin/marketplace/list.html.twig');
-    }
+    public function list(
+        Request $request,
+        ArticleRepository $articleRepository,
+        CategorieRepository $categorieRepository
+    ): Response {
+        // Filtres & tri depuis la query string
+        $q = trim((string) $request->query->get('q', ''));
+        $statutFilter = $request->query->get('statut');
+        $typeFilter = $request->query->get('type');
+        $categorieFilter = $request->query->get('categorie');
+        $sort = $request->query->get('sort', 'date_desc');
 
-    #[Route('/new', name: 'new')]
-    public function new(): Response
-    {
-        return $this->render('admin/marketplace/form.html.twig', [
-            'mode' => 'create'
+        $criteria = [];
+        if ($statutFilter) {
+            $criteria['statut_article'] = $statutFilter;
+        }
+        if ($typeFilter) {
+            $criteria['type_article'] = $typeFilter;
+        }
+        if ($categorieFilter) {
+            $catEntity = $categorieRepository->find((int) $categorieFilter);
+            if ($catEntity instanceof Categorie) {
+                $criteria['categorie'] = $catEntity;
+            }
+        }
+
+        $order = ['id' => 'DESC'];
+        switch ($sort) {
+            case 'price_asc':
+                $order = ['prix_article' => 'ASC'];
+                break;
+            case 'price_desc':
+                $order = ['prix_article' => 'DESC'];
+                break;
+            case 'date_asc':
+                $order = ['id' => 'ASC'];
+                break;
+            case 'date_desc':
+            default:
+                $order = ['id' => 'DESC'];
+                break;
+        }
+
+        // Utilise la méthode search() existante pour gérer q + critères + tri
+        $articles = $articleRepository->search($q, $criteria, $order);
+
+        // Catégories pour le filtre dans la vue
+        $categoriesEntities = $categorieRepository->findAll();
+
+        return $this->render('admin/marketplace/list.html.twig', [
+            'articles' => $articles,
+            'categories' => $categoriesEntities,
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'edit')]
-    public function edit(int $id): Response
-    {
+    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    public function new(
+        Request $request,
+        CategorieRepository $categorieRepository,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator,
+        UserRepository $userRepository
+    ): Response {
+        $categoriesEntities = $categorieRepository->findAll();
+        $categories = array_map(static function (Categorie $categorie): array {
+            return [
+                'id' => $categorie->getId(),
+                'nom' => $categorie->getNomCategorie(),
+            ];
+        }, $categoriesEntities);
+
+        $article = new Article();
+
+        if ($request->isMethod('POST')) {
+            $data = [
+                'titre' => trim((string) $request->request->get('titre', '')),
+                'contenu' => trim((string) $request->request->get('contenu', '')),
+                'prix' => $request->request->get('prix', ''),
+                'categorie' => $request->request->get('categorie'),
+                'type' => trim((string) $request->request->get('type', 'academic')),
+                'statut' => trim((string) $request->request->get('statut', 'disponible')),
+                'image_article' => trim((string) $request->request->get('image_article', '')) ?: 'skills-learning.jpg',
+            ];
+
+            $constraints = new Assert\Collection([
+                'fields' => [
+                    'titre' => [
+                        new Assert\NotBlank(['message' => 'Le titre est obligatoire.']),
+                        new Assert\Length([
+                            'min' => 2,
+                            'max' => 255,
+                            'minMessage' => 'Le titre doit contenir au moins {{ limit }} caractères.',
+                            'maxMessage' => 'Le titre ne doit pas dépasser {{ limit }} caractères.',
+                        ]),
+                    ],
+                    'contenu' => [
+                        new Assert\NotBlank(['message' => 'Le contenu est obligatoire.']),
+                        new Assert\Length([
+                            'min' => 10,
+                            'max' => 5000,
+                            'minMessage' => 'Le contenu doit contenir au moins {{ limit }} caractères.',
+                            'maxMessage' => 'Le contenu est trop long (max {{ limit }} caractères).',
+                        ]),
+                    ],
+                    'prix' => [
+                        new Assert\NotBlank(['message' => 'Le prix est obligatoire.']),
+                        new Assert\Regex([
+                            'pattern' => '/^\d+(?:[\.,]\d+)?$/',
+                            'message' => 'Le prix doit être un nombre.',
+                        ]),
+                        new Assert\Range([
+                            'min' => 0,
+                            'max' => 1000000,
+                            'notInRangeMessage' => 'Le prix doit être compris entre {{ min }} et {{ max }}.',
+                        ]),
+                    ],
+                    'categorie' => [
+                        new Assert\NotBlank(['message' => 'La catégorie est obligatoire.']),
+                        new Assert\Regex([
+                            'pattern' => '/^\d+$/',
+                            'message' => 'La catégorie sélectionnée est invalide.',
+                        ]),
+                    ],
+                    'type' => new Assert\Choice([
+                        'choices' => ['academic', 'commercial', 'service', 'other'],
+                        'message' => 'Type invalide.',
+                    ]),
+                    'statut' => new Assert\Choice([
+                        'choices' => ['disponible', 'vendu', 'reserve'],
+                        'message' => 'Statut invalide.',
+                    ]),
+                    'image_article' => new Assert\Optional(),
+                ],
+                'allowExtraFields' => true,
+            ]);
+
+            $violations = $validator->validate($data, $constraints);
+            if (count($violations) > 0) {
+                foreach ($violations as $violation) {
+                    $this->addFlash('error', $violation->getMessage());
+                }
+            } else {
+                $categorieId = (int) $data['categorie'];
+                $categorie = $categorieRepository->find($categorieId);
+
+                if (!$categorie instanceof Categorie) {
+                    $this->addFlash('error', 'La catégorie sélectionnée est invalide.');
+                } else {
+                    $prix = (float) str_replace(',', '.', (string) $data['prix']);
+
+                    $article
+                        ->setTitreArticle($data['titre'])
+                        ->setContenueArticle($data['contenu'])
+                        ->setImageArticle($data['image_article'])
+                        ->setTypeArticle($data['type'] ?: 'academic')
+                        ->setPrixArticle($prix)
+                        ->setStatutArticle($data['statut'] ?: 'disponible')
+                        ->setCategorie($categorie);
+
+                    // Associer un auteur existant même si personne n'est connecté
+                    $author = $this->getUser();
+                    if ($author instanceof User) {
+                        $article->setAuteur($author);
+                    } else {
+                        $fallbackAuthor = $userRepository->findOneBy([]);
+                        if ($fallbackAuthor instanceof User) {
+                            $article->setAuteur($fallbackAuthor);
+                        } else {
+                            $this->addFlash('error', 'Aucun utilisateur trouvé pour associer l\'article. Créez au moins un utilisateur.');
+                            return $this->redirectToRoute('app_admin_marketplace_list');
+                        }
+                    }
+
+                    $entityManager->persist($article);
+                    $entityManager->flush();
+
+                    $this->addFlash('success', 'Article créé avec succès.');
+                    return $this->redirectToRoute('app_admin_marketplace_list');
+                }
+            }
+        }
+
+        return $this->render('admin/marketplace/form.html.twig', [
+            'mode' => 'create',
+            'article' => $article,
+            'categories' => $categories,
+        ]);
+    }
+
+    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    public function edit(
+        int $id,
+        Request $request,
+        ArticleRepository $articleRepository,
+        CategorieRepository $categorieRepository,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator
+    ): Response {
+        $article = $articleRepository->find($id);
+        if (!$article instanceof Article) {
+            throw $this->createNotFoundException('Article introuvable.');
+        }
+
+        $categoriesEntities = $categorieRepository->findAll();
+        $categories = array_map(static function (Categorie $categorie): array {
+            return [
+                'id' => $categorie->getId(),
+                'nom' => $categorie->getNomCategorie(),
+            ];
+        }, $categoriesEntities);
+
+        if ($request->isMethod('POST')) {
+            $data = [
+                'titre' => trim((string) $request->request->get('titre', '')),
+                'contenu' => trim((string) $request->request->get('contenu', '')),
+                'prix' => $request->request->get('prix', ''),
+                'categorie' => $request->request->get('categorie'),
+                'type' => trim((string) $request->request->get('type', 'academic')),
+                'statut' => trim((string) $request->request->get('statut', 'disponible')),
+                'image_article' => trim((string) $request->request->get('image_article', '')) ?: $article->getImageArticle() ?: 'skills-learning.jpg',
+            ];
+
+            $constraints = new Assert\Collection([
+                'fields' => [
+                    'titre' => [
+                        new Assert\NotBlank(['message' => 'Le titre est obligatoire.']),
+                        new Assert\Length(['min' => 2, 'max' => 255]),
+                    ],
+                    'contenu' => [
+                        new Assert\NotBlank(['message' => 'Le contenu est obligatoire.']),
+                        new Assert\Length(['min' => 10, 'max' => 5000]),
+                    ],
+                    'prix' => [
+                        new Assert\NotBlank(['message' => 'Le prix est obligatoire.']),
+                        new Assert\Regex(['pattern' => '/^\d+(?:[\.,]\d+)?$/', 'message' => 'Le prix doit être un nombre.']),
+                        new Assert\Range(['min' => 0, 'max' => 1000000]),
+                    ],
+                    'categorie' => [
+                        new Assert\NotBlank(['message' => 'La catégorie est obligatoire.']),
+                        new Assert\Regex(['pattern' => '/^\d+$/', 'message' => 'La catégorie sélectionnée est invalide.']),
+                    ],
+                    'type' => new Assert\Choice(['choices' => ['academic', 'commercial', 'service', 'other']]),
+                    'statut' => new Assert\Choice(['choices' => ['disponible', 'vendu', 'reserve']]),
+                    'image_article' => new Assert\Optional(),
+                ],
+                'allowExtraFields' => true,
+            ]);
+
+            $violations = $validator->validate($data, $constraints);
+            if (count($violations) > 0) {
+                foreach ($violations as $violation) {
+                    $this->addFlash('error', $violation->getMessage());
+                }
+            } else {
+                $categorieId = (int) $data['categorie'];
+                $categorie = $categorieRepository->find($categorieId);
+
+                if (!$categorie instanceof Categorie) {
+                    $this->addFlash('error', 'La catégorie sélectionnée est invalide.');
+                } else {
+                    $prix = (float) str_replace(',', '.', (string) $data['prix']);
+
+                    $article
+                        ->setTitreArticle($data['titre'])
+                        ->setContenueArticle($data['contenu'])
+                        ->setImageArticle($data['image_article'])
+                        ->setTypeArticle($data['type'] ?: 'academic')
+                        ->setPrixArticle($prix)
+                        ->setStatutArticle($data['statut'] ?: 'disponible')
+                        ->setCategorie($categorie);
+
+                    $entityManager->flush();
+
+                    $this->addFlash('success', 'Article modifié avec succès.');
+                    return $this->redirectToRoute('app_admin_marketplace_list');
+                }
+            }
+        }
+
         return $this->render('admin/marketplace/form.html.twig', [
             'mode' => 'edit',
-            'id' => $id
+            'article' => $article,
+            'categories' => $categories,
         ]);
+    }
+
+    #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
+    public function delete(
+        int $id,
+        Request $request,
+        ArticleRepository $articleRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        if (!$this->isCsrfTokenValid('delete_article_' . $id, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_admin_marketplace_list');
+        }
+
+        $article = $articleRepository->find($id);
+        if ($article instanceof Article) {
+            $entityManager->remove($article);
+            $entityManager->flush();
+            $this->addFlash('success', 'Article supprimé avec succès.');
+        }
+
+        return $this->redirectToRoute('app_admin_marketplace_list');
     }
 }

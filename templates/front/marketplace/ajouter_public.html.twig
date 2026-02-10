@@ -15,7 +15,7 @@
                 <p class="text-muted-foreground">Ce formulaire permet d'ajouter un article sans se connecter. L'annonce sera publiée sans auteur.</p>
             </div>
 
-            <form method="post" action="{{ path('app_marketplace_ajouter_public') }}" enctype="multipart/form-data" class="glass-card rounded-3xl p-8 space-y-6">
+            <form id="marketplace-add-public-form" method="post" action="{{ path('app_marketplace_ajouter_public') }}" enctype="multipart/form-data" class="glass-card rounded-3xl p-8 space-y-6">
                 <div>
                     <label class="block text-sm font-medium mb-2 text-muted-foreground">Image (choisir un fichier depuis votre PC)</label>
                     <input type="file" name="image" accept="image/*" class="w-full bg-secondary border border-white/10 rounded-xl px-4 py-2">
@@ -23,7 +23,7 @@
 
                 <div>
                     <label class="block text-sm font-medium mb-2 text-muted-foreground">Categorie</label>
-                    <select name="categorie" required class="w-full h-14 bg-secondary border border-white/10 rounded-xl px-4">
+                    <select name="categorie" class="w-full h-14 bg-secondary border border-white/10 rounded-xl px-4">
                         <option value="">Selectionnez une categorie</option>
                         {% for cat in categories %}
                             <option value="{{ cat.id }}">{{ cat.nom }}</option>
@@ -33,24 +33,25 @@
 
                 <div>
                     <label class="block text-sm font-medium mb-2 text-muted-foreground">Titre</label>
-                    <input type="text" name="titre" required class="w-full h-14 bg-secondary border rounded-xl px-4">
+                    <input type="text" name="titre" class="w-full h-14 bg-secondary border rounded-xl px-4">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium mb-2 text-muted-foreground">Description</label>
-                    <textarea name="contenu" rows="5" required class="w-full bg-secondary border rounded-xl p-4 resize-none"></textarea>
+                    <textarea name="contenu" rows="5" class="w-full bg-secondary border rounded-xl p-4 resize-none"></textarea>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium mb-2 text-muted-foreground">Prix (€)</label>
-                    <input type="number" name="prix" required min="0" class="w-full h-14 bg-secondary border rounded-xl px-4">
+                    <input type="number" name="prix" class="w-full h-14 bg-secondary border rounded-xl px-4">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium mb-2 text-muted-foreground">Type</label>
                     <select name="type" class="w-full h-14 bg-secondary border rounded-xl px-4">
                         <option value="academic">Academic</option>
-                        <option value="personnel">Personal</option>
+                        {# valeur alignée avec les contraintes du contrôleur (#academic, commercial, service, other) #}
+                        <option value="commercial">Personal</option>
                     </select>
                 </div>
 
@@ -74,10 +75,111 @@
 {% endblock %}
 
 {% block javascripts %}
-    {% for flash in app.flashes('success') %}
-        <script>
-            // Fallback redirect in case server rendered the same page with a success flash
-            window.location.href = "{{ path('app_marketplace_index') }}";
-        </script>
-    {% endfor %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const form = document.getElementById('marketplace-add-public-form');
+            if (!form) return;
+
+            function showNotification(message, type = 'error') {
+                const containerId = 'marketplace-notification-container';
+                let container = document.getElementById(containerId);
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = containerId;
+                    container.className = 'fixed top-24 right-4 z-50 space-y-2';
+                    document.body.appendChild(container);
+                }
+
+                const bgClass = type === 'success' ? 'bg-emerald-600' : 'bg-red-600';
+                const borderClass = type === 'success' ? 'border-emerald-400/60' : 'border-red-400/60';
+
+                const notif = document.createElement('div');
+                notif.className = `glass-card ${bgClass} border ${borderClass} text-white px-4 py-3 rounded-2xl shadow-lg flex items-start gap-3 animate-fade-in`;
+                notif.innerHTML = `
+                    <div class="mt-0.5">
+                        <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i>
+                    </div>
+                    <div class="text-sm">${message}</div>
+                `;
+                container.appendChild(notif);
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+
+                setTimeout(() => {
+                    notif.classList.add('opacity-0', 'translate-y-1');
+                    setTimeout(() => notif.remove(), 200);
+                }, 3500);
+            }
+
+            form.addEventListener('submit', function (e) {
+                const data = new FormData(form);
+                const errors = [];
+
+                const titre = (data.get('titre') || '').toString().trim();
+                const contenu = (data.get('contenu') || '').toString().trim();
+                const prixRaw = (data.get('prix') || '').toString().trim();
+                const categorie = (data.get('categorie') || '').toString().trim();
+                const type = (data.get('type') || '').toString().trim() || 'academic';
+                const statut = (data.get('statut') || '').toString().trim() || 'disponible';
+
+                // Titre
+                if (!titre) {
+                    errors.push('Le titre est obligatoire.');
+                } else if (titre.length < 2) {
+                    errors.push('Le titre doit contenir au moins 2 caractères.');
+                } else if (titre.length > 255) {
+                    errors.push('Le titre ne doit pas dépasser 255 caractères.');
+                }
+
+                // Contenu
+                if (!contenu) {
+                    errors.push('Le contenu est obligatoire.');
+                } else if (contenu.length < 10) {
+                    errors.push('Le contenu doit contenir au moins 10 caractères.');
+                } else if (contenu.length > 5000) {
+                    errors.push('Le contenu est trop long (max 5000 caractères).');
+                }
+
+                // Prix
+                if (!prixRaw) {
+                    errors.push('Le prix est obligatoire.');
+                } else if (!/^\d+(?:[.,]\d+)?$/.test(prixRaw)) {
+                    errors.push('Le prix doit être un nombre.');
+                } else {
+                    const prix = parseFloat(prixRaw.replace(',', '.'));
+                    if (isNaN(prix) || prix < 0) {
+                        errors.push('Le prix doit être supérieur ou égal à 0.');
+                    } else if (prix > 1000000) {
+                        errors.push('Le prix est trop élevé (max 1 000 000).');
+                    }
+                }
+
+                // Catégorie
+                if (!categorie) {
+                    errors.push('La catégorie est obligatoire.');
+                } else if (!/^\d+$/.test(categorie)) {
+                    errors.push('La catégorie sélectionnée est invalide.');
+                }
+
+                // Type
+                const allowedTypes = ['academic', 'commercial', 'service', 'other'];
+                if (type && !allowedTypes.includes(type)) {
+                    errors.push('Le type sélectionné est invalide.');
+                }
+
+                // Statut
+                const allowedStatus = ['disponible', 'vendu', 'reserve'];
+                if (statut && !allowedStatus.includes(statut)) {
+                    errors.push('Le statut sélectionné est invalide.');
+                }
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    errors.forEach(msg => showNotification(msg, 'error'));
+                }
+            });
+        })();
+    </script>
 {% endblock %}

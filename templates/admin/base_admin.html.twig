@@ -195,6 +195,15 @@
         
         if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
     </script>
+
+    {# Affichage des flashs Symfony dans l'admin via les toasts #}
+    {% for label, messages in app.flashes %}
+        <script>
+            {% for message in messages %}
+                showToast('{{ message|e('js') }}', '{{ label == 'error' ? 'error' : (label == 'success' ? 'success' : 'info') }}');
+            {% endfor %}
+        </script>
+    {% endfor %}
     
     {% block javascripts %}{% endblock %}
 </body>

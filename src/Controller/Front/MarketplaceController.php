@@ -14,6 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[Route('/marketplace')]
 class MarketplaceController extends AbstractController
@@ -209,14 +211,10 @@ class MarketplaceController extends AbstractController
     public function ajouter(
         Request $request,
         CategorieRepository $categorieRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator,
+        \App\Repository\UserRepository $userRepository
     ): Response {
-        $user = $this->getUser();
-        if (!$user instanceof User) {
-            $this->addFlash('error', 'Vous devez être connecté pour publier un article.');
-            return $this->redirectToRoute('app_login');
-        }
-
         $categoriesEntities = $categorieRepository->findAll();
         $categories = array_map(static function (Categorie $categorie): array {
             return [
@@ -228,31 +226,81 @@ class MarketplaceController extends AbstractController
         if ($request->isMethod('POST')) {
             @file_put_contents(sys_get_temp_dir().'/novas_debug.log', "--- ajouter POST ---".PHP_EOL, FILE_APPEND);
             @file_put_contents(sys_get_temp_dir().'/novas_debug.log', print_r($request->request->all(), true).PHP_EOL, FILE_APPEND);
-            @file_put_contents(sys_get_temp_dir().'/novas_debug.log', 'User: '.($user instanceof \App\Entity\User ? $user->getId() : 'anonymous').PHP_EOL, FILE_APPEND);
-            $titre = $request->request->get('titre');
-            $contenu = $request->request->get('contenu');
-            $prix = $request->request->get('prix');
-            $type = $request->request->get('type', 'academic');
-            $categorieId = $request->request->get('categorie');
-            $statut = $request->request->get('statut', 'disponible');
-            // Handle uploaded image file if present
-            $imageArticle = trim((string) $request->request->get('image_article', '')) ?: 'skills-learning.jpg';
+                @file_put_contents(sys_get_temp_dir().'/novas_debug.log', 'User: '.($this->getUser() instanceof \App\Entity\User ? $this->getUser()->getId() : 'anonymous').PHP_EOL, FILE_APPEND);
             $uploadedFile = $request->files->get('image');
-            if ($uploadedFile instanceof UploadedFile) {
-                $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/images';
-                $newFilename = uniqid('article_', true) . '.' . ($uploadedFile->getClientOriginalExtension() ?: 'jpg');
-                try {
-                    $uploadedFile->move($uploadsDir, $newFilename);
-                    $imageArticle = $newFilename;
-                } catch (FileException $e) {
-                    @file_put_contents(sys_get_temp_dir().'/novas_db_error.log', 'Image upload error: '.$e->getMessage().PHP_EOL, FILE_APPEND);
-                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+
+            $data = [
+                'titre' => trim((string) $request->request->get('titre', '')),
+                'contenu' => trim((string) $request->request->get('contenu', '')),
+                'prix' => $request->request->get('prix', ''),
+                'categorie' => $request->request->get('categorie'),
+                'type' => trim((string) $request->request->get('type', 'academic')),
+                'statut' => trim((string) $request->request->get('statut', 'disponible')),
+                'image_article' => trim((string) $request->request->get('image_article', '')) ?: 'skills-learning.jpg',
+            ];
+
+            $constraints = new Assert\Collection([
+                'fields' => [
+                    'titre' => [new Assert\NotBlank(['message' => 'Le titre est obligatoire.']), new Assert\Length(['min' => 2, 'max' => 255, 'minMessage' => 'Le titre doit contenir au moins {{ limit }} caractères.', 'maxMessage' => 'Le titre ne doit pas dépasser {{ limit }} caractères.'])],
+                    'contenu' => [new Assert\NotBlank(['message' => 'Le contenu est obligatoire.']), new Assert\Length(['min' => 10, 'max' => 5000, 'minMessage' => 'Le contenu doit contenir au moins {{ limit }} caractères.', 'maxMessage' => 'Le contenu est trop long (max {{ limit }} caractères).'])],
+                    'prix' => [
+                        new Assert\NotBlank(['message' => 'Le prix est obligatoire.']),
+                        new Assert\Regex(['pattern' => '/^\d+(?:[\.,]\d+)?$/', 'message' => 'Le prix doit être un nombre.']),
+                        new Assert\Range([
+                            'min' => 0,
+                            'max' => 1000000,
+                            'notInRangeMessage' => 'Le prix doit être compris entre {{ min }} et {{ max }}.',
+                        ]),
+                    ],
+                    'categorie' => [new Assert\NotBlank(['message' => 'La catégorie est obligatoire.']), new Assert\Regex(['pattern' => '/^\d+$/', 'message' => 'La catégorie sélectionnée est invalide.'])],
+                    'type' => new Assert\Choice(['choices' => ['academic', 'commercial', 'service', 'other'], 'message' => 'Type invalide.']),
+                    'statut' => new Assert\Choice(['choices' => ['disponible', 'vendu', 'reserve'], 'message' => 'Statut invalide.']),
+                    'image_article' => new Assert\Optional(),
+                ],
+                'allowExtraFields' => true,
+            ]);
+
+            $violations = $validator->validate($data, $constraints);
+            $errors = [];
+            if (count($violations) > 0) {
+                foreach ($violations as $violation) {
+                    $errors[] = $violation->getMessage();
                 }
             }
 
-            if (!$titre || !$contenu || !$prix || !$categorieId) {
-                $this->addFlash('error', 'Merci de remplir tous les champs obligatoires.');
+            // Validate uploaded file with Assert\File if present
+            if ($uploadedFile instanceof UploadedFile) {
+                $fileConstraints = new Assert\File(['maxSize' => '2M', 'mimeTypes' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], 'mimeTypesMessage' => 'Le format de l\'image est invalide.', 'maxSizeMessage' => 'L\'image est trop volumineuse (max 2MB).']);
+                $fileViolations = $validator->validate($uploadedFile, $fileConstraints);
+                if (count($fileViolations) > 0) {
+                    foreach ($fileViolations as $fv) {
+                        $errors[] = $fv->getMessage();
+                    }
+                } else {
+                    $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/images';
+                    $newFilename = uniqid('article_', true) . '.' . ($uploadedFile->getClientOriginalExtension() ?: 'jpg');
+                    try {
+                        $uploadedFile->move($uploadsDir, $newFilename);
+                        $data['image_article'] = $newFilename;
+                    } catch (FileException $e) {
+                        @file_put_contents(sys_get_temp_dir().'/novas_db_error.log', 'Image upload error: '.$e->getMessage().PHP_EOL, FILE_APPEND);
+                        $errors[] = 'Erreur lors de l\'upload de l\'image.';
+                    }
+                }
+            }
+
+            if (!empty($errors)) {
+                foreach ($errors as $err) {
+                    $this->addFlash('error', $err);
+                }
             } else {
+                $titre = $data['titre'];
+                $contenu = $data['contenu'];
+                $prix = (float) str_replace(',', '.', $data['prix']);
+                $type = $data['type'] ?? 'academic';
+                $categorieId = (int) $data['categorie'];
+                $statut = $data['statut'] ?? 'disponible';
+                $imageArticle = $data['image_article'] ?? 'skills-learning.jpg';
                 $categorie = $categorieRepository->find($categorieId);
 
                 if (!$categorie instanceof Categorie) {
@@ -267,8 +315,21 @@ class MarketplaceController extends AbstractController
                         ->setTypeArticle($type)
                         ->setPrixArticle((float) $prix)
                         ->setStatutArticle($statut)
-                        ->setCategorie($categorie)
-                        ->setAuteur($user);
+                        ->setCategorie($categorie);
+
+                    // Associer un auteur existant même si l'utilisateur n'est pas connecté
+                    $author = $this->getUser();
+                    if ($author instanceof User) {
+                        $article->setAuteur($author);
+                    } else {
+                        $fallbackAuthor = $userRepository->findOneBy([]);
+                        if ($fallbackAuthor instanceof User) {
+                            $article->setAuteur($fallbackAuthor);
+                        } else {
+                            $this->addFlash('error', 'Aucun utilisateur trouvé pour associer l\'article. Créez au moins un utilisateur.');
+                            return $this->redirectToRoute('app_marketplace_index');
+                        }
+                    }
 
                     $entityManager->persist($article);
                     try {
@@ -312,29 +373,72 @@ class MarketplaceController extends AbstractController
             @file_put_contents(sys_get_temp_dir().'/novas_debug.log', print_r($request->request->all(), true).PHP_EOL, FILE_APPEND);
             $currentUser = $this->getUser();
             @file_put_contents(sys_get_temp_dir().'/novas_debug.log', 'User: '.($currentUser instanceof \App\Entity\User ? $currentUser->getId() : 'anonymous').PHP_EOL, FILE_APPEND);
-            $titre = $request->request->get('titre');
-            $contenu = $request->request->get('contenu');
-            $prix = $request->request->get('prix');
-            $type = $request->request->get('type', 'academic');
-            $categorieId = $request->request->get('categorie');
-            $statut = $request->request->get('statut', 'disponible');
-            $imageArticle = trim((string) $request->request->get('image_article', '')) ?: 'skills-learning.jpg';
+
             $uploadedFile = $request->files->get('image');
-            if ($uploadedFile instanceof UploadedFile) {
-                $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/images';
-                $newFilename = uniqid('article_', true) . '.' . ($uploadedFile->getClientOriginalExtension() ?: 'jpg');
-                try {
-                    $uploadedFile->move($uploadsDir, $newFilename);
-                    $imageArticle = $newFilename;
-                } catch (FileException $e) {
-                    @file_put_contents(sys_get_temp_dir().'/novas_db_error.log', 'Image upload error (public): '.$e->getMessage().PHP_EOL, FILE_APPEND);
-                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+            $data = [
+                'titre' => trim((string) $request->request->get('titre', '')),
+                'contenu' => trim((string) $request->request->get('contenu', '')),
+                'prix' => $request->request->get('prix', ''),
+                'categorie' => $request->request->get('categorie'),
+                'type' => trim((string) $request->request->get('type', 'academic')),
+                'statut' => trim((string) $request->request->get('statut', 'disponible')),
+                'image_article' => trim((string) $request->request->get('image_article', '')) ?: 'skills-learning.jpg',
+            ];
+
+            $constraints = new Assert\Collection([
+                'fields' => [
+                    'titre' => [new Assert\NotBlank(['message' => 'Le titre est obligatoire.']), new Assert\Length(['min' => 2, 'max' => 255])],
+                    'contenu' => [new Assert\NotBlank(['message' => 'Le contenu est obligatoire.']), new Assert\Length(['min' => 10, 'max' => 5000])],
+                    'prix' => [new Assert\NotBlank(['message' => 'Le prix est obligatoire.']), new Assert\Regex(['pattern' => '/^\d+(?:[\.,]\d+)?$/', 'message' => 'Le prix doit être un nombre.']), new Assert\Range(['min' => 0, 'max' => 1000000])],
+                    'categorie' => [new Assert\NotBlank(['message' => 'La catégorie est obligatoire.']), new Assert\Regex(['pattern' => '/^\d+$/', 'message' => 'La catégorie sélectionnée est invalide.'])],
+                    'type' => new Assert\Choice(['choices' => ['academic', 'commercial', 'service', 'other']]),
+                    'statut' => new Assert\Choice(['choices' => ['disponible', 'vendu', 'reserve']]),
+                    'image_article' => new Assert\Optional(),
+                ],
+                'allowExtraFields' => true,
+            ]);
+
+            $violations = $this->container->get('validator')->validate($data, $constraints);
+            $errors = [];
+            if (count($violations) > 0) {
+                foreach ($violations as $v) {
+                    $errors[] = $v->getMessage();
                 }
             }
 
-            if (!$titre || !$contenu || !$prix || !$categorieId) {
-                $this->addFlash('error', 'Merci de remplir tous les champs obligatoires.');
+            if ($uploadedFile instanceof UploadedFile) {
+                $fileConstraints = new Assert\File(['maxSize' => '2M', 'mimeTypes' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp']]);
+                $fileViolations = $this->container->get('validator')->validate($uploadedFile, $fileConstraints);
+                if (count($fileViolations) > 0) {
+                    foreach ($fileViolations as $fv) {
+                        $errors[] = $fv->getMessage();
+                    }
+                } else {
+                    $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/images';
+                    $newFilename = uniqid('article_', true) . '.' . ($uploadedFile->getClientOriginalExtension() ?: 'jpg');
+                    try {
+                        $uploadedFile->move($uploadsDir, $newFilename);
+                        $data['image_article'] = $newFilename;
+                    } catch (FileException $e) {
+                        @file_put_contents(sys_get_temp_dir().'/novas_db_error.log', 'Image upload error (public): '.$e->getMessage().PHP_EOL, FILE_APPEND);
+                        $errors[] = 'Erreur lors de l\'upload de l\'image.';
+                    }
+                }
+            }
+
+            if (!empty($errors)) {
+                foreach ($errors as $err) {
+                    $this->addFlash('error', $err);
+                }
             } else {
+                $titre = $data['titre'];
+                $contenu = $data['contenu'];
+                $prix = (float) str_replace(',', '.', $data['prix']);
+                $type = $data['type'] ?? 'academic';
+                $categorieId = (int) $data['categorie'];
+                $statut = $data['statut'] ?? 'disponible';
+                $imageArticle = $data['image_article'] ?? 'skills-learning.jpg';
+
                 $categorie = $categorieRepository->find($categorieId);
 
                 if (!$categorie instanceof Categorie) {
@@ -630,4 +734,6 @@ class MarketplaceController extends AbstractController
 
         return $this->redirectToRoute('app_marketplace_categories');
     }
+
+    
 }
