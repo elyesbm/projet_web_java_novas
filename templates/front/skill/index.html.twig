@@ -1,0 +1,144 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Skills & Talents - NoVas{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
+                <img src="{{ asset('images/logo.png') }}" alt="EduVie" class="h-10 w-auto">
+            </a>
+            
+            <div class="flex items-center gap-4">
+                <a href="{{ path('app_skills_mes') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    Mes Skills
+                </a>
+                
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="pt-32 pb-12 px-6 relative overflow-hidden">
+        <div class="absolute inset-0 gradient-orb"></div>
+        <div class="absolute top-20 right-20 w-96 h-96 bg-primary/10 rounded-full blur-[100px]"></div>
+        
+        <div class="max-w-7xl mx-auto relative">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm mb-4">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        Skills & Talents
+                    </div>
+                    <h1 class="font-serif text-4xl md:text-5xl font-medium mb-4">
+                        Decouvrez vos <span class="italic text-primary">talents</span>
+                    </h1>
+                    <p class="text-muted-foreground max-w-xl">
+                        Identifiez, developpez et valorisez vos competences dans une approche inclusive et personnalisee.
+                    </p>
+                </div>
+                
+                <div class="flex gap-4">
+                    <a href="{{ path('app_skills_ajouter') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        Ajouter un skill
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="px-6 pb-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="glass-card rounded-2xl p-4 flex flex-col lg:flex-row gap-4">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
+                    <input type="text" placeholder="Rechercher un skill..." class="w-full h-12 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50">
+                </div>
+                
+                <div class="flex gap-3 flex-wrap">
+                    <button class="px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium">Tous</button>
+                    <button class="px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:border-personal/30 transition-all flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-personal"></span>
+                        Soft Skills
+                    </button>
+                    <button class="px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:border-academic/30 transition-all flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-academic"></span>
+                        Hard Skills
+                    </button>
+                </div>
+                
+                <select class="h-12 bg-secondary border border-white/10 rounded-xl px-4 text-sm focus:outline-none focus:border-primary transition-all text-muted-foreground">
+                    <option>Toutes les categories</option>
+                    {% for cat in categories %}
+                    <option>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Grid -->
+    <section class="px-6 pb-24">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for skill in skills %}
+                <div class="glass-card rounded-3xl p-6 hover:border-primary/30 transition-all duration-500 hover:-translate-y-2 group">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="w-14 h-14 rounded-2xl {{ skill.type == 'hard' ? 'bg-academic/20' : 'bg-personal/20' }} flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i data-lucide="{{ skill.icon }}" class="w-7 h-7 {{ skill.type == 'hard' ? 'text-academic' : 'text-personal' }}"></i>
+                        </div>
+                        
+                        <div class="flex flex-col items-end gap-2">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ skill.type == 'hard' ? 'bg-academic/20 text-academic' : 'bg-personal/20 text-personal' }}">
+                                {{ skill.type == 'hard' ? 'Hard Skill' : 'Soft Skill' }}
+                            </span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-secondary text-muted-foreground">
+                                {{ skill.categorie }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Content -->
+                    <h3 class="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">{{ skill.nom }}</h3>
+                    <p class="text-sm text-muted-foreground mb-4 line-clamp-2">{{ skill.description }}</p>
+                    
+                    <!-- Niveau Badge -->
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary">
+                            {% set niveauColor = skill.niveau == 'Debutant' ? 'text-yellow-500' : skill.niveau == 'Intermediaire' ? 'text-orange-500' : 'text-green-500' %}
+                            <div class="w-2 h-2 rounded-full {{ niveauColor }}"></div>
+                            <span class="text-xs font-medium {{ niveauColor }}">{{ skill.niveau }}</span>
+                        </div>
+                        <span class="text-xs text-muted-foreground">{{ skill.etudiants }} etudiants</span>
+                    </div>
+                    
+                    <!-- Progress -->
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-muted-foreground">Maitrise moyenne</span>
+                            <span class="font-semibold">{{ skill.pourcentage }}%</span>
+                        </div>
+                        <div class="h-2 bg-secondary rounded-full overflow-hidden">
+                            <div class="h-full bg-primary rounded-full transition-all duration-1000" style="width: {{ skill.pourcentage }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action -->
+                    <button class="w-full h-12 bg-secondary border border-white/10 rounded-xl font-medium hover:bg-primary hover:border-primary hover:text-white transition-all flex items-center justify-center gap-2 group/btn">
+                        <span>Developper ce skill</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 group-hover/btn:translate-x-1 transition-transform"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

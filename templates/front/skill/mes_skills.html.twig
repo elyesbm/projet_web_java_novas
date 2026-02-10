@@ -1,0 +1,150 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Mes Skills - NoVas{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <!-- Logo -->
+                <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
+                    <img src="{{ asset('images/logo.png') }}" alt="EduVie" class="h-10 w-auto">
+                </a>
+            
+            <div class="flex items-center gap-4">
+                <a href="{{ path('app_skills_index') }}" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Decouvrir les skills
+                </a>
+                
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="pt-32 pb-12 px-6 relative overflow-hidden">
+        <div class="absolute inset-0 gradient-orb"></div>
+        
+        <div class="max-w-7xl mx-auto relative">
+            <div class="glass-card rounded-3xl p-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px]"></div>
+                
+                <div class="relative flex flex-col md:flex-row items-center gap-8">
+                    <!-- Stats Circle -->
+                    <div class="relative">
+                        <div class="w-32 h-32 rounded-full border-4 border-primary/30 flex items-center justify-center">
+                            <div class="text-center">
+                                <p class="font-serif text-4xl font-bold text-primary">{{ mesSkills|length }}</p>
+                                <p class="text-xs text-muted-foreground">Skills</p>
+                            </div>
+                        </div>
+                        <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
+                            <i data-lucide="trending-up" class="w-5 h-5 text-white"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 text-center md:text-left">
+                        <h1 class="font-serif text-3xl font-medium mb-2">Mes Competences</h1>
+                        <p class="text-muted-foreground mb-4">Votre parcours de developpement personnel et academique</p>
+                        
+                        <div class="flex flex-wrap justify-center md:justify-start gap-3">
+                            <span class="px-4 py-2 bg-academic/20 text-academic rounded-full text-sm">
+                                {{ mesSkills|filter(s => s.type == 'hard')|length }} Hard Skills
+                            </span>
+                            <span class="px-4 py-2 bg-personal/20 text-personal rounded-full text-sm">
+                                {{ mesSkills|filter(s => s.type == 'soft')|length }} Soft Skills
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <a href="{{ path('app_skills_ajouter') }}" class="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center gap-2">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        Ajouter un skill
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- My Skills Grid -->
+    <section class="px-6 pb-24">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-6">
+                {% for skill in mesSkills %}
+                <div class="glass-card rounded-3xl p-6 hover:border-primary/30 transition-all group">
+                    <div class="flex items-start gap-4">
+                        <!-- Icon -->
+                        <div class="w-16 h-16 rounded-2xl {{ skill.type == 'hard' ? 'bg-academic/20' : 'bg-personal/20' }} flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="{{ skill.icon }}" class="w-8 h-8 {{ skill.type == 'hard' ? 'text-academic' : 'text-personal' }}"></i>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="flex-1">
+                            <div class="flex items-start justify-between mb-2">
+                                <div>
+                                    <h3 class="text-xl font-semibold group-hover:text-primary transition-colors">{{ skill.nom }}</h3>
+                                    <p class="text-sm text-muted-foreground">{{ skill.categorie }}</p>
+                                </div>
+                                <div class="flex flex-col items-end gap-1">
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium {{ skill.type == 'hard' ? 'bg-academic/20 text-academic' : 'bg-personal/20 text-personal' }}">
+                                        {{ skill.type == 'hard' ? 'Hard' : 'Soft' }}
+                                    </span>
+                                    {% if skill.certifie %}
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent flex items-center gap-1">
+                                        <i data-lucide="check-circle" class="w-3 h-3"></i>
+                                        Certifie
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Niveau -->
+                            <div class="flex items-center gap-2 mb-4">
+                                {% set niveauColor = skill.niveau == 'Debutant' ? 'text-yellow-500 bg-yellow-500/20' : skill.niveau == 'Intermediaire' ? 'text-orange-500 bg-orange-500/20' : 'text-green-500 bg-green-500/20' %}
+                                <span class="px-3 py-1 rounded-lg text-xs font-medium {{ niveauColor }}">
+                                    {{ skill.niveau }}
+                                </span>
+                                <span class="text-xs text-muted-foreground">Acquis le {{ skill.date_acquisition }}</span>
+                            </div>
+                            
+                            <!-- Progress Bar -->
+                            <div class="mb-4">
+                                <div class="flex justify-between text-sm mb-2">
+                                    <span class="text-muted-foreground">Progression</span>
+                                    <span class="font-semibold">{{ skill.progression }}%</span>
+                                </div>
+                                <div class="h-3 bg-secondary rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary rounded-full transition-all duration-1000 relative" style="width: {{ skill.progression }}%">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-transparent to-white/20"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- XP Info -->
+                            <div class="flex items-center justify-between p-3 bg-secondary/50 rounded-xl">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="zap" class="w-4 h-4 text-primary"></i>
+                                    <span class="text-sm">{{ skill.xp }} / {{ skill.prochain_niveau }} XP</span>
+                                </div>
+                                <span class="text-xs text-muted-foreground">{{ skill.prochain_niveau - skill.xp }} XP pour niveau superieur</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex gap-3 mt-6 pt-6 border-t border-white/5">
+                        <button class="flex-1 h-12 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+                            <i data-lucide="book-open" class="w-4 h-4"></i>
+                            Continuer
+                        </button>
+                        <button class="w-12 h-12 bg-secondary border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors">
+                            <i data-lucide="more-vertical" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
