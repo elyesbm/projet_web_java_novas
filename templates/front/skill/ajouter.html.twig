@@ -8,7 +8,20 @@
     <div class="absolute top-1/4 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]"></div>
     
     <!-- Navigation -->
-    {% include 'front/partials/_auth_nav.html.twig' %}
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="{{ path('app_skills_mes') }}" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                <span class="text-sm">Retour à mes skills</span>
+            </a>
+            
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
 
     <!-- Content -->
     <div class="pt-32 pb-24 px-6">
@@ -18,99 +31,15 @@
                     <i data-lucide="plus-circle" class="w-8 h-8 text-primary"></i>
                 </div>
                 <h1 class="font-serif text-3xl font-medium mb-2">Ajouter un nouveau skill</h1>
-                <p class="text-muted-foreground">Identifiez et ajoutez une competence a votre profil</p>
+                <p class="text-muted-foreground">Identifiez et ajoutez une compétence à votre profil</p>
             </div>
             
-            <form method="post" class="glass-card rounded-3xl p-8 space-y-6">
-                <!-- Type de skill -->
-                <div>
-                    <label class="block text-sm font-medium mb-3 text-muted-foreground">Type de competence</label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="type" value="hard" class="peer hidden" checked>
-                            <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-academic peer-checked:bg-academic/20 transition-all text-center">
-                                <i data-lucide="code" class="w-8 h-8 text-academic mx-auto mb-2"></i>
-                                <p class="font-medium">Hard Skill</p>
-                                <p class="text-xs text-muted-foreground">Technique, academique</p>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="type" value="soft" class="peer hidden">
-                            <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-personal peer-checked:bg-personal/20 transition-all text-center">
-                                <i data-lucide="heart" class="w-8 h-8 text-personal mx-auto mb-2"></i>
-                                <p class="font-medium">Soft Skill</p>
-                                <p class="text-xs text-muted-foreground">Interpersonnel, humain</p>
-                            </div>
-                        </label>
-                    </div>
-                </div>
+            {{ form_start(form, { 'attr': { 'class': 'glass-card rounded-3xl p-8 space-y-6', 'id': 'skill-form', 'novalidate': 'novalidate' } }) }}
+                {{ form_row(form.nom_skill) }}
+                {{ form_row(form.contexte_skill) }}
+                {{ form_row(form.categorie) }}
+                {{ form_row(form.description_skill) }}
                 
-                <!-- Nom du skill -->
-                <div>
-                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Nom du skill</label>
-                    <input type="text" name="nom" required placeholder="Ex: Communication orale, Python..." class="w-full h-14 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50">
-                </div>
-                
-                <!-- Categorie -->
-                <div>
-                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Categorie</label>
-                    <div class="relative">
-                        <select name="categorie" required class="w-full h-14 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all appearance-none cursor-pointer">
-                            <option value="">Selectionnez une categorie</option>
-                            {% for cat in categories %}
-                            <option value="{{ cat }}">{{ cat }}</option>
-                            {% endfor %}
-                        </select>
-                        <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none"></i>
-                    </div>
-                </div>
-                
-                <!-- Niveau actuel -->
-                <div>
-                    <label class="block text-sm font-medium mb-3 text-muted-foreground">Votre niveau actuel</label>
-                    <div class="grid grid-cols-3 gap-3">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="niveau" value="Debutant" class="peer hidden">
-                            <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-yellow-500 peer-checked:bg-yellow-500/20 transition-all text-center">
-                                <div class="w-3 h-3 rounded-full bg-yellow-500 mx-auto mb-2"></div>
-                                <p class="text-sm font-medium">Debutant</p>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="niveau" value="Intermediaire" class="peer hidden" checked>
-                            <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-orange-500 peer-checked:bg-orange-500/20 transition-all text-center">
-                                <div class="w-3 h-3 rounded-full bg-orange-500 mx-auto mb-2"></div>
-                                <p class="text-sm font-medium">Intermediaire</p>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="niveau" value="Avance" class="peer hidden">
-                            <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-green-500 peer-checked:bg-green-500/20 transition-all text-center">
-                                <div class="w-3 h-3 rounded-full bg-green-500 mx-auto mb-2"></div>
-                                <p class="text-sm font-medium">Avance</p>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-                
-                <!-- Description -->
-                <div>
-                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Description (optionnel)</label>
-                    <textarea name="description" rows="3" placeholder="Decrivez votre experience avec ce skill..." class="w-full bg-secondary border border-white/10 rounded-xl p-4 focus:outline-none focus:border-primary transition-all resize-none placeholder:text-muted-foreground/50"></textarea>
-                </div>
-                
-                <!-- Auto-evaluation -->
-                <div>
-                    <label class="block text-sm font-medium mb-3 text-muted-foreground">Auto-evaluation (%)</label>
-                    <input type="range" name="evaluation" min="0" max="100" value="50" class="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary" oninput="document.getElementById('evalValue').textContent = this.value + '%'">
-                    <div class="flex justify-between text-xs text-muted-foreground mt-2">
-                        <span>Debutant</span>
-                        <span id="evalValue" class="text-primary font-medium">50%</span>
-                        <span>Expert</span>
-                    </div>
-                </div>
-                
-                <!-- Submit -->
                 <div class="flex gap-4 pt-4">
                     <a href="{{ path('app_skills_mes') }}" class="flex-1 h-14 bg-secondary border border-white/10 rounded-xl font-medium flex items-center justify-center hover:bg-white/5 transition-colors">
                         Annuler
@@ -120,7 +49,95 @@
                         Ajouter le skill
                     </button>
                 </div>
-            </form>
+            {{ form_end(form) }}
+
+            <!-- Container pour les notifications -->
+            <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-3 pointer-events-none"></div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const form = document.getElementById('skill-form');
+                    if (!form) return;
+
+                    const nomInput = document.getElementById('{{ form.nom_skill.vars.id }}');
+                    const categorieInput = document.getElementById('{{ form.categorie.vars.id }}');
+                    const contexteInput = document.getElementById('{{ form.contexte_skill.vars.id }}');
+                    const descriptionInput = document.getElementById('{{ form.description_skill.vars.id }}');
+
+                    function showToast(message, type = 'error') {
+                        const container = document.getElementById('toast-container');
+                        if (!container) return;
+
+                        const toast = document.createElement('div');
+                        const colors = {
+                            success: 'bg-emerald-500',
+                            error: 'bg-red-600',
+                            warning: 'bg-amber-500',
+                            info: 'bg-blue-500',
+                        };
+
+                        toast.className = 'pointer-events-auto flex items-center gap-3 px-6 py-4 rounded-xl shadow-lg text-white transform translate-x-full transition-transform duration-300 ' + (colors[type] || colors.error);
+                        toast.innerHTML = `
+                            <i data-lucide="${type === 'success' ? 'check-circle' : type === 'warning' ? 'alert-triangle' : type === 'info' ? 'info' : 'x-circle'}" class="w-5 h-5"></i>
+                            <span class="font-medium text-sm">${message}</span>
+                        `;
+
+                        container.appendChild(toast);
+                        if (window.lucide) {
+                            window.lucide.createIcons();
+                        }
+
+                        // Animation d'apparition
+                        requestAnimationFrame(() => {
+                            toast.classList.remove('translate-x-full');
+                        });
+
+                        // Disparition automatique
+                        setTimeout(() => {
+                            toast.classList.add('translate-x-full');
+                            setTimeout(() => toast.remove(), 300);
+                        }, 4000);
+                    }
+
+                    form.addEventListener('submit', function (e) {
+                        const errors = [];
+
+                        const nom = nomInput.value.trim();
+                        const categorie = categorieInput.value;
+                        const contexte = contexteInput.value;
+                        const description = descriptionInput.value.trim();
+
+                        // Nom du skill
+                        if (!nom) {
+                            errors.push('Le nom du skill est obligatoire.');
+                        } else if (nom.length < 3) {
+                            errors.push('Le nom du skill doit contenir au moins 3 caractères.');
+                        } else if (nom.length > 255) {
+                            errors.push('Le nom du skill ne peut pas dépasser 255 caractères.');
+                        }
+
+                        // Catégorie
+                        if (!categorie) {
+                            errors.push('La catégorie est obligatoire.');
+                        }
+
+                        // Type de compétence
+                        if (!contexte) {
+                            errors.push('Le type de compétence est obligatoire.');
+                        }
+
+                        // Description (optionnelle mais limitée)
+                        if (description.length > 255) {
+                            errors.push('La description ne peut pas dépasser 255 caractères.');
+                        }
+
+                        if (errors.length > 0) {
+                            e.preventDefault();
+                            errors.forEach(message => showToast(message, 'error'));
+                        }
+                    });
+                });
+            </script>
         </div>
     </div>
 </div>

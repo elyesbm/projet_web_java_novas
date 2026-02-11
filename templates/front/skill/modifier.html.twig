@@ -1,0 +1,56 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Modifier le skill - NoVas{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background relative overflow-hidden">
+    <div class="absolute inset-0 gradient-orb"></div>
+    <div class="absolute top-1/4 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="{{ path('app_skills_mes') }}" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                <span class="text-sm">Retour à mes skills</span>
+            </a>
+            
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                    <i data-lucide="pencil" class="w-6 h-6 text-white"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="pt-32 pb-24 px-6">
+        <div class="max-w-2xl mx-auto">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/20 mb-4">
+                    <i data-lucide="pencil" class="w-8 h-8 text-primary"></i>
+                </div>
+                <h1 class="font-serif text-3xl font-medium mb-2">Modifier le skill</h1>
+                <p class="text-muted-foreground">{{ skill.nomSkill }}</p>
+            </div>
+            
+            {{ form_start(form, { 'attr': { 'class': 'glass-card rounded-3xl p-8 space-y-6' } }) }}
+                {{ form_row(form.nom_skill) }}
+                {{ form_row(form.contexte_skill) }}
+                {{ form_row(form.categorie) }}
+                {{ form_row(form.description_skill) }}
+                
+                <div class="flex gap-4 pt-4">
+                    <a href="{{ path('app_skills_mes') }}" class="flex-1 h-14 bg-secondary border border-white/10 rounded-xl font-medium flex items-center justify-center hover:bg-white/5 transition-colors">
+                        Annuler
+                    </a>
+                    <button type="submit" class="flex-1 h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
+                        <i data-lucide="check" class="w-5 h-5"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

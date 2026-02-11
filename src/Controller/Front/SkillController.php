@@ -2,6 +2,11 @@
 
 namespace App\Controller\Front;
 
+use App\Entity\Skill;
+use App\Form\SkillType;
+use App\Repository\SkillRepository;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,150 +15,42 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/skills')]
 class SkillController extends AbstractController
 {
-    #[Route('/', name: 'app_skills_index')]
-    public function index(): Response
-    {
-        // Tous les skills disponibles
-        $skills = [
-            [
-                'id' => 1,
-                'nom' => 'Communication orale',
-                'type' => 'soft',
-                'categorie' => 'Communication',
-                'niveau' => 'Intermediaire',
-                'pourcentage' => 65,
-                'description' => 'Capacite a exprimer des idees clairement et efficacement',
-                'icon' => 'message-circle',
-                'etudiants' => 234,
-            ],
-            [
-                'id' => 2,
-                'nom' => 'Python',
-                'type' => 'hard',
-                'categorie' => 'Programmation',
-                'niveau' => 'Avance',
-                'pourcentage' => 85,
-                'description' => 'Maitrise du langage Python et ses frameworks',
-                'icon' => 'code',
-                'etudiants' => 567,
-            ],
-            [
-                'id' => 3,
-                'nom' => 'Leadership',
-                'type' => 'soft',
-                'categorie' => 'Management',
-                'niveau' => 'Debutant',
-                'pourcentage' => 35,
-                'description' => 'Capacite a guider et motiver une equipe',
-                'icon' => 'users',
-                'etudiants' => 189,
-            ],
-            [
-                'id' => 4,
-                'nom' => 'Machine Learning',
-                'type' => 'hard',
-                'categorie' => 'Data Science',
-                'niveau' => 'Intermediaire',
-                'pourcentage' => 55,
-                'description' => 'Algorithmes d\'apprentissage automatique',
-                'icon' => 'brain',
-                'etudiants' => 423,
-            ],
-            [
-                'id' => 5,
-                'nom' => 'Gestion du stress',
-                'type' => 'soft',
-                'categorie' => 'Bien-etre',
-                'niveau' => 'Avance',
-                'pourcentage' => 78,
-                'description' => 'Techniques de gestion emotionnelle et resilience',
-                'icon' => 'heart',
-                'etudiants' => 312,
-            ],
-            [
-                'id' => 6,
-                'nom' => 'React.js',
-                'type' => 'hard',
-                'categorie' => 'Developpement Web',
-                'niveau' => 'Intermediaire',
-                'pourcentage' => 60,
-                'description' => 'Developpement d\'interfaces modernes avec React',
-                'icon' => 'layout',
-                'etudiants' => 445,
-            ],
-        ];
+    public function __construct(
+        private SkillRepository $skillRepository,
+        private UserRepository $userRepository,
+        private EntityManagerInterface $entityManager,
+    ) {
+    }
 
-        // Categories pour filtre
-        $categories = ['Communication', 'Programmation', 'Management', 'Data Science', 'Bien-etre', 'Developpement Web'];
+    #[Route('/', name: 'app_skills_index')]
+    public function index(Request $request): Response
+    {
+        $q = $request->query->get('q');
+        $type = $request->query->get('type');
+        $categorie = $request->query->get('categorie');
+
+        $skills = $this->skillRepository->searchAndFilter($q, $type, $categorie);
+        $categories = ['Communication', 'Programmation', 'Management', 'Data Science', 'Bien-être', 'Développement Web', 'Design', 'Marketing'];
 
         return $this->render('front/skill/index.html.twig', [
             'skills' => $skills,
             'categories' => $categories,
+            'search_q' => $q,
+            'search_type' => $type,
+            'search_categorie' => $categorie,
         ]);
     }
 
     #[Route('/mes-skills', name: 'app_skills_mes')]
     public function mesSkills(): Response
     {
-        // Skills de l'utilisateur connecte
-        $mesSkills = [
-            [
-                'id' => 1,
-                'nom' => 'Python',
-                'type' => 'hard',
-                'categorie' => 'Programmation',
-                'niveau' => 'Avance',
-                'pourcentage' => 85,
-                'progression' => 85,
-                'xp' => 8500,
-                'prochain_niveau' => 10000,
-                'date_acquisition' => '15 Jan 2024',
-                'certifie' => true,
-                'icon' => 'code',
-            ],
-            [
-                'id' => 2,
-                'nom' => 'Communication orale',
-                'type' => 'soft',
-                'categorie' => 'Communication',
-                'niveau' => 'Intermediaire',
-                'pourcentage' => 65,
-                'progression' => 65,
-                'xp' => 6500,
-                'prochain_niveau' => 8000,
-                'date_acquisition' => '22 Fev 2024',
-                'certifie' => false,
-                'icon' => 'message-circle',
-            ],
-            [
-                'id' => 3,
-                'nom' => 'Leadership',
-                'type' => 'soft',
-                'categorie' => 'Management',
-                'niveau' => 'Debutant',
-                'pourcentage' => 35,
-                'progression' => 35,
-                'xp' => 3500,
-                'prochain_niveau' => 5000,
-                'date_acquisition' => '10 Mar 2024',
-                'certifie' => false,
-                'icon' => 'users',
-            ],
-            [
-                'id' => 4,
-                'nom' => 'Machine Learning',
-                'type' => 'hard',
-                'categorie' => 'Data Science',
-                'niveau' => 'Intermediaire',
-                'pourcentage' => 55,
-                'progression' => 55,
-                'xp' => 5500,
-                'prochain_niveau' => 7000,
-                'date_acquisition' => '05 Avr 2024',
-                'certifie' => false,
-                'icon' => 'brain',
-            ],
-        ];
+        $user = $this->getUserOrFirst();
+        if (!$user) {
+            $this->addFlash('warning', 'Connectez-vous pour accéder à vos skills.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        $mesSkills = $this->skillRepository->findByCreateur($user);
 
         return $this->render('front/skill/mes_skills.html.twig', [
             'mesSkills' => $mesSkills,
@@ -163,16 +60,106 @@ class SkillController extends AbstractController
     #[Route('/ajouter', name: 'app_skills_ajouter', methods: ['GET', 'POST'])]
     public function ajouter(Request $request): Response
     {
-        if ($request->isMethod('POST')) {
-            // Traiter l'ajout
-            $this->addFlash('success', 'Skill ajoute avec succes !');
+        $user = $this->getUserOrFirst();
+        if (!$user) {
+            $this->addFlash('warning', 'Connectez-vous pour ajouter un skill.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        $skill = new Skill();
+        $skill->setCreateur($user);
+        $form = $this->createForm(SkillType::class, $skill);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->persist($skill);
+            $this->entityManager->flush();
+            $this->addFlash('success', 'Skill ajouté avec succès !');
             return $this->redirectToRoute('app_skills_mes');
         }
 
-        $categories = ['Communication', 'Programmation', 'Management', 'Data Science', 'Bien-etre', 'Developpement Web', 'Design', 'Marketing'];
-
         return $this->render('front/skill/ajouter.html.twig', [
-            'categories' => $categories,
+            'form' => $form,
         ]);
+    }
+
+    #[Route('/{id}/modifier', name: 'app_skills_modifier', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    public function modifier(Request $request, int $id): Response
+    {
+        $user = $this->getUserOrFirst();
+        if (!$user) {
+            $this->addFlash('warning', 'Connectez-vous pour modifier un skill.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        $skill = $this->skillRepository->find($id);
+        if (!$skill) {
+            $this->addFlash('error', 'Skill introuvable.');
+            return $this->redirectToRoute('app_skills_mes');
+        }
+
+        if ($skill->getCreateur() !== $user) {
+            $this->addFlash('error', 'Vous ne pouvez modifier que vos propres skills.');
+            return $this->redirectToRoute('app_skills_mes');
+        }
+
+        $form = $this->createForm(SkillType::class, $skill);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->flush();
+            $this->addFlash('success', 'Skill modifié avec succès !');
+            return $this->redirectToRoute('app_skills_mes');
+        }
+
+        return $this->render('front/skill/modifier.html.twig', [
+            'form' => $form,
+            'skill' => $skill,
+        ]);
+    }
+
+    #[Route('/{id}/supprimer', name: 'app_skills_supprimer', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function supprimer(Request $request, int $id): Response
+    {
+        $user = $this->getUserOrFirst();
+        if (!$user) {
+            $this->addFlash('warning', 'Connectez-vous pour supprimer un skill.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        $skill = $this->skillRepository->find($id);
+        if (!$skill) {
+            $this->addFlash('error', 'Skill introuvable.');
+            return $this->redirectToRoute('app_skills_mes');
+        }
+
+        if ($skill->getCreateur() !== $user) {
+            $this->addFlash('error', 'Vous ne pouvez supprimer que vos propres skills.');
+            return $this->redirectToRoute('app_skills_mes');
+        }
+
+        $token = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('delete_skill_' . $id, $token)) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_skills_mes');
+        }
+
+        $this->entityManager->remove($skill);
+        $this->entityManager->flush();
+        $this->addFlash('success', 'Skill supprimé.');
+
+        return $this->redirectToRoute('app_skills_mes');
+    }
+
+    /**
+     * Retourne l'utilisateur connecté ou le premier utilisateur en BDD (pour dev sans auth).
+     */
+    private function getUserOrFirst(): ?object
+    {
+        $user = $this->getUser();
+        if ($user !== null) {
+            return $user;
+        }
+        return $this->userRepository->findOneBy([], ['id' => 'ASC']);
     }
 }

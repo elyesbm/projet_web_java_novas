@@ -65,6 +65,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Reservation::class)]
     private Collection $reservations;
 
+    #[ORM\OneToMany(mappedBy: 'createur', targetEntity: Skill::class)]
+    private Collection $skills;
+
     public function __construct()
     {
         $this->articles = new ArrayCollection();
@@ -73,6 +76,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->offrejobs = new ArrayCollection();
         $this->condidatureJobs = new ArrayCollection();
         $this->reservations = new ArrayCollection();
+        $this->skills = new ArrayCollection();
     }
 
     // Getters et setters basiques...
@@ -116,4 +120,5 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getOffrejobs(): Collection { return $this->offrejobs; }
     public function getCondidatureJobs(): Collection { return $this->condidatureJobs; }
     public function getReservations(): Collection { return $this->reservations; }
+    public function getSkills(): Collection { return $this->skills; }
 }

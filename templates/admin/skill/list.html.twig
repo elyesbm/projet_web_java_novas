@@ -12,84 +12,262 @@
         <div class="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg shadow-cyan-500/25">
             <div class="flex items-center justify-between mb-4">
                 <div class="p-3 rounded-xl bg-white/20 backdrop-blur-sm"><i data-lucide="zap" class="w-6 h-6"></i></div>
-                <span class="text-xs font-medium bg-white/20 px-2 py-1 rounded-full">+8</span>
             </div>
-            <p class="text-3xl font-bold">48</p>
+            <p class="text-3xl font-bold">{{ totalSkills }}</p>
             <p class="text-cyan-100">Compétences</p>
         </div>
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700 flex items-center gap-4">
             <div class="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600"><i data-lucide="route" class="w-7 h-7"></i></div>
-            <div><p class="text-3xl font-bold text-slate-900 dark:text-white">24</p><p class="text-slate-500">Parcours</p></div>
+            <div><p class="text-3xl font-bold text-slate-900 dark:text-white">{{ totalPaths }}</p><p class="text-slate-500">Parcours</p></div>
         </div>
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700 flex items-center gap-4">
             <div class="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600"><i data-lucide="trending-up" class="w-7 h-7"></i></div>
-            <div><p class="text-3xl font-bold text-slate-900 dark:text-white">2.4k</p><p class="text-slate-500">Certifications</p></div>
+            <div><p class="text-3xl font-bold text-slate-900 dark:text-white">—</p><p class="text-slate-500">Certifications</p></div>
         </div>
     </div>
 
-    {# Tabs & Filters #}
+    {# Onglets Compétences | Parcours #}
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700">
         <div class="border-b border-slate-200 dark:border-slate-700 px-6 flex items-center justify-between">
             <div class="flex gap-6">
-                <button onclick="switchTab('skills')" id="tab-skills" class="py-4 text-sm font-semibold text-cyan-600 border-b-2 border-cyan-600">Compétences</button>
-                <button onclick="switchTab('paths')" id="tab-paths" class="py-4 text-sm font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">Learning Paths</button>
+                <button type="button" data-tab="skills" class="tab-admin py-4 text-sm font-semibold text-cyan-600 border-b-2 border-cyan-600 -mb-px">Compétences</button>
+                <button type="button" data-tab="paths" class="tab-admin py-4 text-sm font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 border-b-2 border-transparent -mb-px">Parcours</button>
             </div>
-            <a href="{{ path('app_admin_skills_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-sm transition-colors shadow-lg shadow-cyan-500/25">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-                Nouveau
-            </a>
+            <div id="btn-new-skills" class="flex items-center gap-2">
+                <a href="{{ path('app_admin_skills_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-sm transition-colors shadow-lg shadow-cyan-500/25">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Nouveau
+                </a>
+            </div>
+            <div id="btn-new-paths" class="flex items-center gap-2 hidden">
+                <a href="{{ path('app_admin_learning_path_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm transition-colors shadow-lg shadow-indigo-500/25">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Nouveau parcours
+                </a>
+            </div>
         </div>
 
-        <div class="p-6">
-            {# Filter Buttons #}
-            <div class="flex flex-wrap gap-3 mb-6">
-                <button onclick="filterSkills('all')" class="px-4 py-2 rounded-full text-sm font-medium bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 transition-colors">Toutes</button>
-                <button onclick="filterSkills('hard')" class="px-4 py-2 rounded-full text-sm font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">Hard Skills</button>
-                <button onclick="filterSkills('soft')" class="px-4 py-2 rounded-full text-sm font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">Soft Skills</button>
-            </div>
+        {# Contenu onglet Compétences #}
+        <div id="content-skills" class="tab-content p-6">
+            {# Recherche & Filtres #}
+            <form method="get" action="{{ path('app_admin_skills_list') }}" id="form-filters-admin" class="flex flex-col lg:flex-row gap-4 items-end lg:items-center mb-6 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-100 dark:border-slate-700">
+                <div class="relative flex-1 w-full">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" name="q" value="{{ search_q|default('') }}" placeholder="Rechercher (nom, description)..." class="w-full h-11 pl-10 pr-4 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+                </div>
+                <div class="flex gap-2 flex-wrap items-center">
+                    <span class="text-sm text-slate-500 hidden sm:inline">Type :</span>
+                    <button type="submit" name="type" value="" class="px-4 py-2 rounded-lg text-sm font-medium {{ search_type is empty ? 'bg-cyan-600 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500' }}">Tous</button>
+                    <button type="submit" name="type" value="soft" class="px-4 py-2 rounded-lg text-sm font-medium {{ search_type == 'soft' ? 'bg-purple-600 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500' }}">Soft</button>
+                    <button type="submit" name="type" value="hard" class="px-4 py-2 rounded-lg text-sm font-medium {{ search_type == 'hard' ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500' }}">Hard</button>
+                </div>
+                <div class="flex gap-2 items-center w-full lg:w-auto">
+                    <label for="filter-cat-admin" class="text-sm text-slate-500 hidden sm:inline">Catégorie :</label>
+                    <select name="categorie" id="filter-cat-admin" onchange="document.getElementById('form-filters-admin').submit()" class="h-11 px-4 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm min-w-[160px] focus:ring-2 focus:ring-cyan-500">
+                        <option value="">Toutes</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {{ search_categorie == cat ? 'selected' : '' }}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="h-11 px-5 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium flex items-center gap-2 shrink-0">
+                    <i data-lucide="search" class="w-4 h-4"></i>
+                    Appliquer
+                </button>
+            </form>
 
-            {# Skills Grid #}
+            {% if search_q or search_type or search_categorie %}
+            <div class="flex items-center justify-between mb-4">
+                <p class="text-sm text-slate-500">{{ skills|length }} résultat(s){% if search_q %} pour « {{ search_q }} »{% endif %}</p>
+                <a href="{{ path('app_admin_skills_list') }}" class="text-sm text-cyan-600 hover:underline">Réinitialiser</a>
+            </div>
+            {% endif %}
+
+            {# Grille des skills #}
+            {% if skills is empty %}
+            <div class="text-center py-12 rounded-xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
+                {% if search_q or search_type or search_categorie %}
+                <i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4 text-slate-400"></i>
+                <p class="text-slate-600 dark:text-slate-400 mb-2">Aucun skill trouvé</p>
+                <p class="text-sm text-slate-500 mb-4">Modifiez la recherche ou <a href="{{ path('app_admin_skills_list') }}" class="text-cyan-600 hover:underline">réinitialisez les filtres</a>.</p>
+                <a href="{{ path('app_admin_skills_list') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-600 text-white text-sm hover:bg-cyan-700">Voir tout</a>
+                {% else %}
+                <i data-lucide="zap" class="w-12 h-12 mx-auto mb-4 text-slate-400"></i>
+                <p class="text-slate-600 dark:text-slate-400 mb-2">Aucune compétence</p>
+                <p class="text-sm text-slate-500 mb-4"><a href="{{ path('app_admin_skills_new') }}" class="text-cyan-600 hover:underline">Créer la première</a>.</p>
+                <a href="{{ path('app_admin_skills_new') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-600 text-white text-sm hover:bg-cyan-700"><i data-lucide="plus" class="w-4 h-4"></i> Nouveau</a>
+                {% endif %}
+            </div>
+            {% else %}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="skills-grid">
+                {% for skill in skills %}
+                {% set typeSkill = skill.contexteSkill == 'hard' ? 'hard' : 'soft' %}
+                {% set iconSkill = skill.contexteSkill == 'hard' ? 'code' : 'heart' %}
                 <div class="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 hover-card border border-slate-100 dark:border-slate-700 relative overflow-hidden group">
                     <div class="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
                     <div class="relative">
                         <div class="flex items-start justify-between mb-4">
-                            <div class="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600"><i data-lucide="code" class="w-6 h-6"></i></div>
-                            <span class="px-2 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">hard</span>
+                            <div class="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600"><i data-lucide="{{ iconSkill }}" class="w-6 h-6"></i></div>
+                            <span class="px-2 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">{{ typeSkill }}</span>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Python</h3>
-                        <p class="text-sm text-slate-500 mb-3">Programmation</p>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">Maîtrise du langage Python et ses frameworks</p>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="text-sm text-slate-500"><i data-lucide="users" class="w-4 h-4 inline mr-1"></i>567 étudiants</span>
-                            <span class="text-xs font-medium px-2 py-1 rounded bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300">Avancé</span>
-                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">{{ skill.nomSkill }}</h3>
+                        <p class="text-sm text-slate-500 mb-3">{{ skill.categorie }}</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">{{ skill.descriptionSkill|default('—') }}</p>
                         <div class="flex gap-2">
-                            <a href="{{ path('app_admin_skills_edit', {id: 1}) }}" class="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">Modifier</a>
-                            <button onclick="if(confirm('Supprimer ?')) showToast('Compétence supprimée', 'success')" class="px-3 py-2 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <a href="{{ path('app_admin_skills_edit', { id: skill.id }) }}" class="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">Modifier</a>
+                            <form method="post" action="{{ path('app_admin_skills_delete', { id: skill.id }) }}" class="inline" onsubmit="return confirm('Supprimer cette compétence ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_skill_' ~ skill.id) }}">
+                                <button type="submit" class="px-3 py-2 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </form>
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
+            {% endif %}
+        </div>
+
+        {# Contenu onglet Parcours #}
+        <div id="content-paths" class="tab-content hidden p-6">
+            {# Recherche & Filtres parcours #}
+            <form method="get" action="{{ path('app_admin_skills_list') }}" id="form-filters-paths" class="flex flex-col lg:flex-row gap-4 items-end lg:items-center mb-6 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-100 dark:border-slate-700">
+                <input type="hidden" name="tab" value="paths">
+                <div class="relative flex-1 w-full">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" name="q_path" value="{{ search_q_path|default('') }}" placeholder="Rechercher (titre, description, compétence)..." class="w-full h-11 pl-10 pr-4 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="flex gap-2 flex-wrap items-center">
+                    <span class="text-sm text-slate-500 hidden sm:inline">Niveau :</span>
+                    <button type="submit" name="niveau_path" value="" class="px-4 py-2 rounded-lg text-sm font-medium {{ search_niveau_path is empty ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500' }}">Tous</button>
+                    <button type="submit" name="niveau_path" value="1" class="px-4 py-2 rounded-lg text-sm font-medium {{ search_niveau_path == '1' ? 'bg-amber-600 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500' }}">Débutant</button>
+                    <button type="submit" name="niveau_path" value="2" class="px-4 py-2 rounded-lg text-sm font-medium {{ search_niveau_path == '2' ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500' }}">Intermédiaire</button>
+                    <button type="submit" name="niveau_path" value="3" class="px-4 py-2 rounded-lg text-sm font-medium {{ search_niveau_path == '3' ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500' }}">Avancé</button>
+                </div>
+                <div class="flex gap-2 items-center w-full lg:w-auto">
+                    <label for="filter-statut-path" class="text-sm text-slate-500 hidden sm:inline">Statut :</label>
+                    <select name="statut_path" id="filter-statut-path" onchange="document.getElementById('form-filters-paths').submit()" class="h-11 px-4 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm min-w-[140px] focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Tous</option>
+                        <option value="1" {{ search_statut_path == '1' ? 'selected' : '' }}>Actif</option>
+                        <option value="0" {{ search_statut_path == '0' ? 'selected' : '' }}>Inactif</option>
+                    </select>
+                </div>
+                <button type="submit" class="h-11 px-5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium flex items-center gap-2 shrink-0">
+                    <i data-lucide="search" class="w-4 h-4"></i>
+                    Appliquer
+                </button>
+            </form>
+
+            {% if search_q_path or (search_niveau_path ?? '') != '' or (search_statut_path ?? '') != '' %}
+            <div class="flex items-center justify-between mb-4">
+                <p class="text-sm text-slate-500">{{ learningPaths|length }} résultat(s){% if search_q_path %} pour « {{ search_q_path }} »{% endif %}</p>
+                <a href="{{ path('app_admin_skills_list') }}?tab=paths" class="text-sm text-indigo-600 hover:underline">Réinitialiser</a>
+            </div>
+            {% endif %}
+
+            <div class="flex items-center justify-between mb-6">
+                <p class="text-sm text-slate-500">{{ learningPaths|length }} parcours</p>
+                <a href="{{ path('app_admin_learning_path_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Nouveau parcours
+                </a>
+            </div>
+            {% set has_path_filters = search_q_path or (search_niveau_path ?? '') != '' or (search_statut_path ?? '') != '' %}
+            {% if learningPaths is empty %}
+            <div class="text-center py-12 rounded-xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
+                {% if has_path_filters %}
+                <i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4 text-slate-400"></i>
+                <p class="text-slate-600 dark:text-slate-400 mb-2">Aucun parcours trouvé</p>
+                <p class="text-sm text-slate-500 mb-4">Modifiez la recherche ou <a href="{{ path('app_admin_skills_list') }}?tab=paths" class="text-indigo-600 hover:underline">réinitialisez les filtres</a>.</p>
+                <a href="{{ path('app_admin_skills_list') }}?tab=paths" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700">Voir tout</a>
+                {% else %}
+                <i data-lucide="route" class="w-12 h-12 mx-auto mb-4 text-slate-400"></i>
+                <p class="text-slate-600 dark:text-slate-400 mb-2">Aucun parcours</p>
+                <p class="text-sm text-slate-500 mb-4"><a href="{{ path('app_admin_learning_path_new') }}" class="text-indigo-600 hover:underline">Créer le premier</a>.</p>
+                <a href="{{ path('app_admin_learning_path_new') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700"><i data-lucide="plus" class="w-4 h-4"></i> Nouveau parcours</a>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-slate-200 dark:border-slate-700 text-slate-500 text-sm">
+                            <th class="pb-3 font-semibold">Titre</th>
+                            <th class="pb-3 font-semibold">Compétence</th>
+                            <th class="pb-3 font-semibold">Durée</th>
+                            <th class="pb-3 font-semibold">Niveau</th>
+                            <th class="pb-3 font-semibold">Statut</th>
+                            <th class="pb-3 font-semibold text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lp in learningPaths %}
+                        <tr class="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                            <td class="py-4 font-medium text-slate-900 dark:text-white">{{ lp.titrePath }}</td>
+                            <td class="py-4 text-slate-600 dark:text-slate-400">{{ lp.skill ? lp.skill.nomSkill : '—' }}</td>
+                            <td class="py-4 text-slate-600 dark:text-slate-400">{{ lp.dureeEstimee }} h</td>
+                            <td class="py-4">
+                                {% if lp.niveauPath == 1 %}<span class="px-2 py-1 rounded text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Débutant</span>
+                                {% elseif lp.niveauPath == 2 %}<span class="px-2 py-1 rounded text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">Intermédiaire</span>
+                                {% elseif lp.niveauPath == 3 %}<span class="px-2 py-1 rounded text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">Avancé</span>
+                                {% else %}{{ lp.niveauPath }}{% endif %}
+                            </td>
+                            <td class="py-4">
+                                <span class="px-2 py-1 rounded text-xs {{ lp.statutPath == 1 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400' }}">{{ lp.statutPath == 1 ? 'Actif' : 'Inactif' }}</span>
+                            </td>
+                            <td class="py-4 text-right">
+                                <a href="{{ path('app_admin_learning_path_edit', { id: lp.id }) }}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 text-sm hover:bg-slate-100 dark:hover:bg-slate-600">Modifier</a>
+                                <form method="post" action="{{ path('app_admin_learning_path_delete', { id: lp.id }) }}" class="inline ml-1" onsubmit="return confirm('Supprimer ce parcours ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_learning_path_' ~ lp.id) }}">
+                                    <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 text-sm hover:bg-rose-50 dark:hover:bg-rose-900/20">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
-{% block javascripts %}
 <script>
-    function switchTab(tab) {
-        const isSkills = tab === 'skills';
-        document.getElementById('tab-skills').className = 'py-4 text-sm font-semibold ' + (isSkills ? 'text-cyan-600 border-b-2 border-cyan-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300');
-        document.getElementById('tab-paths').className = 'py-4 text-sm font-semibold ' + (!isSkills ? 'text-cyan-600 border-b-2 border-cyan-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300');
-        showToast(isSkills ? 'Affichage des compétences' : 'Affichage des parcours', 'info');
-    }
-    
-    function filterSkills(type) {
-        event.target.parentElement.querySelectorAll('button').forEach(btn => {
-            btn.className = 'px-4 py-2 rounded-full text-sm font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors';
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab === 'paths') {
+        document.querySelectorAll('.tab-admin').forEach(b => {
+            b.classList.remove('text-cyan-600', 'border-cyan-600', 'text-slate-500', 'border-transparent');
+            b.classList.add('text-slate-500', 'border-transparent');
+            if (b.dataset.tab === 'paths') {
+                b.classList.remove('text-slate-500', 'border-transparent');
+                b.classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
+            }
         });
-        event.target.className = 'px-4 py-2 rounded-full text-sm font-medium bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 transition-colors';
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById('content-paths')?.classList.remove('hidden');
+        document.getElementById('btn-new-skills')?.classList.add('hidden');
+        document.getElementById('btn-new-paths')?.classList.remove('hidden');
     }
+})();
+document.querySelectorAll('.tab-admin').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const tab = this.dataset.tab;
+        document.querySelectorAll('.tab-admin').forEach(b => {
+            b.classList.remove('text-cyan-600', 'border-cyan-600', 'text-indigo-600', 'border-indigo-600');
+            b.classList.add('text-slate-500', 'border-transparent');
+        });
+        this.classList.remove('text-slate-500', 'border-transparent');
+        if (tab === 'paths') {
+            this.classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
+        } else {
+            this.classList.add('text-cyan-600', 'border-b-2', 'border-cyan-600');
+        }
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById('content-' + tab).classList.remove('hidden');
+        document.getElementById('btn-new-skills').classList.toggle('hidden', tab !== 'skills');
+        document.getElementById('btn-new-paths').classList.toggle('hidden', tab !== 'paths');
+    });
+});
 </script>
-{% endblock %}
 {% endblock %}

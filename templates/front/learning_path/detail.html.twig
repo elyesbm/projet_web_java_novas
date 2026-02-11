@@ -1,11 +1,30 @@
 {% extends 'front/base_home.html.twig' %}
 
-{% block title %}{{ parcours.titre }} - NoVas{% endblock %}
+{% block title %}{{ parcours.titrePath }} - NoVas{% endblock %}
 
 {% block body %}
+{% set typeSkill = parcours.skill and parcours.skill.contexteSkill == 'hard' ? 'hard' : 'soft' %}
+{% set skillNom = parcours.skill ? parcours.skill.nomSkill : 'Compétence' %}
+{% set niveauLabel = parcours.niveauPath == 1 ? 'Débutant' : (parcours.niveauPath == 2 ? 'Intermédiaire' : (parcours.niveauPath == 3 ? 'Avancé' : '—')) %}
+{% set objectifs = parcours.descriptionSkill ? parcours.descriptionSkill|split('.')|filter(o => o|trim != '') : [] %}
+{% if objectifs is empty %}{% set objectifs = ['Maîtriser les concepts du parcours.', 'Progresser à votre rythme.'] %}{% endif %}
+{% set progression_skill = { debut: 0, fin: parcours.niveauPath == 1 ? 50 : (parcours.niveauPath == 2 ? 80 : 100), actuel: 0 } %}
 <div class="min-h-screen bg-background">
     <!-- Navigation -->
-    {% include 'front/partials/_auth_nav.html.twig' %}
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="{{ path('app_learning_paths_index') }}" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                <span class="text-sm">Retour aux parcours</span>
+            </a>
+            
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
 
     <!-- Hero -->
     <section class="pt-32 pb-12 px-6 relative overflow-hidden">
@@ -16,26 +35,32 @@
             <div class="grid lg:grid-cols-2 gap-12 items-center">
                 <div>
                     <div class="flex items-center gap-2 mb-4">
-                        <span class="px-3 py-1 rounded-full text-xs font-medium {{ parcours.type_skill == 'hard' ? 'bg-academic/20 text-academic' : 'bg-personal/20 text-personal' }}">
-                            {{ parcours.type_skill == 'hard' ? 'Hard Skill' : 'Soft Skill' }}
+                        <span class="px-3 py-1 rounded-full text-xs font-medium {{ typeSkill == 'hard' ? 'bg-academic/20 text-academic' : 'bg-personal/20 text-personal' }}">
+                            {{ typeSkill == 'hard' ? 'Hard Skill' : 'Soft Skill' }}
                         </span>
+                        {% if parcours.statutPath == 1 %}
                         <span class="px-3 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent flex items-center gap-1">
                             <i data-lucide="award" class="w-3 h-3"></i>
                             Certifiant
                         </span>
+                        {% endif %}
                     </div>
                     
-                    <h1 class="font-serif text-4xl md:text-5xl font-medium mb-4">{{ parcours.titre }}</h1>
-                    <p class="text-muted-foreground text-lg mb-6">{{ parcours.description }}</p>
+                    <h1 class="font-serif text-4xl md:text-5xl font-medium mb-4">{{ parcours.titrePath }}</h1>
+                    <p class="text-muted-foreground text-lg mb-6">{{ parcours.descriptionSkill|default('Parcours d\'apprentissage NoVas.') }}</p>
                     
                     <div class="flex flex-wrap gap-4 mb-8">
                         <div class="flex items-center gap-2 px-4 py-2 bg-secondary rounded-xl">
                             <i data-lucide="sparkles" class="w-4 h-4 text-primary"></i>
-                            <span class="text-sm">Skill vise: <strong>{{ parcours.skill_lie }}</strong></span>
+                            <span class="text-sm">Skill visé: <strong>{{ skillNom }}</strong></span>
                         </div>
                         <div class="flex items-center gap-2 px-4 py-2 bg-secondary rounded-xl">
-                            <i data-lucide="user" class="w-4 h-4 text-primary"></i>
-                            <span class="text-sm">Par {{ parcours.formateur }}</span>
+                            <i data-lucide="clock" class="w-4 h-4 text-primary"></i>
+                            <span class="text-sm">Durée: {{ parcours.dureeEstimee }} h</span>
+                        </div>
+                        <div class="flex items-center gap-2 px-4 py-2 bg-secondary rounded-xl">
+                            <i data-lucide="bar-chart" class="w-4 h-4 text-primary"></i>
+                            <span class="text-sm">Niveau: {{ niveauLabel }}</span>
                         </div>
                     </div>
                     
@@ -60,25 +85,25 @@
                         <div class="flex items-center justify-between mb-8">
                             <div class="text-center">
                                 <div class="w-20 h-20 rounded-full border-4 border-secondary flex items-center justify-center mb-2">
-                                    <span class="font-serif text-2xl font-bold text-muted-foreground">{{ parcours.progression_skill.debut }}</span>
+                                    <span class="font-serif text-2xl font-bold text-muted-foreground">{{ progression_skill.debut }}</span>
                                 </div>
-                                <p class="text-sm text-muted-foreground">Debut</p>
+                                <p class="text-sm text-muted-foreground">Début</p>
                             </div>
                             
                             <div class="flex-1 px-4">
                                 <div class="h-2 bg-secondary rounded-full overflow-hidden relative">
                                     <div class="absolute inset-0 bg-gradient-to-r from-muted-foreground via-primary to-accent"></div>
-                                    <div class="absolute top-0 bottom-0 w-1 bg-white" style="left: {{ parcours.progression_skill.actuel }}%"></div>
+                                    <div class="absolute top-0 bottom-0 w-1 bg-white" style="left: {{ progression_skill.actuel }}%"></div>
                                 </div>
                                 <div class="flex justify-between mt-2">
-                                    <span class="text-xs text-muted-foreground">Actuel: {{ parcours.progression_skill.actuel }}%</span>
-                                    <span class="text-xs text-accent">Objectif: {{ parcours.progression_skill.fin }}%</span>
+                                    <span class="text-xs text-muted-foreground">Actuel: {{ progression_skill.actuel }}%</span>
+                                    <span class="text-xs text-accent">Objectif: {{ progression_skill.fin }}%</span>
                                 </div>
                             </div>
                             
                             <div class="text-center">
                                 <div class="w-20 h-20 rounded-full border-4 border-accent flex items-center justify-center mb-2">
-                                    <span class="font-serif text-2xl font-bold text-accent">{{ parcours.progression_skill.fin }}</span>
+                                    <span class="font-serif text-2xl font-bold text-accent">{{ progression_skill.fin }}</span>
                                 </div>
                                 <p class="text-sm text-accent">Final</p>
                             </div>
@@ -91,7 +116,7 @@
                                 </div>
                                 <div>
                                     <p class="text-sm text-muted-foreground">Progression estimée</p>
-                                    <p class="font-medium">+{{ parcours.progression_skill.fin - parcours.progression_skill.actuel }}% de competence acquise</p>
+                                    <p class="font-medium">+{{ progression_skill.fin - progression_skill.actuel }}% de compétence à acquérir</p>
                                 </div>
                             </div>
                         </div>
@@ -104,47 +129,43 @@
     <!-- Objectifs -->
     <section class="px-6 py-12 border-t border-white/5">
         <div class="max-w-7xl mx-auto">
-            <h2 class="font-serif text-2xl font-medium mb-8">Objectifs pedagogiques</h2>
+            <h2 class="font-serif text-2xl font-medium mb-8">Objectifs pédagogiques</h2>
             <div class="grid md:grid-cols-2 gap-4">
-                {% for objectif in parcours.objectifs %}
+                {% for objectif in objectifs %}
                 <div class="flex items-start gap-4 p-4 bg-secondary/30 rounded-xl">
                     <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
                         <i data-lucide="check" class="w-4 h-4 text-primary"></i>
                     </div>
-                    <p class="text-foreground">{{ objectif }}</p>
+                    <p class="text-foreground">{{ objectif|trim }}</p>
                 </div>
                 {% endfor %}
             </div>
         </div>
     </section>
 
-    <!-- Timeline -->
+    <!-- Contenu du parcours -->
     <section class="px-6 py-12 border-t border-white/5">
         <div class="max-w-4xl mx-auto">
-            <h2 class="font-serif text-2xl font-medium mb-8">Parcours de progression</h2>
-            
-            <div class="relative">
-                <!-- Line -->
-                <div class="absolute left-8 top-0 bottom-0 w-px bg-white/10"></div>
-                
-                <div class="space-y-8">
-                    {% for etape in parcours.etapes %}
-                    <div class="relative flex items-start gap-6">
-                        <!-- Number -->
-                        <div class="relative z-10 w-16 h-16 rounded-2xl bg-secondary border border-white/10 flex items-center justify-center flex-shrink-0">
-                            <span class="font-serif text-2xl font-bold text-primary">{{ etape.numero }}</span>
-                        </div>
-                        
-                        <!-- Content -->
-                        <div class="flex-1 glass-card rounded-2xl p-6 hover:border-primary/30 transition-all">
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="font-medium text-lg">{{ etape.titre }}</h3>
-                                <span class="px-3 py-1 rounded-full text-xs bg-secondary text-muted-foreground">{{ etape.duree }}</span>
-                            </div>
-                            <p class="text-sm text-muted-foreground">{{ etape.description }}</p>
-                        </div>
+            <h2 class="font-serif text-2xl font-medium mb-8">Contenu du parcours</h2>
+            {% set typeIcon = parcours.typeEtape == 'video' ? 'video' : (parcours.typeEtape == 'post' ? 'file-text' : (parcours.typeEtape == 'exercice' ? 'pencil' : (parcours.typeEtape == 'quiz' ? 'help-circle' : 'book-open'))) %}
+            <div class="relative flex items-start gap-6">
+                <div class="relative z-10 w-16 h-16 rounded-2xl bg-secondary border border-white/10 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="{{ typeIcon }}" class="w-7 h-7 text-primary"></i>
+                </div>
+                <div class="flex-1 glass-card rounded-2xl p-6 hover:border-primary/30 transition-all">
+                    <div class="flex items-start justify-between gap-4 mb-2">
+                        <h3 class="font-medium text-lg">{{ parcours.titrePath }}</h3>
+                        <span class="px-3 py-1 rounded-full text-xs bg-secondary text-muted-foreground whitespace-nowrap">{{ parcours.dureeEstimee }} h</span>
                     </div>
-                    {% endfor %}
+                    {% if parcours.descriptionSkill %}
+                    <p class="text-sm text-muted-foreground mb-3">{{ parcours.descriptionSkill }}</p>
+                    {% endif %}
+                    {% if parcours.url %}
+                    <a href="{{ parcours.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary text-sm font-medium transition-colors">
+                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                        {{ parcours.typeEtape == 'video' ? 'Voir la vidéo' : 'Accéder à la ressource' }}
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -157,8 +178,8 @@
             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/20 rounded-full blur-[100px]"></div>
             
             <div class="relative">
-                <h2 class="font-serif text-3xl font-medium mb-4">Pret a commencer ?</h2>
-                <p class="text-muted-foreground mb-8">Rejoignez les {{ parcours.participants }} etudiants qui suivent deja ce parcours.</p>
+                <h2 class="font-serif text-3xl font-medium mb-4">Prêt à commencer ?</h2>
+                <p class="text-muted-foreground mb-8">Développez votre compétence avec ce parcours structuré.</p>
                 <button class="px-8 py-4 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-xl shadow-primary/30 flex items-center gap-2 mx-auto">
                     <i data-lucide="rocket" class="w-5 h-5"></i>
                     Commencer le parcours

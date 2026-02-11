@@ -5,7 +5,20 @@
 {% block body %}
 <div class="min-h-screen bg-background">
     <!-- Navigation -->
-    {% include 'front/partials/_auth_nav.html.twig' %}
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="{{ path('app_home') }}" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center glow-primary">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight">NoVas</span>
+            </a>
+            
+            <div class="flex items-center gap-4">
+                
+            </div>
+        </div>
+    </nav>
 
     <!-- Header -->
     <section class="pt-32 pb-12 px-6 relative overflow-hidden">
@@ -32,18 +45,15 @@
     <section class="px-6 pb-8">
         <div class="max-w-7xl mx-auto">
             <div class="glass-card rounded-2xl p-4 flex flex-wrap gap-4 justify-center">
-                <button class="px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-medium">Tous les parcours</button>
-                <button class="px-6 py-2.5 bg-secondary border border-white/10 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                <a href="{{ path('app_learning_paths_index') }}" class="px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-medium">Tous les parcours</a>
+                <a href="{{ path('app_learning_paths_index') }}" class="px-6 py-2.5 bg-secondary border border-white/10 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-academic"></span>
                     Hard Skills
-                </button>
-                <button class="px-6 py-2.5 bg-secondary border border-white/10 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                </a>
+                <a href="{{ path('app_learning_paths_index') }}" class="px-6 py-2.5 bg-secondary border border-white/10 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-personal"></span>
                     Soft Skills
-                </button>
-                <button class="px-6 py-2.5 bg-secondary border border-white/10 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Mes parcours
-                </button>
+                </a>
             </div>
         </div>
     </section>
@@ -51,20 +61,31 @@
     <!-- Paths Grid -->
     <section class="px-6 pb-24">
         <div class="max-w-7xl mx-auto">
+            {% if parcours is empty %}
+            <div class="glass-card rounded-3xl p-12 text-center">
+                <i data-lucide="route" class="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50"></i>
+                <h3 class="text-xl font-semibold mb-2">Aucun parcours pour le moment</h3>
+                <p class="text-muted-foreground">Les parcours ajoutés par l'équipe apparaîtront ici.</p>
+            </div>
+            {% else %}
             <div class="grid md:grid-cols-2 gap-8">
-                {% for parcours in parcours %}
+                {% for lp in parcours %}
+                {% set typeSkill = lp.skill and lp.skill.contexteSkill == 'hard' ? 'hard' : 'soft' %}
+                {% set skillNom = lp.skill ? lp.skill.nomSkill : 'Compétence' %}
+                {% set niveauLabel = lp.niveauPath == 1 ? 'Débutant' : (lp.niveauPath == 2 ? 'Intermédiaire' : (lp.niveauPath == 3 ? 'Avancé' : '—')) %}
+                {% set certifiant = lp.statutPath == 1 %}
                 <div class="glass-card rounded-3xl overflow-hidden group hover:border-primary/30 transition-all duration-500">
                     <!-- Image -->
                     <div class="relative h-56 overflow-hidden">
-                        <img src="{{ asset('images/' ~ parcours.image) }}" alt="{{ parcours.titre }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <img src="{{ asset('images/skills-learning.jpg') }}" alt="{{ lp.titrePath }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                         <div class="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
                         
                         <!-- Badges -->
                         <div class="absolute top-4 left-4 flex gap-2">
-                            <span class="px-3 py-1.5 rounded-full text-xs font-medium {{ parcours.type_skill == 'hard' ? 'bg-academic/90 text-white' : 'bg-personal/90 text-white' }} backdrop-blur-sm">
-                                {{ parcours.type_skill == 'hard' ? 'Hard Skill' : 'Soft Skill' }}
+                            <span class="px-3 py-1.5 rounded-full text-xs font-medium {{ typeSkill == 'hard' ? 'bg-academic/90 text-white' : 'bg-personal/90 text-white' }} backdrop-blur-sm">
+                                {{ typeSkill == 'hard' ? 'Hard Skill' : 'Soft Skill' }}
                             </span>
-                            {% if parcours.certifiant %}
+                            {% if certifiant %}
                             <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-accent/90 text-white backdrop-blur-sm flex items-center gap-1">
                                 <i data-lucide="award" class="w-3 h-3"></i>
                                 Certifiant
@@ -76,51 +97,46 @@
                         <div class="absolute bottom-4 left-4">
                             <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-sm text-sm">
                                 <i data-lucide="sparkles" class="w-4 h-4 text-primary"></i>
-                                <span>Skill: {{ parcours.skill_lie }}</span>
+                                <span>Skill: {{ skillNom }}</span>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Content -->
                     <div class="p-6">
-                        <h3 class="font-serif text-2xl font-medium mb-3 group-hover:text-primary transition-colors">{{ parcours.titre }}</h3>
-                        <p class="text-muted-foreground mb-6 line-clamp-2">{{ parcours.description }}</p>
+                        <h3 class="font-serif text-2xl font-medium mb-3 group-hover:text-primary transition-colors">{{ lp.titrePath }}</h3>
+                        <p class="text-muted-foreground mb-6 line-clamp-2">{{ lp.descriptionSkill|default('Parcours d\'apprentissage.') }}</p>
                         
                         <!-- Info Grid -->
                         <div class="grid grid-cols-3 gap-4 mb-6">
                             <div class="text-center p-3 bg-secondary/50 rounded-xl">
                                 <i data-lucide="clock" class="w-5 h-5 text-primary mx-auto mb-1"></i>
-                                <p class="text-xs text-muted-foreground">{{ parcours.duree }}</p>
+                                <p class="text-xs text-muted-foreground">{{ lp.dureeEstimee }} h</p>
                             </div>
                             <div class="text-center p-3 bg-secondary/50 rounded-xl">
                                 <i data-lucide="book-open" class="w-5 h-5 text-primary mx-auto mb-1"></i>
-                                <p class="text-xs text-muted-foreground">{{ parcours.modules }} modules</p>
+                                <p class="text-xs text-muted-foreground">{{ lp.dureeEstimee }} modules</p>
                             </div>
                             <div class="text-center p-3 bg-secondary/50 rounded-xl">
                                 <i data-lucide="users" class="w-5 h-5 text-primary mx-auto mb-1"></i>
-                                <p class="text-xs text-muted-foreground">{{ parcours.participants }}</p>
+                                <p class="text-xs text-muted-foreground">—</p>
                             </div>
                         </div>
                         
                         <!-- Niveaux -->
                         <div class="flex items-center gap-4 mb-6 p-4 bg-secondary/30 rounded-xl">
                             <div class="flex-1">
-                                <p class="text-xs text-muted-foreground mb-1">Niveau de depart</p>
-                                <p class="text-sm font-medium">{{ parcours.niveau_depart }}</p>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="w-12 h-px bg-primary/50"></div>
-                                <i data-lucide="arrow-right" class="w-4 h-4 text-primary"></i>
-                                <div class="w-12 h-px bg-primary/50"></div>
+                                <p class="text-xs text-muted-foreground mb-1">Niveau</p>
+                                <p class="text-sm font-medium">{{ niveauLabel }}</p>
                             </div>
                             <div class="flex-1 text-right">
-                                <p class="text-xs text-muted-foreground mb-1">Niveau final</p>
-                                <p class="text-sm font-medium text-primary">{{ parcours.niveau_arrivee }}</p>
+                                <p class="text-xs text-muted-foreground mb-1">Objectif</p>
+                                <p class="text-sm font-medium text-primary">{{ niveauLabel }}</p>
                             </div>
                         </div>
                         
                         <!-- Action -->
-                        <a href="{{ path('app_learning_path_detail', {id: parcours.id}) }}" class="flex items-center justify-center gap-2 w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 group/btn">
+                        <a href="{{ path('app_learning_path_detail', { id: lp.id }) }}" class="flex items-center justify-center gap-2 w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 group/btn">
                             <span>Commencer ce parcours</span>
                             <i data-lucide="arrow-right" class="w-5 h-5 group-hover/btn:translate-x-1 transition-transform"></i>
                         </a>
@@ -128,6 +144,7 @@
                 </div>
                 {% endfor %}
             </div>
+            {% endif %}
         </div>
     </section>
 </div>
