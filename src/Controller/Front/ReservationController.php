@@ -26,7 +26,10 @@ class ReservationController extends AbstractController
         UserRepository $userRepository,
         ?int $id = null
     ): Response {
-        $user = $this->resolveUser($userRepository, $id);
+        $user = $this->resolveUser($userRepository);
+        if ($id !== null && $user->getId() !== $id) {
+            throw $this->createAccessDeniedException('Vous ne pouvez consulter que vos reservations.');
+        }
 
         $search = $request->query->get('search', '');
         $statut = $request->query->get('statut');
@@ -34,7 +37,7 @@ class ReservationController extends AbstractController
         $statutInt = null;
         if ($statut !== null && $statut !== '') {
             $candidate = (int) $statut;
-            if (in_array($candidate, [0, 1], true)) {
+            if (in_array($candidate, [0, 1, 2], true)) {
                 $statutInt = $candidate;
             }
         }
@@ -85,7 +88,10 @@ class ReservationController extends AbstractController
             throw $this->createNotFoundException('Atelier introuvable.');
         }
 
-        $user = $this->resolveUser($userRepository, $userId);
+        $user = $this->resolveUser($userRepository);
+        if ($userId !== null && $user->getId() !== $userId) {
+            throw $this->createAccessDeniedException('Vous ne pouvez reserver que pour votre propre compte.');
+        }
 
         if ($reservationRepository->existsForUserAndAtelier($user, $atelier)) {
             $this->addFlash('warning', 'Vous avez deja une reservation pour cet atelier.');
@@ -119,12 +125,13 @@ class ReservationController extends AbstractController
     }
 
     #[Route('/export-pdf/{id}', name: 'app_reservation_export_pdf', requirements: ['id' => '\\d+'])]
-    public function exportPdf(int $id, ReservationRepository $reservationRepository): Response
+    public function exportPdf(int $id, ReservationRepository $reservationRepository, UserRepository $userRepository): Response
     {
         $reservation = $reservationRepository->find($id);
         if (!$reservation) {
             throw $this->createNotFoundException('Reservation introuvable.');
         }
+        $this->assertReservationOwner($reservation, $this->resolveUser($userRepository));
 
         $html = $this->renderView('front/reservation/pdf_reservation.html.twig', [
             'reservation' => $reservation,
@@ -153,12 +160,18 @@ class ReservationController extends AbstractController
     }
 
     #[Route('/qrcode/{id}', name: 'app_reservation_qrcode', requirements: ['id' => '\\d+'])]
-    public function qrcode(int $id, ReservationRepository $reservationRepository, UrlGeneratorInterface $urlGenerator): Response
+    public function qrcode(
+        int $id,
+        ReservationRepository $reservationRepository,
+        UrlGeneratorInterface $urlGenerator,
+        UserRepository $userRepository
+    ): Response
     {
         $reservation = $reservationRepository->find($id);
         if (!$reservation) {
             throw $this->createNotFoundException('Reservation introuvable.');
         }
+        $this->assertReservationOwner($reservation, $this->resolveUser($userRepository));
 
         $pdfUrl = $urlGenerator->generate('app_reservation_export_pdf', ['id' => $id], UrlGeneratorInterface::ABSOLUTE_URL);
 
@@ -173,12 +186,14 @@ class ReservationController extends AbstractController
         int $id,
         Request $request,
         ReservationRepository $reservationRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository
     ): Response {
         $reservation = $reservationRepository->find($id);
         if (!$reservation) {
             throw $this->createNotFoundException('Reservation introuvable.');
         }
+        $this->assertReservationOwner($reservation, $this->resolveUser($userRepository));
 
         $token = $request->request->get('_token');
         if (!$this->isCsrfTokenValid('annuler' . $id, $token)) {
@@ -192,17 +207,8 @@ class ReservationController extends AbstractController
         return $this->redirectToRoute('app_reservation_mes');
     }
 
-    private function resolveUser(UserRepository $userRepository, ?int $id = null): User
+    private function resolveUser(UserRepository $userRepository): User
     {
-        if ($id !== null) {
-            $user = $userRepository->find($id);
-            if ($user instanceof User) {
-                return $user;
-            }
-
-            throw $this->createNotFoundException('Utilisateur introuvable.');
-        }
-
         $securityUser = $this->getUser();
         if ($securityUser instanceof User) {
             return $securityUser;
@@ -219,5 +225,13 @@ class ReservationController extends AbstractController
         }
 
         throw $this->createAccessDeniedException('Authentication required.');
+    }
+
+    private function assertReservationOwner(Reservation $reservation, User $user): void
+    {
+        $ownerId = $reservation->getUser()?->getId();
+        if ($ownerId === null || $ownerId !== $user->getId()) {
+            throw $this->createAccessDeniedException('Acces refuse a cette reservation.');
+        }
     }
 }

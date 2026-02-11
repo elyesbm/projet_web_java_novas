@@ -1,8 +1,6 @@
-
-
 {% extends 'front/base_home.html.twig' %}
 
-{% block title %}Mes Reservations - NoVas{% endblock %}
+{% block title %}Mes reservations - NoVas{% endblock %}
 
 {% block body %}
 <div class="min-h-screen bg-background">
@@ -20,7 +18,7 @@
                         Vos <span class="italic text-primary">ateliers</span> reserves
                     </h1>
                     <p class="text-muted-foreground max-w-xl">
-                        Retrouvez tous vos ateliers et telechargez vos QR codes d'acces.
+                        Retrouvez vos reservations, vos QR codes et vos exports PDF.
                     </p>
                 </div>
 
@@ -31,60 +29,55 @@
                     </div>
                     <div class="glass-card rounded-2xl px-6 py-4 text-center">
                         <p class="font-serif text-2xl font-bold text-accent">{{ historique|length }}</p>
-                        <p class="text-xs text-muted-foreground">Passes</p>
+                        <p class="text-xs text-muted-foreground">Passees</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Barre de recherche et filtres -->
     <section class="px-6 pb-8">
         <div class="max-w-7xl mx-auto">
             <form method="GET" action="{{ path('app_reservation_mes') }}" id="searchReservationForm" class="glass-card rounded-2xl p-6">
                 <div class="flex flex-col md:flex-row gap-4">
-                    <!-- Recherche par nom d'atelier -->
                     <div class="flex-1">
-                        <label for="search" class="block text-sm font-medium mb-2 text-muted-foreground">
-                            Rechercher une réservation
-                        </label>
+                        <label for="search" class="block text-sm font-medium mb-2 text-muted-foreground">Rechercher une reservation</label>
                         <div class="relative">
                             <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
-                            <input type="text"
-                                   id="search"
-                                   name="search"
-                                   value="{{ search|default('') }}"
-                                   placeholder="Ex: Python, Communication..."
-                                   class="w-full h-12 pl-12 pr-4 bg-secondary border border-white/10 rounded-xl focus:outline-none focus:border-primary transition-colors">
+                            <input
+                                type="text"
+                                id="search"
+                                name="search"
+                                value="{{ search|default('') }}"
+                                placeholder="Ex: Python, Communication..."
+                                class="w-full h-12 pl-12 pr-4 bg-secondary border border-white/10 rounded-xl focus:outline-none focus:border-primary transition-colors"
+                            >
                         </div>
                     </div>
 
-                    <!-- Filtre par statut -->
                     <div class="md:w-64">
-                        <label for="statut" class="block text-sm font-medium mb-2 text-muted-foreground">
-                            Filtrer par statut
-                        </label>
-                        <select id="statut"
-                                name="statut"
-                                class="w-full h-12 px-4 bg-secondary border border-white/10 rounded-xl focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer">
+                        <label for="statut" class="block text-sm font-medium mb-2 text-muted-foreground">Filtrer par statut</label>
+                        <select
+                            id="statut"
+                            name="statut"
+                            class="w-full h-12 px-4 bg-secondary border border-white/10 rounded-xl focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
+                        >
                             <option value="">Tous les statuts</option>
                             <option value="0" {{ statut == 0 ? 'selected' : '' }}>En attente</option>
-                            <option value="1" {{ statut == 1 ? 'selected' : '' }}>Confirmée</option>
+                            <option value="1" {{ statut == 1 ? 'selected' : '' }}>Confirmee</option>
+                            <option value="2" {{ statut == 2 ? 'selected' : '' }}>Refusee</option>
                         </select>
                     </div>
 
-                    <!-- Boutons -->
                     <div class="flex items-end gap-2">
-                        <button type="submit"
-                                class="h-12 px-6 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all flex items-center gap-2">
+                        <button type="submit" class="h-12 px-6 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all flex items-center gap-2">
                             <i data-lucide="filter" class="w-5 h-5"></i>
                             <span>Filtrer</span>
                         </button>
                         {% if search or statut is not null %}
-                            <a href="{{ path('app_reservation_mes') }}"
-                               class="h-12 px-6 bg-secondary border border-white/10 text-foreground rounded-xl font-medium hover:bg-white/5 transition-all flex items-center gap-2">
+                            <a href="{{ path('app_reservation_mes') }}" class="h-12 px-6 bg-secondary border border-white/10 text-foreground rounded-xl font-medium hover:bg-white/5 transition-all flex items-center gap-2">
                                 <i data-lucide="x" class="w-5 h-5"></i>
-                                <span>Réinitialiser</span>
+                                <span>Reinitialiser</span>
                             </a>
                         {% endif %}
                     </div>
@@ -95,126 +88,119 @@
 
     <section class="px-6 pb-24">
         <div class="max-w-7xl mx-auto space-y-6">
-            {% for reservation in reservations %}
-            {% set atelier = reservation.atelier %}
-            <div class="glass-card rounded-3xl p-6 hover:border-primary/30 transition-all">
-                <div class="flex flex-col lg:flex-row gap-6">
-
-                    {# ==== IMAGE ATELIER VIA URL (CORRECTION ICI) ==== #}
-                    <div class="lg:w-48 flex-shrink-0">
-                        <div class="aspect-square rounded-2xl overflow-hidden bg-secondary">
-                            <img src="{{ atelier.imageAtelier }}"
-                                 alt="{{ atelier.titreAtelier }}"
-                                 class="w-full h-full object-cover">
-                        </div>
-                    </div>
-
-                    <div class="flex-1 space-y-4">
-                        <div class="flex flex-wrap items-start justify-between gap-4">
-                            <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="px-3 py-1 rounded-full text-xs font-medium {{ atelier.contexteAtelier == 0 ? 'bg-personal/20 text-personal' : 'bg-academic/20 text-academic' }}">
-                                        {{ atelier.contexteAtelier == 0 ? 'Soft Skill' : 'Hard Skill' }}
-                                    </span>
-                                    <span class="px-3 py-1 rounded-full text-xs font-medium {{ reservation.statutReservation == 1 ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400' }}">
-                                        {{ reservation.statutReservation == 1 ? 'Confirmee' : 'En attente' }}
-                                    </span>
-                                </div>
-                                <h3 class="text-xl font-semibold">{{ atelier.titreAtelier }}</h3>
-                                <p class="text-sm text-muted-foreground">
-                                    Atelier du {{ atelier.dateAtelier|date('d/m/Y') }}
-                                </p>
-                            </div>
-
-                            <div class="flex gap-2 flex-wrap">
-                                <a href="{{ path('app_reservation_export_pdf', { id: reservation.id }) }}"
-                                   target="_blank"
-                                   class="px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2">
-                                    <i data-lucide="file-text" class="w-4 h-4"></i>
-                                    Exporter en PDF
-                                </a>
-                                <a href="{{ path('app_reservation_qrcode', { id: reservation.id }) }}"
-                                   target="_blank"
-                                   class="px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2">
-                                    <i data-lucide="qr-code" class="w-4 h-4"></i>
-                                    QR Code
-                                </a>
-                                <form method="post" action="{{ path('app_reservation_annuler', { id: reservation.id }) }}" class="inline" onsubmit="return confirm('Annuler cette réservation ?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('annuler' ~ reservation.id) }}">
-                                    <button type="submit" class="px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-2">
-                                        <i data-lucide="x-circle" class="w-4 h-4"></i>
-                                        Annuler
-                                    </button>
-                                </form>
+            {% set all_reservations = reservations|merge(historique) %}
+            {% for reservation in all_reservations %}
+                {% set atelier = reservation.atelier %}
+                {% set is_past = reservation in historique %}
+                <div class="glass-card rounded-3xl p-6 hover:border-primary/30 transition-all">
+                    <div class="flex flex-col lg:flex-row gap-6">
+                        <div class="lg:w-48 flex-shrink-0">
+                            <div class="aspect-square rounded-2xl overflow-hidden bg-secondary flex items-center justify-center">
+                                {% if atelier and atelier.imageAtelier %}
+                                    <img src="{{ atelier.imageAtelier }}" alt="{{ atelier ? atelier.titreAtelier : 'Atelier' }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <i data-lucide="image" class="w-10 h-10 text-muted-foreground"></i>
+                                {% endif %}
                             </div>
                         </div>
 
-                        <div class="grid sm:grid-cols-2 gap-4">
-                            <div class="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl">
-                                <i data-lucide="calendar" class="w-5 h-5 text-primary"></i>
+                        <div class="flex-1 space-y-4">
+                            <div class="flex flex-wrap items-start justify-between gap-4">
                                 <div>
-                                    <p class="text-xs text-muted-foreground">Date atelier</p>
-                                    <p class="text-sm font-medium">{{ atelier.dateAtelier|date('d F Y') }}</p>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="px-3 py-1 rounded-full text-xs font-medium {{ atelier and atelier.contexteAtelier == 0 ? 'bg-personal/20 text-personal' : 'bg-academic/20 text-academic' }}">
+                                            {{ atelier and atelier.contexteAtelier == 0 ? 'Soft Skill' : 'Hard Skill' }}
+                                        </span>
+                                        {% if is_past %}
+                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-slate-500/20 text-slate-300">Passee</span>
+                                        {% endif %}
+                                        <span class="px-3 py-1 rounded-full text-xs font-medium {{ reservation.statutReservation == 1 ? 'bg-green-500/20 text-green-400' : (reservation.statutReservation == 2 ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400') }}">
+                                            {{ reservation.statutReservation == 1 ? 'Confirmee' : (reservation.statutReservation == 2 ? 'Refusee' : 'En attente') }}
+                                        </span>
+                                    </div>
+                                    <h3 class="text-xl font-semibold">{{ atelier ? atelier.titreAtelier : 'Atelier' }}</h3>
+                                    <p class="text-sm text-muted-foreground">
+                                        Atelier du {{ atelier and atelier.dateAtelier ? atelier.dateAtelier|date('d/m/Y') : '-' }}
+                                    </p>
                                 </div>
-                            </div>
-                            <div class="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl">
-                                <i data-lucide="tag" class="w-5 h-5 text-primary"></i>
-                                <div>
-                                    <p class="text-xs text-muted-foreground">Type</p>
-                                    <p class="text-sm font-medium">{{ atelier.typeAtelier|capitalize }}</p>
-                                </div>
-                            </div>
-                        </div>
 
-                        {% if reservation.commentaireReservation %}
-                        <div class="flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t border-white/10">
-                            <i data-lucide="message-square" class="w-4 h-4"></i>
-                            <span>{{ reservation.commentaireReservation }}</span>
+                                <div class="flex gap-2 flex-wrap">
+                                    <a href="{{ path('app_reservation_export_pdf', { id: reservation.id }) }}" target="_blank" class="px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2">
+                                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                                        Exporter PDF
+                                    </a>
+                                    <a href="{{ path('app_reservation_qrcode', { id: reservation.id }) }}" target="_blank" class="px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors flex items-center gap-2">
+                                        <i data-lucide="qr-code" class="w-4 h-4"></i>
+                                        QR Code
+                                    </a>
+                                    <form method="post" action="{{ path('app_reservation_annuler', { id: reservation.id }) }}" class="inline" onsubmit="return confirm('Annuler cette reservation ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('annuler' ~ reservation.id) }}">
+                                        <button type="submit" class="px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-2">
+                                            <i data-lucide="x-circle" class="w-4 h-4"></i>
+                                            Annuler
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="grid sm:grid-cols-2 gap-4">
+                                <div class="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl">
+                                    <i data-lucide="calendar" class="w-5 h-5 text-primary"></i>
+                                    <div>
+                                        <p class="text-xs text-muted-foreground">Date atelier</p>
+                                        <p class="text-sm font-medium">{{ atelier and atelier.dateAtelier ? atelier.dateAtelier|date('d F Y') : '-' }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl">
+                                    <i data-lucide="tag" class="w-5 h-5 text-primary"></i>
+                                    <div>
+                                        <p class="text-xs text-muted-foreground">Type</p>
+                                        <p class="text-sm font-medium">{{ atelier and atelier.typeAtelier ? atelier.typeAtelier|capitalize : '-' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if reservation.commentaireReservation %}
+                                <div class="flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t border-white/10">
+                                    <i data-lucide="message-square" class="w-4 h-4"></i>
+                                    <span>{{ reservation.commentaireReservation }}</span>
+                                </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
                     </div>
                 </div>
-            </div>
             {% else %}
-            <div class="glass-card rounded-3xl p-12 text-center">
-                <h3 class="text-xl font-medium mb-2">Aucune reservation</h3>
-                <p class="text-muted-foreground mb-6">Vous n'avez pas encore reserve d'atelier.</p>
-            </div>
+                <div class="glass-card rounded-3xl p-12 text-center">
+                    <h3 class="text-xl font-medium mb-2">Aucune reservation</h3>
+                    <p class="text-muted-foreground mb-6">Vous n'avez encore aucune reservation pour votre compte.</p>
+                </div>
             {% endfor %}
         </div>
     </section>
 </div>
 
 <script>
-// Recherche en temps réel avec debounce pour les réservations
 (function() {
     const searchInput = document.getElementById('search');
     const statutSelect = document.getElementById('statut');
     const form = document.getElementById('searchReservationForm');
     let timeoutId = null;
 
-    // Fonction pour soumettre le formulaire
     function submitForm() {
         form.submit();
     }
 
-    // Recherche en temps réel sur le champ de recherche
     if (searchInput) {
         searchInput.addEventListener('input', function() {
-            // Annuler le timeout précédent
             if (timeoutId) {
                 clearTimeout(timeoutId);
             }
-            
-            // Attendre 500ms avant de soumettre
             timeoutId = setTimeout(submitForm, 500);
         });
     }
 
-    // Soumission immédiate sur changement de filtre statut
     if (statutSelect) {
         statutSelect.addEventListener('change', function() {
-            // Annuler le timeout de recherche si en cours
             if (timeoutId) {
                 clearTimeout(timeoutId);
             }

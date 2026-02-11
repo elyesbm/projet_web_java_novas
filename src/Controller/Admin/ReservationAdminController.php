@@ -2,7 +2,6 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Reservation;
 use App\Repository\ReservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,41 +16,38 @@ class ReservationAdminController extends AbstractController
     #[Route('/', name: 'list')]
     public function list(Request $request, ReservationRepository $reservationRepository): Response
     {
-        // Récupération des paramètres de recherche, filtre et tri
         $search = $request->query->get('search', '');
         $statut = $request->query->get('statut');
         $sort = $request->query->get('sort', 'id_desc');
 
-        // Conversion du statut en int si fourni
         $statutInt = null;
         if ($statut !== null && $statut !== '') {
-            $statutInt = (int) $statut;
-            if ($statutInt !== 0 && $statutInt !== 1 && $statutInt !== 2) {
-                $statutInt = null;
+            $candidate = (int) $statut;
+            if (in_array($candidate, [0, 1, 2], true)) {
+                $statutInt = $candidate;
             }
         }
 
-        // Validation du tri
         $validSorts = ['id_desc', 'id_asc', 'date_asc', 'date_desc', 'nom_asc', 'nom_desc'];
-        if (!in_array($sort, $validSorts)) {
+        if (!in_array($sort, $validSorts, true)) {
             $sort = 'id_desc';
         }
 
-        // Recherche, filtrage et tri
         $reservations = $reservationRepository->searchFilterAndSort($search, $statutInt, $sort);
 
-        // Calcul des stats sur toutes les réservations (pas seulement celles filtrées)
-        $toutesReservations = $reservationRepository->findAll();
+        $allReservations = $reservationRepository->findAll();
         $stats = [
-            'total' => count($toutesReservations),
+            'total' => count($allReservations),
             'en_attente' => 0,
             'acceptees' => 0,
             'refusees' => 0,
         ];
-        foreach ($toutesReservations as $r) {
-            if ($r->getStatutReservation() === 0) {
+
+        foreach ($allReservations as $reservation) {
+            $status = $reservation->getStatutReservation();
+            if ($status === 0) {
                 $stats['en_attente']++;
-            } elseif ($r->getStatutReservation() === 1) {
+            } elseif ($status === 1) {
                 $stats['acceptees']++;
             } else {
                 $stats['refusees']++;
@@ -67,20 +63,24 @@ class ReservationAdminController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'edit', requirements: ['id' => '\d+'])]
-    public function edit(int $id, Request $request, ReservationRepository $reservationRepository, EntityManagerInterface $em): Response
-    {
+    #[Route('/{id}/edit', name: 'edit', requirements: ['id' => '\\d+'])]
+    public function edit(
+        int $id,
+        Request $request,
+        ReservationRepository $reservationRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
         $reservation = $reservationRepository->find($id);
-        if (!$reservation) {
-            throw $this->createNotFoundException('Réservation introuvable.');
+        if ($reservation === null) {
+            throw $this->createNotFoundException('Reservation introuvable.');
         }
 
         $form = $this->createFormBuilder($reservation)
-            ->add('statut_reservation', ChoiceType::class, [
+            ->add('statutReservation', ChoiceType::class, [
                 'choices' => [
                     'En attente' => 0,
-                    'Acceptée' => 1,
-                    'Refusée' => 2,
+                    'Acceptee' => 1,
+                    'Refusee' => 2,
                 ],
                 'label' => 'Statut',
                 'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border'],
@@ -90,8 +90,9 @@ class ReservationAdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
-            $this->addFlash('success', 'Statut de la réservation mis à jour.');
+            $entityManager->flush();
+            $this->addFlash('success', 'Statut de la reservation mis a jour.');
+
             return $this->redirectToRoute('app_admin_reservations_list');
         }
 
