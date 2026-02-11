@@ -14,8 +14,8 @@
                 <i data-lucide="calendar-days" class="w-7 h-7"></i>
             </div>
             <div>
-                <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ ateliers|length }}</p>
-                <p class="text-slate-500">Ateliers ce mois</p>
+                <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ totalAteliers|default(ateliers|length) }}</p>
+                <p class="text-slate-500">Total ateliers</p>
             </div>
         </div>
 
@@ -27,7 +27,7 @@
                 <p class="text-3xl font-bold text-slate-900 dark:text-white">
                     {{ (statsContexte.soft + statsContexte.hard) }}
                 </p>
-                <p class="text-slate-500">Réservations (Soft + Hard)</p>
+                <p class="text-slate-500">Ateliers (Soft + Hard)</p>
             </div>
         </div>
 
@@ -46,22 +46,23 @@
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Prochains ateliers</h3>
 
                 <div class="space-y-4">
-                    <div class="flex gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer">
-                        <div class="w-14 h-14 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 flex flex-col items-center justify-center shrink-0">
-                            <span class="text-xs font-bold uppercase">Fév</span>
-                            <span class="text-lg font-bold">15</span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="font-semibold text-slate-900 dark:text-white truncate">Prise de Parole en Public</h4>
-                            <p class="text-sm text-slate-500">14:00 • Salle A102</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                <div class="flex-1 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
-                                    <div class="bg-purple-500 h-1.5 rounded-full" style="width: 75%"></div>
-                                </div>
-                                <span class="text-xs text-slate-500">15/20</span>
+                    {% if nextAtelier %}
+                        <a href="{{ path('app_admin_ateliers_edit', { id: nextAtelier.id }) }}" class="flex gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                            <div class="w-14 h-14 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 flex flex-col items-center justify-center shrink-0">
+                                <span class="text-xs font-bold uppercase">{{ nextAtelier.dateAtelier|date('M') }}</span>
+                                <span class="text-lg font-bold">{{ nextAtelier.dateAtelier|date('d') }}</span>
                             </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-slate-900 dark:text-white truncate">{{ nextAtelier.titreAtelier }}</h4>
+                                <p class="text-sm text-slate-500">{{ nextAtelier.dateAtelier|date('d/m/Y') }} � {{ nextAtelier.typeAtelier|capitalize }}</p>
+                                <p class="mt-2 text-xs text-slate-500">Capacite: {{ nextAtelier.capacite }}</p>
+                            </div>
+                        </a>
+                    {% else %}
+                        <div class="p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 text-sm text-slate-500">
+                            Aucun atelier a venir.
                         </div>
-                    </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -139,8 +140,8 @@
                                     name="contexte"
                                     class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <option value="">Tous</option>
-                                <option value="0" {{ contexte == 0 ? 'selected' : '' }}>Soft Skill</option>
-                                <option value="1" {{ contexte == 1 ? 'selected' : '' }}>Hard Skill</option>
+                                <option value="0" {{ contexte is same as(0) ? 'selected' : '' }}>Soft Skill</option>
+                                <option value="1" {{ contexte is same as(1) ? 'selected' : '' }}>Hard Skill</option>
                             </select>
                         </div>
 
@@ -190,6 +191,7 @@
                             <tr>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Atelier</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Date</th>
+                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Contexte</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Places</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Actions</th>
                             </tr>
@@ -219,6 +221,18 @@
                                 </td>
 
                                 <td class="px-6 py-4">
+                                    {% if atelier.contexteAtelier == 0 %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                            Soft Skill
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                            Hard Skill
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="px-6 py-4">
                                     <span class="text-sm font-medium text-rose-600">
                                         {{ atelier.capacite }}
                                     </span>
@@ -244,7 +258,7 @@
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="4" class="px-6 py-6 text-center text-slate-500">
+                                <td colspan="5" class="px-6 py-6 text-center text-slate-500">
                                     Aucun atelier en base
                                 </td>
                             </tr>
@@ -287,3 +301,4 @@
     })();
     </script>
 {% endblock %}
+

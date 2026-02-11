@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Entity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\CommentaireRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -16,18 +17,25 @@ class Commentaire
     #[ORM\Column(type: 'text')]
     private ?string $image = null;
 
-    #[ORM\Column(type: 'date')]
+    #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $date_creation = null;
 
     #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank(message: "Le commentaire ne peut pas être vide.")]
+#[Assert\Length(
+    min: 5,
+    max: 1000,
+    minMessage: "Le contenu doit contenir au moins {{ limit }} caractères.",
+    maxMessage: "Le commentaire ne doit pas dépasser {{ limit }} caractères."
+)]
     private ?string $contenu = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'commentaires')]
-    #[ORM\JoinColumn(name: 'id_auteur', referencedColumnName: 'ID', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'id_auteur', referencedColumnName: 'ID', nullable: false)]
     private ?User $auteur = null;
 
     #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'commentaires')]
-    #[ORM\JoinColumn(name: 'id_pub', referencedColumnName: 'id_pub', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'id_pub', referencedColumnName: 'id_pub', nullable: false)]
     private ?Publication $publication = null;
 
     public function getId(): ?int { return $this->id; }

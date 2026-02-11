@@ -2,48 +2,41 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\Atelier;
+use App\Form\AtelierType;
+use App\Repository\AtelierRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Entity\Atelier;
-use App\Repository\AtelierRepository;
-use App\Repository\ReservationRepository;
-use App\Form\AtelierType;
-use Doctrine\ORM\EntityManagerInterface;
-
 
 #[Route('/admin/ateliers', name: 'app_admin_ateliers_')]
 class AtelierAdminController extends AbstractController
 {
     #[Route('/', name: 'list')]
-    public function list(Request $request, AtelierRepository $atelierRepository, ReservationRepository $reservationRepository): Response
+    public function list(Request $request, AtelierRepository $atelierRepository): Response
     {
-        // Récupération des paramètres de recherche, filtre et tri
         $search = $request->query->get('search', '');
         $contexte = $request->query->get('contexte');
         $sort = $request->query->get('sort', 'id_desc');
 
-        // Conversion du contexte en int si fourni
-        $contexteInt = null;
-        if ($contexte !== null && $contexte !== '') {
-            $contexteInt = (int) $contexte;
-            if ($contexteInt !== 0 && $contexteInt !== 1) {
-                $contexteInt = null;
-            }
-        }
+        // Robust contexte parsing to avoid implicit cast issues
+        // (e.g. 'hard' previously became 0 with (int) cast).
+        $contexteInt = match ((string) $contexte) {
+            '0', 'soft' => 0,
+            '1', 'hard' => 1,
+            default => null,
+        };
 
-        // Validation du tri
         $validSorts = ['id_desc', 'id_asc', 'date_asc', 'date_desc', 'titre_asc', 'titre_desc'];
-        if (!in_array($sort, $validSorts)) {
+        if (!in_array($sort, $validSorts, true)) {
             $sort = 'id_desc';
         }
 
-        // Recherche, filtrage et tri
         $ateliers = $atelierRepository->searchFilterAndSort($search, $contexteInt, $sort);
-
-        // Statistiques Hard / Soft pour le graphique
-        $statsContexte = $reservationRepository->countByContexte();
+        $statsContexte = $atelierRepository->countByContexte();
+        $nextAtelier = $atelierRepository->findNextUpcomingAtelier();
 
         return $this->render('admin/atelier/list.html.twig', [
             'ateliers' => $ateliers,
@@ -51,6 +44,8 @@ class AtelierAdminController extends AbstractController
             'contexte' => $contexteInt,
             'sort' => $sort,
             'statsContexte' => $statsContexte,
+            'nextAtelier' => $nextAtelier,
+            'totalAteliers' => $atelierRepository->count([]),
         ]);
     }
 
@@ -75,7 +70,7 @@ class AtelierAdminController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'edit', requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'edit', requirements: ['id' => '\\d+'])]
     public function edit(int $id, Request $request, AtelierRepository $atelierRepository, EntityManagerInterface $em): Response
     {
         $atelier = $atelierRepository->find($id);
@@ -99,7 +94,7 @@ class AtelierAdminController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/delete', name: 'delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'delete', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function delete(int $id, Request $request, AtelierRepository $atelierRepository, EntityManagerInterface $em): Response
     {
         $atelier = $atelierRepository->find($id);

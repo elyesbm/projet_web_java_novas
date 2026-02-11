@@ -1,0 +1,102 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Modifier la publication - NoVas{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background relative overflow-hidden">
+    <div class="absolute inset-0 gradient-orb"></div>
+    <div class="absolute top-1/4 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="{{ path('app_publications_index') }}" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                <span class="text-sm">Retour aux publications</span>
+            </a>
+            
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="pt-32 pb-24 px-6">
+        <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/20 mb-4">
+                    <i data-lucide="edit-3" class="w-8 h-8 text-primary"></i>
+                </div>
+                <h1 class="font-serif text-3xl font-medium mb-2">Modifier la publication</h1>
+                <p class="text-muted-foreground">Modifiez le titre, le contenu ou le contexte</p>
+            </div>
+            
+            <form method="post" action="{{ path('app_publication_modifier', { id: publication.id }) }}" class="glass-card rounded-3xl p-8 space-y-6">
+                <!-- Contexte -->
+                <div>
+                    <label class="block text-sm font-medium mb-3 text-muted-foreground">Contexte de votre publication</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="contexte" value="1" class="peer hidden" {{ (publication.contexte == 1 or publication.contexte != 2) ? 'checked' : '' }}>
+                            <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-academic peer-checked:bg-academic/20 transition-all text-center">
+                                <i data-lucide="graduation-cap" class="w-8 h-8 text-academic mx-auto mb-2"></i>
+                                <p class="font-medium text-sm">Academic</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="contexte" value="2" class="peer hidden" {{ publication.contexte == 2 ? 'checked' : '' }}>
+                            <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-personal peer-checked:bg-personal/20 transition-all text-center">
+                                <i data-lucide="heart" class="w-8 h-8 text-personal mx-auto mb-2"></i>
+                                <p class="font-medium text-sm">Personal</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Titre -->
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Titre</label>
+                    <input 
+                        type="text" 
+                        name="titre" 
+                        required 
+                        value="{{ publication.titre }}"
+                        placeholder="Resumez votre publication en une phrase accrocheuse..."
+                        class="w-full h-14 bg-secondary border border-white/10 rounded-xl px-4 text-lg font-medium focus:outline focus:border-primary transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
+                    >
+                </div>
+                
+                <!-- Contenu -->
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Contenu</label>
+                    <textarea 
+                        name="contenu" 
+                        rows="8" 
+                        required
+                        placeholder="Decrivez votre question, experience ou partage en detail..."
+                        class="w-full bg-secondary border border-white/10 rounded-xl p-4 focus:outline focus:border-primary transition-all resize-none placeholder:text-muted-foreground/50"
+                    >{{ publication.contenu }}</textarea>
+                    <div class="flex justify-between mt-2">
+                        <p class="text-xs text-muted-foreground">Soyez respectueux et constructif</p>
+                        <p class="text-xs text-muted-foreground">0 / 2000 caracteres</p>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex gap-4 pt-4">
+                    <a href="{{ path('app_publications_index') }}" class="flex-1 h-14 bg-secondary border border-white/10 rounded-xl font-medium flex items-center justify-center hover:bg-white/5 transition-colors">
+                        Annuler
+                    </a>
+                    <button type="submit" class="flex-1 h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
+                        <i data-lucide="save" class="w-5 h-5"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

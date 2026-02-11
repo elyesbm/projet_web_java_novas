@@ -107,6 +107,44 @@ class AtelierRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * Count ateliers by contexte.
+     *
+     * @return array{soft:int,hard:int}
+     */
+    public function countByContexte(): array
+    {
+        $rows = $this->createQueryBuilder('a')
+            ->select('a.contexte_atelier AS contexte, COUNT(a.id) AS total')
+            ->groupBy('a.contexte_atelier')
+            ->getQuery()
+            ->getResult();
+
+        $stats = ['soft' => 0, 'hard' => 0];
+        foreach ($rows as $row) {
+            $contexte = (string) $row['contexte'];
+            if ($contexte === '0') {
+                $stats['soft'] = (int) $row['total'];
+            } elseif ($contexte === '1') {
+                $stats['hard'] = (int) $row['total'];
+            }
+        }
+
+        return $stats;
+    }
+
+    public function findNextUpcomingAtelier(): ?Atelier
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.date_atelier >= :today')
+            ->setParameter('today', new \DateTimeImmutable('today'))
+            ->orderBy('a.date_atelier', 'ASC')
+            ->addOrderBy('a.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     //    /**
     //     * @return Atelier[] Returns an array of Atelier objects
     //     */

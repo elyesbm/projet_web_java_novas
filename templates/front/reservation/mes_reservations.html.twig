@@ -63,9 +63,9 @@
                             class="w-full h-12 px-4 bg-secondary border border-white/10 rounded-xl focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
                         >
                             <option value="">Tous les statuts</option>
-                            <option value="0" {{ statut == 0 ? 'selected' : '' }}>En attente</option>
-                            <option value="1" {{ statut == 1 ? 'selected' : '' }}>Confirmee</option>
-                            <option value="2" {{ statut == 2 ? 'selected' : '' }}>Refusee</option>
+                            <option value="0" {{ statut is same as(0) ? 'selected' : '' }}>En attente</option>
+                            <option value="1" {{ statut is same as(1) ? 'selected' : '' }}>Confirmee</option>
+                            <option value="2" {{ statut is same as(2) ? 'selected' : '' }}>Refusee</option>
                         </select>
                     </div>
 

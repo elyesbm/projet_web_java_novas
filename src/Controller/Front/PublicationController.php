@@ -2,6 +2,13 @@
 
 namespace App\Controller\Front;
 
+use App\Entity\Commentaire;
+use App\Entity\Publication;
+use App\Form\CommentaireType;
+use App\Form\PublicationType;
+use App\Repository\PublicationRepository;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,136 +17,235 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/publications')]
 class PublicationController extends AbstractController
 {
-    #[Route('/', name: 'app_publications_index')]
-    public function index(): Response
+    /**
+     * ✅ User courant OU fallback (1er user en base)
+     */
+    private function getCurrentUserOrFallback(UserRepository $userRepo)
     {
-        $publications = [
-            [
-                'id' => 1,
-                'auteur' => [
-                    'nom' => 'Marie Dubois',
-                    'avatar' => 'student-avatar.jpg',
-                    'niveau' => 'L3 Informatique',
-                ],
-                'date_creation' => '2024-02-15 14:30',
-                'contexte' => 'academic',
-                'titre' => 'Conseils pour reussir les examens de Machine Learning ?',
-                'contenu' => 'Les examens approchent et j\'aimerais avoir vos conseils pour bien reviser le cours de ML. Quelles ressources utilisez-vous ? Des astuces particulieres pour les exercices pratiques ?',
-                'likes' => 24,
-                'commentaires_count' => 12,
-                'statut' => 'actif',
-                'commentaires' => [
-                    [
-                        'id' => 101,
-                        'auteur' => ['nom' => 'Thomas Bernard', 'avatar' => 'student-avatar.jpg'],
-                        'date' => '2024-02-15 15:45',
-                        'contenu' => 'Je te conseille les videos de 3Blue1Brown sur YouTube, c\'est super bien explique !',
-                    ],
-                    [
-                        'id' => 102,
-                        'auteur' => ['nom' => 'Emma Petit', 'avatar' => 'student-avatar.jpg'],
-                        'date' => '2024-02-15 16:20',
-                        'contenu' => 'Fais beaucoup d\'exercices pratiques, c\'est la cle pour bien comprendre.',
-                    ],
-                ],
-            ],
-            [
-                'id' => 2,
-                'auteur' => [
-                    'nom' => 'Anonyme',
-                    'avatar' => null,
-                    'niveau' => null,
-                ],
-                'date_creation' => '2024-02-14 09:15',
-                'contexte' => 'personal',
-                'titre' => 'Comment gerer le stress avant une presentation ?',
-                'contenu' => 'J\'ai une presentation importante la semaine prochaine et je stresse enormement. Avez-vous des techniques pour gerer le trac ? Je cherche des conseils pratiques qui fonctionnent vraiment !',
-                'likes' => 45,
-                'commentaires_count' => 23,
-                'statut' => 'actif',
-                'commentaires' => [
-                    [
-                        'id' => 201,
-                        'auteur' => ['nom' => 'Lucas Moreau', 'avatar' => 'student-avatar.jpg'],
-                        'date' => '2024-02-14 10:30',
-                        'contenu' => 'La respiration 4-7-8 m\'aide beaucoup. 4 secondes d\'inspiration, 7 de retention, 8 d\'expiration.',
-                    ],
-                ],
-            ],
-            [
-                'id' => 3,
-                'auteur' => [
-                    'nom' => 'Sarah Chen',
-                    'avatar' => 'student-avatar.jpg',
-                    'niveau' => 'M2 Management',
-                ],
-                'date_creation' => '2024-02-13 18:00',
-                'contexte' => 'help',
-                'titre' => 'Groupe d\'etude pour le projet de base de donnees',
-                'contenu' => 'Salut ! Je cherche des camarades motives pour former un groupe d\'etude sur le projet de BDD. On pourrait se retrouver a la bibliotheque les mardis et jeudis apres-midi. Qui est interesse ?',
-                'likes' => 18,
-                'commentaires_count' => 8,
-                'statut' => 'actif',
-                'commentaires' => [],
-            ],
-            [
-                'id' => 4,
-                'auteur' => [
-                    'nom' => 'Alexandre Martin',
-                    'avatar' => 'student-avatar.jpg',
-                    'niveau' => 'L3 Informatique',
-                ],
-                'date_creation' => '2024-02-12 11:20',
-                'contexte' => 'academic',
-                'titre' => 'Retour d\'experience : Stage en startup vs grande entreprise',
-                'contenu' => 'J\'ai fait un stage dans une startup l\'ete dernier et je voulais partager mon experience avec vous. Les avantages et inconvenients selon moi... N\'hesitez pas a poser vos questions !',
-                'likes' => 67,
-                'commentaires_count' => 31,
-                'statut' => 'actif',
-                'commentaires' => [
-                    [
-                        'id' => 301,
-                        'auteur' => ['nom' => 'Julie Lambert', 'avatar' => 'student-avatar.jpg'],
-                        'date' => '2024-02-12 12:15',
-                        'contenu' => 'Super retour ! Tu as prefere la startup finalement ?',
-                    ],
-                    [
-                        'id' => 302,
-                        'auteur' => ['nom' => 'Marc Dupont', 'avatar' => 'student-avatar.jpg'],
-                        'date' => '2024-02-12 14:00',
-                        'contenu' => 'Merci pour ce partage, ca m\'aide beaucoup pour mon choix.',
-                    ],
-                ],
-            ],
-        ];
+        $user = $this->getUser();
 
-        return $this->render('front/publication/index.html.twig', [
-            'publications' => $publications,
-        ]);
+        if (!$user) {
+            $user = $userRepo->findOneBy([], ['id' => 'ASC']);
+        }
+
+        return $user;
     }
 
+  #[Route('/', name: 'app_publications_index', methods: ['GET'])]
+public function index(Request $request, PublicationRepository $repo, UserRepository $userRepo): Response
+{
+    $contexteFilter = $request->query->get('contexte');
+
+    // ✅ q: recherche (titre + contenu + nom/prénom auteur)
+    $q = trim((string) $request->query->get('q', ''));
+
+    // ✅ sort : created_desc / updated_desc
+    $sort = (string) $request->query->get('sort', 'created_desc');
+
+    // ✅ ordre (updated: fallback sur date_creation)
+    $orderBy = match ($sort) {
+        'updated_desc' => ['date_modification' => 'DESC', 'date_creation' => 'DESC'],
+        default        => ['date_creation' => 'DESC'],
+    };
+
+    // ✅ uniquement les pubs actives
+    $criteria = ['statut' => 1];
+
+    if ($contexteFilter !== null && in_array((int) $contexteFilter, [1, 2], true)) {
+        $criteria['contexte'] = (int) $contexteFilter;
+    }
+
+    // ✅ récupère depuis DB trié
+    $publications = $repo->findBy($criteria, $orderBy);
+
+    // ✅ filtre en mémoire (titre + contenu + auteur nom/prénom)
+    if ($q !== '') {
+        $publications = array_values(array_filter($publications, function ($pub) use ($q) {
+            $titre = (string) ($pub->getTitre() ?? '');
+            $contenu = (string) ($pub->getContenu() ?? '');
+
+            $auteurNom = '';
+            $auteurPrenom = '';
+            if ($pub->getAuteur()) {
+                $auteurNom = (string) ($pub->getAuteur()->getNOM() ?? '');
+                $auteurPrenom = (string) ($pub->getAuteur()->getPRENOM() ?? '');
+            }
+
+            return stripos($titre, $q) !== false
+                || stripos($contenu, $q) !== false
+                || stripos($auteurNom, $q) !== false
+                || stripos($auteurPrenom, $q) !== false;
+        }));
+    }
+
+    // ✅ user courant / fallback
+    $currentUser = $this->getCurrentUserOrFallback($userRepo);
+
+    // ✅ Forms commentaires par publication
+    $commentForms = [];
+    foreach ($publications as $pub) {
+        $commentForms[$pub->getId()] = $this->createForm(
+            CommentaireType::class,
+            new Commentaire(),
+            [
+        'action' => $this->generateUrl('app_commentaire_ajouter', ['id' => $pub->getId()]) . '#pub-' . $pub->getId(),
+                'method' => 'POST',
+            ]
+        )->createView();
+    }
+
+    return $this->render('front/publication/index.html.twig', [
+        'publications' => $publications,
+        'comment_forms' => $commentForms,
+        'current_user_id' => $currentUser ? $currentUser->getId() : null,
+        'contexte_filter' => $contexteFilter !== null ? (int) $contexteFilter : null,
+        'q' => $q,
+        'sort' => $sort,
+    ]);
+}
+
+
     #[Route('/nouvelle', name: 'app_publication_nouvelle', methods: ['GET', 'POST'])]
-    public function nouvelle(Request $request): Response
-    {
-        if ($request->isMethod('POST')) {
-            $this->addFlash('success', 'Votre publication a ete creee avec succes !');
+    public function nouvelle(
+        Request $request,
+        EntityManagerInterface $em,
+        UserRepository $userRepo
+    ): Response {
+        $user = $this->getCurrentUserOrFallback($userRepo);
+
+        if (!$user) {
+            $this->addFlash('error', 'Aucun utilisateur en base.');
             return $this->redirectToRoute('app_publications_index');
         }
 
-        return $this->render('front/publication/nouvelle.html.twig');
+        $pub = new Publication();
+        $form = $this->createForm(PublicationType::class, $pub);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $anonyme = (bool) $form->get('anonyme')->getData();
+
+            $pub->setStatut(1);
+            $pub->setDateCreation(new \DateTime('now', new \DateTimeZone('Europe/Paris')));
+            $pub->setAuteur($user);
+            // Use an explicit marker for anonymous posts to avoid confusion
+            // when the user has no profile image.
+            $pub->setImageAuteur($anonyme ? 'ANONYMOUS' : ($user->getIMAGE() ?: 'VISIBLE'));
+
+            $em->persist($pub);
+            $em->flush();
+
+            $this->addFlash('success', 'Publication créée.');
+            return $this->redirectToRoute('app_publications_index');
+        }
+
+        return $this->render('front/publication/nouvelle.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
 
-    #[Route('/{id}/commenter', name: 'app_publication_commenter', methods: ['POST'])]
-    public function commenter(Request $request, int $id): Response
-    {
-        // Traiter le commentaire
+    #[Route('/{id}/modifier', name: 'app_publication_modifier', methods: ['GET', 'POST'])]
+    public function modifier(
+        Request $request,
+        int $id,
+        PublicationRepository $repo,
+        UserRepository $userRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $pub = $repo->find($id);
+        if (!$pub) {
+            $this->addFlash('error', 'Publication introuvable.');
+            return $this->redirectToRoute('app_publications_index');
+        }
+
+        $user = $this->getCurrentUserOrFallback($userRepo);
+        if (!$user || !$pub->getAuteur() || $pub->getAuteur()->getId() !== $user->getId()) {
+            $this->addFlash('error', 'Action non autorisée.');
+            return $this->redirectToRoute('app_publications_index');
+        }
+
+        if ($request->isMethod('POST')) {
+            $pub->setTitre($request->request->get('titre'));
+            $pub->setContenu($request->request->get('contenu'));
+                $pub->setDateModification(new \DateTime());
+            $contexte = (int) $request->request->get('contexte');
+            if ($contexte >= 1 && $contexte <= 3) {
+                $pub->setContexte($contexte);
+            }
+
+            $em->flush();
+            $this->addFlash('success', 'Publication modifiée.');
+            return $this->redirectToRoute('app_publications_index');
+        }
+
+        return $this->render('front/publication/modifier.html.twig', [
+            'publication' => $pub,
+        ]);
+    }
+
+    #[Route('/{id}/supprimer', name: 'app_publication_supprimer', methods: ['POST'])]
+    public function supprimerPublication(
+        Request $request,
+        int $id,
+        PublicationRepository $repo,
+        UserRepository $userRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $pub = $repo->find($id);
+        if (!$pub) {
+            $this->addFlash('error', 'Publication introuvable.');
+            return $this->redirectToRoute('app_publications_index');
+        }
+
+        $user = $this->getCurrentUserOrFallback($userRepo);
+        if (!$user || !$pub->getAuteur() || $pub->getAuteur()->getId() !== $user->getId()) {
+            $this->addFlash('error', 'Action non autorisée.');
+            return $this->redirectToRoute('app_publications_index');
+        }
+
+        if (!$this->isCsrfTokenValid('delete_publication_' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('app_publications_index');
+        }
+
+        $em->remove($pub);
+        $em->flush();
+
+        $this->addFlash('success', 'Publication supprimée.');
         return $this->redirectToRoute('app_publications_index');
     }
 
-    #[Route('/{id}/signaler', name: 'app_publication_signaler')]
-    public function signaler(int $id): Response
+    #[Route('/{id}/signaler', name: 'app_publication_signaler', methods: ['GET'])]
+    public function signaler(): Response
     {
-        $this->addFlash('warning', 'La publication a ete signalee aux moderateurs.');
+        $this->addFlash('warning', 'Publication signalée.');
         return $this->redirectToRoute('app_publications_index');
+    }
+
+    #[Route('/{id}/like', name: 'app_publication_like', methods: ['POST'])]
+    public function like(
+        int $id,
+        PublicationRepository $repo,
+        UserRepository $userRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $user = $this->getCurrentUserOrFallback($userRepo);
+        if (!$user) {
+            return $this->json(['ok' => false], 400);
+        }
+
+        $pub = $repo->find($id);
+        if (!$pub || $pub->getStatut() != 1) {
+            return $this->json(['ok' => false], 404);
+        }
+
+        // ⚠️ volontairement simple (double-like géré plus tard)
+        $pub->incrementLikes();
+        $em->flush();
+
+        return $this->json([
+            'ok'    => true,
+            'likes' => $pub->getLikes(),
+        ]);
     }
 }

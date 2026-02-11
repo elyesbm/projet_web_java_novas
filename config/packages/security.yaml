@@ -28,7 +28,7 @@ security:
 
     access_control:
         - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/publications, roles: ROLE_PSY }
+        - { path: ^/(publications|commentaires), roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/user, roles: ROLE_USER }
 
 when@test:
