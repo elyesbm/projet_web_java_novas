@@ -1,0 +1,94 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Catégories - Marketplace{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background">
+    <section class="pt-32 pb-8 px-6">
+        <div class="max-w-7xl mx-auto relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div>
+                <h1 class="font-serif text-3xl md:text-4xl font-medium mb-2">Catégories</h1>
+                <p class="text-muted-foreground">Gérez les catégories de la marketplace.</p>
+            </div>
+            <a href="{{ path('app_marketplace_categorie_ajouter') }}" class="flex items-center justify-center gap-2 px-5 py-2 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg w-fit">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Ajouter une catégorie
+            </a>
+        </div>
+    </section>
+
+    <!-- Filter / Search for categories (like marketplace) -->
+    <section class="px-6 pb-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="glass-card rounded-2xl p-4">
+                <form method="get" action="{{ path('app_marketplace_categories') }}" class="w-full flex flex-col sm:flex-row gap-3 items-center">
+                    <div class="flex-1 min-w-0">
+                        <label class="sr-only">Rechercher</label>
+                        <div class="relative">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></i>
+                            <input type="search" name="q" value="{{ app.request.get('q') }}" placeholder="Rechercher une catégorie, mot-clé..." class="pl-10 h-12 w-full bg-secondary border border-white/10 rounded-xl focus:outline-none" />
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <select name="sort" class="h-12 bg-secondary border border-white/10 rounded-xl px-3">
+                            <option value="date_desc" {{ app.request.get('sort') == 'date_desc' ? 'selected' : '' }}>Trier: Plus récentes</option>
+                            <option value="date_asc" {{ app.request.get('sort') == 'date_asc' ? 'selected' : '' }}>Trier: Plus anciennes</option>
+                            <option value="name_asc" {{ app.request.get('sort') == 'name_asc' ? 'selected' : '' }}>Nom ↑</option>
+                            <option value="name_desc" {{ app.request.get('sort') == 'name_desc' ? 'selected' : '' }}>Nom ↓</option>
+                        </select>
+
+                        <button type="submit" class="h-12 px-4 bg-primary text-white rounded-xl">Appliquer</button>
+                        <a href="{{ path('app_marketplace_categories') }}" class="h-12 px-4 bg-secondary text-sm rounded-xl flex items-center">Réinitialiser</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section class="px-6 pb-24">
+        <div class="max-w-7xl mx-auto">
+            {% for flash in app.flashes('success') %}
+                <div class="mb-4 p-4 rounded-xl bg-green-500/20 text-green-400 text-sm">{{ flash }}</div>
+            {% endfor %}
+            {% for flash in app.flashes('error') %}
+                <div class="mb-4 p-4 rounded-xl bg-red-500/20 text-red-400 text-sm">{{ flash }}</div>
+            {% endfor %}
+
+            {% if categories is empty %}
+                <div class="glass-card rounded-2xl p-12 text-center">
+                    <i data-lucide="package" class="w-16 h-16 text-muted-foreground mx-auto mb-4"></i>
+                    <p class="text-muted-foreground mb-4">Aucune catégorie pour le moment.</p>
+                    <a href="{{ path('app_marketplace_categorie_ajouter') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        Ajouter une catégorie
+                    </a>
+                </div>
+            {% else %}
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for cat in categories %}
+                        <div class="group glass-card rounded-2xl overflow-hidden hover:border-primary/30 transition-all duration-300">
+                            <div class="p-4">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-semibold mb-2">{{ cat.getNomCategorie() }}</h3>
+                                        <p class="text-sm text-muted-foreground">{{ cat.getDescriptionCategorie() ?: '—' }}</p>
+                                    </div>
+                                    <div class="flex flex-col items-end gap-2">
+                                        <a href="{{ path('app_marketplace_index', {'categorie': cat.getId()}) }}" class="text-sm px-3 py-1 bg-primary text-white rounded-md">Voir sur Marketplace</a>
+                                        <a href="{{ path('app_marketplace_categorie_modifier', {'id': cat.getId()}) }}" class="text-sm px-3 py-1 bg-secondary rounded-md">Modifier</a>
+                                        <form method="post" action="{{ path('app_marketplace_categorie_supprimer', {'id': cat.getId()}) }}" onsubmit="return confirm('Confirmer la suppression ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('supprimer_categorie_' ~ cat.getId()) }}">
+                                            <button class="text-sm px-3 py-1 bg-red-600 text-white rounded-md">Supprimer</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}
