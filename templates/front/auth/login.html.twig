@@ -30,7 +30,7 @@
             {# Erreur d'authentification (credentials invalides) #}
             {% if error %}
                 <div class="mb-5 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm">
-                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                    {{ error.message ?? (error.messageKey|trans(error.messageData, 'security')) }}
                 </div>
             {% endif %}
 

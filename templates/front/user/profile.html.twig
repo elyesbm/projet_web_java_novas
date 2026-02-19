@@ -60,13 +60,11 @@
                             {% endif %}
                         </p>
                     </div>
-                    <div>
-                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Identifiant</p>
-                        <p class="text-sm text-muted-foreground">#{{ user.id }}</p>
-                    </div>
+                    
                 </div>
             </div>
-
+            <!-- 2FA Management -->
+            {% include 'front/user/_2fa_management.html.twig' %}
             <div class="mt-10 pt-8 border-t border-border/50">
                 <h3 class="text-sm font-semibold text-foreground mb-4">Résumé de l’activité</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">

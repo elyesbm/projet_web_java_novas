@@ -46,6 +46,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
+    #[ORM\Column(name: 'ACTIF', type: 'boolean', options: ['default' => true])]
+    private bool $ACTIF = true;
+
+    // 2FA - Two Factor Authentication
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $twoFactorSecret = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $twoFactorEnabledAt = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $backupCodes = null;
+
     // 🔗 RELATIONS
     #[ORM\OneToMany(mappedBy: 'auteur', targetEntity: Article::class)]
     private Collection $articles;
@@ -96,6 +109,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getPassword(): ?string { return $this->password; }
     public function setPassword(string $password): static { $this->password = $password; return $this; }
+
+    public function getACTIF(): bool { return $this->ACTIF; }
+    public function setACTIF(bool $ACTIF): static { $this->ACTIF = $ACTIF; return $this; }
+
+    // 2FA Getters and Setters
+    public function getTwoFactorSecret(): ?string { return $this->twoFactorSecret; }
+    public function setTwoFactorSecret(?string $twoFactorSecret): static { $this->twoFactorSecret = $twoFactorSecret; return $this; }
+
+    public function getTwoFactorEnabledAt(): ?\DateTimeInterface { return $this->twoFactorEnabledAt; }
+    public function setTwoFactorEnabledAt(?\DateTimeInterface $twoFactorEnabledAt): static { $this->twoFactorEnabledAt = $twoFactorEnabledAt; return $this; }
+
+    public function isTwoFactorEnabled(): bool { return $this->twoFactorEnabledAt !== null; }
+    public function enableTwoFactor(): static { $this->twoFactorEnabledAt = new \DateTime('now'); return $this; }
+    public function disableTwoFactor(): static { $this->twoFactorEnabledAt = null; return $this; }
+
+    public function getBackupCodes(): ?array { return $this->backupCodes; }
+    public function setBackupCodes(?array $backupCodes): static { $this->backupCodes = $backupCodes; return $this; }
 
     public function getRoles(): array
     {

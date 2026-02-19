@@ -8,6 +8,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -65,6 +66,13 @@ class UserType extends AbstractType
                 ],
                 'attr' => [
                     'class' => 'w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-primary-500',
+                ],
+            ])
+            ->add('ACTIF', CheckboxType::class, [
+                'label' => 'Actif',
+                'required' => false,
+                'attr' => [
+                    'class' => 'h-4 w-4',
                 ],
             ])
             ->add('plainPassword', PasswordType::class, [

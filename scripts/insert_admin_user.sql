@@ -7,14 +7,14 @@
 -- ============================================================
 
 -- Si votre table user a des colonnes en MINUSCULES (nom, prenom, email, etc.) :
-INSERT INTO user (nom, prenom, email, image, numero, role, password) VALUES
-('Admin', 'NoVas', 'admin@novas.fr', NULL, NULL, 'ROLE_ADMIN', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+INSERT INTO user (nom, prenom, email, image, numero, role, password, ACTIF) VALUES
+('Admin', 'NoVas', 'admin@novas.fr', NULL, NULL, 'ROLE_ADMIN', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
 
 -- ============================================================
 -- Si votre table user a des colonnes en MAJUSCULES (NOM, PRENOM, etc.) :
 -- Décommentez la ligne suivante et commentez celle du-dessus.
 -- ============================================================
--- INSERT INTO user (NOM, PRENOM, EMAIL, IMAGE, NUMERO, ROLE, password) VALUES
--- ('Admin', 'NoVas', 'admin@novas.fr', NULL, NULL, 'ROLE_ADMIN', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+-- INSERT INTO user (NOM, PRENOM, EMAIL, IMAGE, NUMERO, ROLE, password, ACTIF) VALUES
+-- ('Admin', 'NoVas', 'admin@novas.fr', NULL, NULL, 'ROLE_ADMIN', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
 
 -- Connexion après exécution : email = admin@novas.fr  |  mot de passe = password

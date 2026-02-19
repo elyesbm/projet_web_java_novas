@@ -1,0 +1,113 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Vérificationde l'authentification à deux facteurs - NoVas{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <!-- Background Effects -->
+    <div class="absolute inset-0 gradient-orb"></div>
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[120px]"></div>
+    <div class="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[100px]"></div>
+    
+    <!-- Verify Card -->
+    <div class="relative w-full max-w-md mx-4">
+        <div class="glass-card rounded-3xl p-8 md:p-10 shadow-2xl">
+            <!-- Logo -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary glow-primary mb-4">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-white"></i>
+                </div>
+                <h1 class="font-serif text-2xl font-semibold mb-2">Vérification requise</h1>
+                <p class="text-muted-foreground text-sm">Entrez votre code d'authentification</p>
+            </div>
+
+            <!-- Flash Messages -->
+            {% if app.flashes %}
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="mb-5 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+
+            <!-- Verify Form -->
+            <form method="POST" action="{{ path('app_2fa_verify') }}" class="space-y-5">
+                <!-- Code Input -->
+                <div>
+                    <label for="code" class="block text-sm font-medium mb-2">Code d'authentification</label>
+                    <div class="relative">
+                        <i data-lucide="shield" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
+                        <input 
+                            type="text" 
+                            id="code"
+                            name="code" 
+                            maxlength="6"
+                            pattern="[0-9]{6}"
+                            inputmode="numeric"
+                            autocomplete="off"
+                            placeholder="000000"
+                            class="w-full h-14 bg-secondary border border-white/10 rounded-xl pl-12 pr-4 text-center text-2xl tracking-widest font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
+                            autofocus
+                            required
+                        >
+                    </div>
+                    <p class="text-xs text-muted-foreground mt-2">
+                        Entrez le code à 6 chiffres de votre application d'authentification
+                    </p>
+                </div>
+
+                <!-- Ou utiliser un code de secours -->
+                <details class="group">
+                    <summary class="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
+                        <i data-lucide="chevron-down" class="w-4 h-4 inline mr-1 group-open:rotate-180 transition-transform"></i>
+                        Utiliser un code de secours
+                    </summary>
+                    <div class="mt-3 p-3 bg-secondary/50 rounded-lg">
+                        <p class="text-xs text-muted-foreground mb-2">
+                            Entrez l'un de vos codes de secours si vous n'avez pas accès à votre application.
+                        </p>
+                        <input 
+                            type="text" 
+                            name="backup_code" 
+                            autocomplete="off"
+                            placeholder="Coller le code de secours"
+                            class="w-full h-10 bg-background border border-white/10 rounded-lg px-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                        >
+                    </div>
+                </details>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 group">
+                    Vérifier
+                    <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </form>
+
+            <!-- Help -->
+            <div class="mt-6 pt-6 border-t border-white/10">
+                <p class="text-xs text-muted-foreground text-center">
+                    Vous n'avez pas reçu de code?
+                    <a href="{{ path('app_login') }}" class="text-primary hover:underline">Retour à la connexion</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto format code input
+    document.getElementById('code').addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+    });
+
+    // Auto submit when 6 digits are entered
+    document.getElementById('code').addEventListener('input', function(e) {
+        if (this.value.length === 6) {
+            // Optional: auto submit after a short delay
+            // this.closest('form').submit();
+        }
+    });
+</script>
+{% endblock %}

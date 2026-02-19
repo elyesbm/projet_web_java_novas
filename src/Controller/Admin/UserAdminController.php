@@ -139,6 +139,26 @@ class UserAdminController extends AbstractController
         return $this->redirectToRoute('app_admin_users_list');
     }
 
+    #[Route('/{id}/toggle-active', name: 'toggle_active', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function toggleActive(int $id, Request $request): Response
+    {
+        $user = $this->userRepository->find($id);
+        if (!$user) {
+            throw new NotFoundHttpException('Utilisateur introuvable.');
+        }
+
+        if ($this->isCsrfTokenValid('toggle_active_' . $id, $request->request->get('_token'))) {
+            $current = $user->getACTIF();
+            $user->setACTIF(!$current);
+            $this->em->flush();
+            $this->addFlash('success', 'Statut du compte modifié.');
+        } else {
+            $this->addFlash('error', 'Jeton de sécurité invalide.');
+        }
+
+        return $this->redirectToRoute('app_admin_users_list');
+    }
+
     #[Route('/export/pdf', name: 'export_pdf')]
     public function exportPdf(Request $request): Response
     {

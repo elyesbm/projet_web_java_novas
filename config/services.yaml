@@ -25,5 +25,13 @@ services:
             # Priorité haute pour que notre redirection par rôle s'applique (événement = FQCN en Symfony 6)
             - { name: kernel.event_listener, event: Symfony\Component\Security\Http\Event\LoginSuccessEvent, method: onLoginSuccess, priority: 100 }
 
+    App\EventListener\TwoFactorAuthenticationListener:
+        tags:
+            - { name: kernel.event_subscriber, priority: 200 }
+
+    App\EventListener\RequireTwoFactorListener:
+        tags:
+            - { name: kernel.event_subscriber, priority: 190 }
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

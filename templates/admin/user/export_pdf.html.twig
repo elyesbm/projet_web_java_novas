@@ -86,7 +86,6 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 5%">#ID</th>
                 <th style="width: 25%">Nom et Prénom</th>
                 <th style="width: 30%">Email</th>
                 <th style="width: 15%">Téléphone</th>
@@ -96,7 +95,6 @@
         <tbody>
             {% for user in users %}
             <tr>
-                <td>{{ user.id }}</td>
                 <td>{{ user.PRENOM }} {{ user.NOM }}</td>
                 <td>{{ user.EMAIL }}</td>
                 <td>{{ user.NUMERO|default('-') }}</td>
