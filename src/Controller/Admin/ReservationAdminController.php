@@ -20,13 +20,12 @@ class ReservationAdminController extends AbstractController
         $statut = $request->query->get('statut');
         $sort = $request->query->get('sort', 'id_desc');
 
-        $statutInt = null;
-        if ($statut !== null && $statut !== '') {
-            $candidate = (int) $statut;
-            if (in_array($candidate, [0, 1, 2], true)) {
-                $statutInt = $candidate;
-            }
-        }
+        $statutInt = match ((string) $statut) {
+            '0' => 0,
+            '1' => 1,
+            '2' => 2,
+            default => null,
+        };
 
         $validSorts = ['id_desc', 'id_asc', 'date_asc', 'date_desc', 'nom_asc', 'nom_desc'];
         if (!in_array($sort, $validSorts, true)) {
@@ -63,7 +62,7 @@ class ReservationAdminController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'edit', requirements: ['id' => '\\d+'])]
+    #[Route('/{id}/edit', name: 'edit', requirements: ['id' => '\\d+'], methods: ['GET', 'POST'])]
     public function edit(
         int $id,
         Request $request,
@@ -75,13 +74,15 @@ class ReservationAdminController extends AbstractController
             throw $this->createNotFoundException('Reservation introuvable.');
         }
 
-        $form = $this->createFormBuilder($reservation)
+        $form = $this->createFormBuilder()
             ->add('statutReservation', ChoiceType::class, [
                 'choices' => [
                     'En attente' => 0,
                     'Acceptee' => 1,
                     'Refusee' => 2,
                 ],
+                'data' => $reservation->getStatutReservation(),
+                'mapped' => false,
                 'label' => 'Statut',
                 'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border'],
             ])
@@ -90,10 +91,17 @@ class ReservationAdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $newStatus = (int) $form->get('statutReservation')->getData();
+            $reservation->setStatutReservation($newStatus);
+            $entityManager->persist($reservation);
             $entityManager->flush();
             $this->addFlash('success', 'Statut de la reservation mis a jour.');
 
             return $this->redirectToRoute('app_admin_reservations_list');
+        }
+
+        if ($form->isSubmitted() && !$form->isValid()) {
+            $this->addFlash('error', 'Le formulaire contient des erreurs.');
         }
 
         return $this->render('admin/reservation/edit.html.twig', [

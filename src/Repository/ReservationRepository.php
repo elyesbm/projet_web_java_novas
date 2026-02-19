@@ -67,7 +67,7 @@ class ReservationRepository extends ServiceEntityRepository
      * @param int|null $statut Filtre par statut : 0 = En attente, 1 = Confirmée, null = tous
      * @return Reservation[]
      */
-    public function searchAndFilterByUser(\App\Entity\User $user, ?string $search = null, ?int $statut = null): array
+    public function searchAndFilterByUser(\App\Entity\User $user, ?string $search = null, ?int $statut = null, string $sort = 'date_asc'): array
     {
         $qb = $this->createQueryBuilder('r')
             ->leftJoin('r.atelier', 'a')
@@ -87,7 +87,36 @@ class ReservationRepository extends ServiceEntityRepository
         }
 
         // Tri par date d'atelier (ateliers à venir en premier)
-        $qb->orderBy('a.date_atelier', 'ASC');
+        switch ($sort) {
+            case 'date_desc':
+                $qb->orderBy('a.date_atelier', 'DESC')
+                    ->addOrderBy('r.id', 'DESC');
+                break;
+            case 'statut_asc':
+                $qb->orderBy('r.statut_reservation', 'ASC')
+                    ->addOrderBy('a.date_atelier', 'ASC');
+                break;
+            case 'statut_desc':
+                $qb->orderBy('r.statut_reservation', 'DESC')
+                    ->addOrderBy('a.date_atelier', 'ASC');
+                break;
+            case 'titre_asc':
+                $qb->orderBy('a.titre_atelier', 'ASC')
+                    ->addOrderBy('a.date_atelier', 'ASC');
+                break;
+            case 'titre_desc':
+                $qb->orderBy('a.titre_atelier', 'DESC')
+                    ->addOrderBy('a.date_atelier', 'ASC');
+                break;
+            case 'recent':
+                $qb->orderBy('r.id', 'DESC');
+                break;
+            case 'date_asc':
+            default:
+                $qb->orderBy('a.date_atelier', 'ASC')
+                    ->addOrderBy('r.id', 'ASC');
+                break;
+        }
 
         return $qb->getQuery()->getResult();
     }

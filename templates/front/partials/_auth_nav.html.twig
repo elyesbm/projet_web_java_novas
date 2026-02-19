@@ -23,8 +23,8 @@
                         Admin
                     </a>
                 {% endif %}
-                <a href="{{ path('app_user_profile') }}" class="hidden sm:inline-flex text-sm px-4 py-2 rounded-xl border border-white/15 {{ current_route starts with 'app_user_' ? 'text-primary border-primary/30 bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-white/5' }} transition-colors">
-                    Mon compte
+                <a href="{{ is_granted('ROLE_ADMIN') ? path('app_admin_dashboard') : path('app_user_profile') }}" class="hidden sm:inline-flex text-sm px-4 py-2 rounded-xl border border-white/15 {{ current_route starts with 'app_user_' or current_route starts with 'app_admin_' ? 'text-primary border-primary/30 bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-white/5' }} transition-colors">
+                    {{ is_granted('ROLE_ADMIN') ? 'Dashboard' : 'Mon compte' }}
                 </a>
                 <a href="{{ path('app_logout') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
                     Deconnexion
@@ -49,7 +49,7 @@
             <a href="{{ path('app_marketplace_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_marketplace_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Marketplace</a>
             <a href="{{ path('front_jobs_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'front_jobs_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Jobs</a>
             <a href="{{ path('app_publications_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_publication' or current_route starts with 'app_publications_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Forum</a>
-            <a href="{{ path('app_user_profile') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_user_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Profil</a>
+            <a href="{{ is_granted('ROLE_ADMIN') ? path('app_admin_dashboard') : path('app_user_profile') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_user_' or current_route starts with 'app_admin_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">{{ is_granted('ROLE_ADMIN') ? 'Dashboard' : 'Profil' }}</a>
         </div>
     </div>
 </nav>

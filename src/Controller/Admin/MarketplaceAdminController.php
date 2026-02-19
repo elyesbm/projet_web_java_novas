@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -27,7 +28,6 @@ class MarketplaceAdminController extends AbstractController
         ArticleRepository $articleRepository,
         CategorieRepository $categorieRepository
     ): Response {
-        // Filtres & tri ARTICLES depuis la query string
         $q = trim((string) $request->query->get('q', ''));
         $statutFilter = $request->query->get('statut');
         $typeFilter = $request->query->get('type');
@@ -65,13 +65,9 @@ class MarketplaceAdminController extends AbstractController
                 break;
         }
 
-        // Utilise la méthode search() existante pour gérer q + critères + tri
         $articles = $articleRepository->search($q, $criteria, $order);
-
-        // Catégories pour le filtre dans la vue (liste complète)
         $categoriesEntities = $categorieRepository->findAll();
 
-        // RECHERCHE / TRI CATEGORIES pour l'onglet catégories
         $qCat = trim((string) $request->query->get('q_cat', ''));
         $sortCat = $request->query->get('sort_cat', 'date_desc');
 
@@ -85,7 +81,7 @@ class MarketplaceAdminController extends AbstractController
             }
 
             $qb->andWhere('(' . $expr . ')')
-               ->setParameter('q', '%' . $qCat . '%');
+                ->setParameter('q', '%' . $qCat . '%');
 
             if ($isNumeric) {
                 $qb->setParameter('qid', (int) $qCat);
@@ -125,66 +121,68 @@ class MarketplaceAdminController extends AbstractController
         ValidatorInterface $validator,
         UserRepository $userRepository
     ): Response {
-        $categoriesEntities = $categorieRepository->findAll();
-        $categories = array_map(static function (Categorie $categorie): array {
-            return [
-                'id' => $categorie->getId(),
-                'nom' => $categorie->getNomCategorie(),
-            ];
-        }, $categoriesEntities);
-
+        $categories = $this->buildCategoriesForSelect($categorieRepository->findAll());
         $article = new Article();
 
         if ($request->isMethod('POST')) {
             /** @var UploadedFile|null $uploadedFile */
             $uploadedFile = $request->files->get('image');
-            $data = [
+            $imageValue = trim((string) $request->request->get('image_article', ''));
+
+            $rawPrice = str_replace(',', '.', trim((string) $request->request->get('prix', '')));
+            $rawCategorieId = (string) $request->request->get('categorie', '');
+            $rawType = trim((string) $request->request->get('type', 'academic'));
+            $rawStatut = trim((string) $request->request->get('statut', 'disponible'));
+            $categorie = ctype_digit($rawCategorieId) ? $categorieRepository->find((int) $rawCategorieId) : null;
+            $resolvedImageValue = $imageValue !== '' ? $imageValue : ($uploadedFile instanceof UploadedFile ? '__uploaded__' : '');
+
+            $inputData = [
                 'titre' => trim((string) $request->request->get('titre', '')),
                 'contenu' => trim((string) $request->request->get('contenu', '')),
-                'prix' => $request->request->get('prix', ''),
-                'categorie' => $request->request->get('categorie'),
-                'type' => trim((string) $request->request->get('type', 'academic')),
-                'statut' => trim((string) $request->request->get('statut', 'disponible')),
-                'image_article' => trim((string) $request->request->get('image_article', '')) ?: 'skills-learning.jpg',
+                'prix' => $rawPrice,
+                'categorie' => $rawCategorieId,
+                'type' => $rawType,
+                'statut' => $rawStatut,
+                'image_article' => $resolvedImageValue,
             ];
 
-            $constraints = new Assert\Collection([
+            $inputConstraints = new Assert\Collection([
                 'fields' => [
                     'titre' => [
                         new Assert\NotBlank(['message' => 'Le titre est obligatoire.']),
                         new Assert\Length([
                             'min' => 2,
                             'max' => 255,
-                            'minMessage' => 'Le titre doit contenir au moins {{ limit }} caractères.',
-                            'maxMessage' => 'Le titre ne doit pas dépasser {{ limit }} caractères.',
+                            'minMessage' => 'Le titre doit contenir au moins {{ limit }} caracteres.',
+                            'maxMessage' => 'Le titre ne doit pas depasser {{ limit }} caracteres.',
                         ]),
                     ],
                     'contenu' => [
                         new Assert\NotBlank(['message' => 'Le contenu est obligatoire.']),
                         new Assert\Length([
                             'min' => 10,
-                            'max' => 5000,
-                            'minMessage' => 'Le contenu doit contenir au moins {{ limit }} caractères.',
-                            'maxMessage' => 'Le contenu est trop long (max {{ limit }} caractères).',
+                            'max' => 255,
+                            'minMessage' => 'Le contenu doit contenir au moins {{ limit }} caracteres.',
+                            'maxMessage' => 'Le contenu ne doit pas depasser {{ limit }} caracteres.',
                         ]),
                     ],
                     'prix' => [
                         new Assert\NotBlank(['message' => 'Le prix est obligatoire.']),
                         new Assert\Regex([
-                            'pattern' => '/^\d+(?:[\.,]\d+)?$/',
-                            'message' => 'Le prix doit être un nombre.',
+                            'pattern' => '/^\d+(?:[.,]\d+)?$/',
+                            'message' => 'Le prix doit etre un nombre valide.',
                         ]),
                         new Assert\Range([
                             'min' => 0,
                             'max' => 1000000,
-                            'notInRangeMessage' => 'Le prix doit être compris entre {{ min }} et {{ max }}.',
+                            'notInRangeMessage' => 'Le prix doit etre compris entre {{ min }} et {{ max }}.',
                         ]),
                     ],
                     'categorie' => [
-                        new Assert\NotBlank(['message' => 'La catégorie est obligatoire.']),
+                        new Assert\NotBlank(['message' => 'La categorie est obligatoire.']),
                         new Assert\Regex([
                             'pattern' => '/^\d+$/',
-                            'message' => 'La catégorie sélectionnée est invalide.',
+                            'message' => 'La categorie selectionnee est invalide.',
                         ]),
                     ],
                     'type' => new Assert\Choice([
@@ -195,74 +193,92 @@ class MarketplaceAdminController extends AbstractController
                         'choices' => ['disponible', 'vendu', 'reserve'],
                         'message' => 'Statut invalide.',
                     ]),
-                    'image_article' => new Assert\Optional(),
+                    'image_article' => [
+                        new Assert\NotBlank(['message' => "L'image est obligatoire."]),
+                        new Assert\Length(['max' => 2000, 'maxMessage' => "Le chemin de l'image est trop long."]),
+                    ],
                 ],
                 'allowExtraFields' => true,
             ]);
 
-            $violations = $validator->validate($data, $constraints);
-            if (count($violations) > 0) {
-                foreach ($violations as $violation) {
-                    $this->addFlash('error', $violation->getMessage());
+            $inputViolations = $validator->validate($inputData, $inputConstraints);
+            $hasInputErrors = count($inputViolations) > 0;
+            if ($hasInputErrors) {
+                $this->addValidationFlashes($inputViolations);
+            }
+
+            if ($uploadedFile instanceof UploadedFile) {
+                $fileViolations = $validator->validate($uploadedFile, new Assert\File([
+                    'maxSize' => '2M',
+                    'mimeTypes' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+                    'mimeTypesMessage' => "Le format de l'image est invalide (jpg, png, gif, webp).",
+                    'maxSizeMessage' => "L'image est trop volumineuse (max 2MB).",
+                ]));
+                if (count($fileViolations) > 0) {
+                    $this->addValidationFlashes($fileViolations);
+                    $hasInputErrors = true;
                 }
+            }
+
+            $article
+                ->setTitreArticle($this->nullableTrimmedString($request->request->get('titre')))
+                ->setContenueArticle($this->nullableTrimmedString($request->request->get('contenu')))
+                ->setImageArticle($imageValue !== '' ? $imageValue : null)
+                ->setTypeArticle($this->nullableTrimmedString($rawType))
+                ->setStatutArticle($this->nullableTrimmedString($rawStatut))
+                ->setPrixArticle($rawPrice !== '' && is_numeric($rawPrice) ? (float) $rawPrice : null)
+                ->setCategorie($categorie instanceof Categorie ? $categorie : null);
+
+            $author = $this->getUser();
+            if ($author instanceof User) {
+                $article->setAuteur($author);
             } else {
-                // Gestion upload image si présente (sans utiliser FileValidator pour éviter fileinfo)
-                if ($uploadedFile instanceof UploadedFile) {
-                    $ext = strtolower($uploadedFile->getClientOriginalExtension() ?: '');
-                    $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-                    if (!in_array($ext, $allowedExt, true)) {
-                        $this->addFlash('error', 'Le format de l\'image est invalide (jpg, png, gif, webp uniquement).');
-                        return $this->redirectToRoute('app_admin_marketplace_new');
-                    }
+                $fallbackAuthor = $userRepository->findOneBy([]);
+                if (!$fallbackAuthor instanceof User) {
+                    $this->addFlash('error', 'Aucun utilisateur trouve pour associer l\'article.');
 
-                    $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/images';
-                    $newFilename = uniqid('article_', true) . '.' . ($ext ?: 'jpg');
-                    try {
-                        $uploadedFile->move($uploadsDir, $newFilename);
-                        $data['image_article'] = $newFilename;
-                    } catch (FileException $e) {
-                        $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
-                        return $this->redirectToRoute('app_admin_marketplace_new');
-                    }
-                }
-
-                $categorieId = (int) $data['categorie'];
-                $categorie = $categorieRepository->find($categorieId);
-
-                if (!$categorie instanceof Categorie) {
-                    $this->addFlash('error', 'La catégorie sélectionnée est invalide.');
-                } else {
-                    $prix = (float) str_replace(',', '.', (string) $data['prix']);
-
-                    $article
-                        ->setTitreArticle($data['titre'])
-                        ->setContenueArticle($data['contenu'])
-                        ->setImageArticle($data['image_article'])
-                        ->setTypeArticle($data['type'] ?: 'academic')
-                        ->setPrixArticle($prix)
-                        ->setStatutArticle($data['statut'] ?: 'disponible')
-                        ->setCategorie($categorie);
-
-                    // Associer un auteur existant même si personne n'est connecté
-                    $author = $this->getUser();
-                    if ($author instanceof User) {
-                        $article->setAuteur($author);
-                    } else {
-                        $fallbackAuthor = $userRepository->findOneBy([]);
-                        if ($fallbackAuthor instanceof User) {
-                            $article->setAuteur($fallbackAuthor);
-                        } else {
-                            $this->addFlash('error', 'Aucun utilisateur trouvé pour associer l\'article. Créez au moins un utilisateur.');
-                            return $this->redirectToRoute('app_admin_marketplace_list');
-                        }
-                    }
-
-                    $entityManager->persist($article);
-                    $entityManager->flush();
-
-                    $this->addFlash('success', 'Article créé avec succès.');
                     return $this->redirectToRoute('app_admin_marketplace_list');
                 }
+
+                $article->setAuteur($fallbackAuthor);
+            }
+
+            if ($hasInputErrors) {
+                return $this->render('admin/marketplace/form.html.twig', [
+                    'mode' => 'create',
+                    'article' => $article,
+                    'categories' => $categories,
+                ]);
+            } else {
+                if ($uploadedFile instanceof UploadedFile) {
+                    $movedFilename = $this->moveUploadedImage($uploadedFile);
+                    if ($movedFilename === null) {
+                        return $this->render('admin/marketplace/form.html.twig', [
+                            'mode' => 'create',
+                            'article' => $article,
+                            'categories' => $categories,
+                        ]);
+                    }
+                    $article->setImageArticle($movedFilename);
+                }
+
+                $violations = $validator->validate($article);
+                if (count($violations) > 0) {
+                    $this->addValidationFlashes($violations);
+
+                    return $this->render('admin/marketplace/form.html.twig', [
+                        'mode' => 'create',
+                        'article' => $article,
+                        'categories' => $categories,
+                    ]);
+                }
+
+                $entityManager->persist($article);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Article cree avec succes.');
+
+                return $this->redirectToRoute('app_admin_marketplace_list');
             }
         }
 
@@ -287,101 +303,45 @@ class MarketplaceAdminController extends AbstractController
             throw $this->createNotFoundException('Article introuvable.');
         }
 
-        $categoriesEntities = $categorieRepository->findAll();
-        $categories = array_map(static function (Categorie $categorie): array {
-            return [
-                'id' => $categorie->getId(),
-                'nom' => $categorie->getNomCategorie(),
-            ];
-        }, $categoriesEntities);
+        $categories = $this->buildCategoriesForSelect($categorieRepository->findAll());
 
         if ($request->isMethod('POST')) {
             /** @var UploadedFile|null $uploadedFile */
             $uploadedFile = $request->files->get('image');
-            $data = [
-                'titre' => trim((string) $request->request->get('titre', '')),
-                'contenu' => trim((string) $request->request->get('contenu', '')),
-                'prix' => $request->request->get('prix', ''),
-                'categorie' => $request->request->get('categorie'),
-                'type' => trim((string) $request->request->get('type', 'academic')),
-                'statut' => trim((string) $request->request->get('statut', 'disponible')),
-                'image_article' => trim((string) $request->request->get('image_article', '')) ?: $article->getImageArticle() ?: 'skills-learning.jpg',
-            ];
+            $imageValue = trim((string) $request->request->get('image_article', ''));
 
-            $constraints = new Assert\Collection([
-                'fields' => [
-                    'titre' => [
-                        new Assert\NotBlank(['message' => 'Le titre est obligatoire.']),
-                        new Assert\Length(['min' => 2, 'max' => 255]),
-                    ],
-                    'contenu' => [
-                        new Assert\NotBlank(['message' => 'Le contenu est obligatoire.']),
-                        new Assert\Length(['min' => 10, 'max' => 5000]),
-                    ],
-                    'prix' => [
-                        new Assert\NotBlank(['message' => 'Le prix est obligatoire.']),
-                        new Assert\Regex(['pattern' => '/^\d+(?:[\.,]\d+)?$/', 'message' => 'Le prix doit être un nombre.']),
-                        new Assert\Range(['min' => 0, 'max' => 1000000]),
-                    ],
-                    'categorie' => [
-                        new Assert\NotBlank(['message' => 'La catégorie est obligatoire.']),
-                        new Assert\Regex(['pattern' => '/^\d+$/', 'message' => 'La catégorie sélectionnée est invalide.']),
-                    ],
-                    'type' => new Assert\Choice(['choices' => ['academic', 'commercial', 'service', 'other']]),
-                    'statut' => new Assert\Choice(['choices' => ['disponible', 'vendu', 'reserve']]),
-                    'image_article' => new Assert\Optional(),
-                ],
-                'allowExtraFields' => true,
-            ]);
+            if ($uploadedFile instanceof UploadedFile) {
+                $movedFilename = $this->moveUploadedImage($uploadedFile);
+                if ($movedFilename === null) {
+                    return $this->redirectToRoute('app_admin_marketplace_edit', ['id' => $id]);
+                }
+                $imageValue = $movedFilename;
+            } elseif ($imageValue === '') {
+                $imageValue = $article->getImageArticle() ?? '';
+            }
 
-            $violations = $validator->validate($data, $constraints);
+            $rawPrice = str_replace(',', '.', trim((string) $request->request->get('prix', '')));
+            $rawCategorieId = (string) $request->request->get('categorie', '');
+            $categorie = ctype_digit($rawCategorieId) ? $categorieRepository->find((int) $rawCategorieId) : null;
+
+            $article
+                ->setTitreArticle($this->nullableTrimmedString($request->request->get('titre')))
+                ->setContenueArticle($this->nullableTrimmedString($request->request->get('contenu')))
+                ->setImageArticle($imageValue !== '' ? $imageValue : null)
+                ->setTypeArticle($this->nullableTrimmedString($request->request->get('type')))
+                ->setStatutArticle($this->nullableTrimmedString($request->request->get('statut')))
+                ->setPrixArticle($rawPrice !== '' && is_numeric($rawPrice) ? (float) $rawPrice : null)
+                ->setCategorie($categorie instanceof Categorie ? $categorie : null);
+
+            $violations = $validator->validate($article);
             if (count($violations) > 0) {
-                foreach ($violations as $violation) {
-                    $this->addFlash('error', $violation->getMessage());
-                }
+                $this->addValidationFlashes($violations);
             } else {
-                // Gestion upload image si présente (sans FileValidator)
-                if ($uploadedFile instanceof UploadedFile) {
-                    $ext = strtolower($uploadedFile->getClientOriginalExtension() ?: '');
-                    $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-                    if (!in_array($ext, $allowedExt, true)) {
-                        $this->addFlash('error', 'Le format de l\'image est invalide (jpg, png, gif, webp uniquement).');
-                        return $this->redirectToRoute('app_admin_marketplace_edit', ['id' => $id]);
-                    }
+                $entityManager->flush();
 
-                    $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/images';
-                    $newFilename = uniqid('article_', true) . '.' . ($ext ?: 'jpg');
-                    try {
-                        $uploadedFile->move($uploadsDir, $newFilename);
-                        $data['image_article'] = $newFilename;
-                    } catch (FileException $e) {
-                        $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
-                        return $this->redirectToRoute('app_admin_marketplace_edit', ['id' => $id]);
-                    }
-                }
+                $this->addFlash('success', 'Article modifie avec succes.');
 
-                $categorieId = (int) $data['categorie'];
-                $categorie = $categorieRepository->find($categorieId);
-
-                if (!$categorie instanceof Categorie) {
-                    $this->addFlash('error', 'La catégorie sélectionnée est invalide.');
-                } else {
-                    $prix = (float) str_replace(',', '.', (string) $data['prix']);
-
-                    $article
-                        ->setTitreArticle($data['titre'])
-                        ->setContenueArticle($data['contenu'])
-                        ->setImageArticle($data['image_article'])
-                        ->setTypeArticle($data['type'] ?: 'academic')
-                        ->setPrixArticle($prix)
-                        ->setStatutArticle($data['statut'] ?: 'disponible')
-                        ->setCategorie($categorie);
-
-                    $entityManager->flush();
-
-                    $this->addFlash('success', 'Article modifié avec succès.');
-                    return $this->redirectToRoute('app_admin_marketplace_list');
-                }
+                return $this->redirectToRoute('app_admin_marketplace_list');
             }
         }
 
@@ -401,6 +361,7 @@ class MarketplaceAdminController extends AbstractController
     ): Response {
         if (!$this->isCsrfTokenValid('delete_article_' . $id, (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
+
             return $this->redirectToRoute('app_admin_marketplace_list');
         }
 
@@ -408,50 +369,34 @@ class MarketplaceAdminController extends AbstractController
         if ($article instanceof Article) {
             $entityManager->remove($article);
             $entityManager->flush();
-            $this->addFlash('success', 'Article supprimé avec succès.');
+            $this->addFlash('success', 'Article supprime avec succes.');
         }
 
         return $this->redirectToRoute('app_admin_marketplace_list');
     }
 
     #[Route('/categorie/new', name: 'categorie_new', methods: ['GET', 'POST'])]
-    public function categorieNew(Request $request, EntityManagerInterface $entityManager): Response
-    {
+    public function categorieNew(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator
+    ): Response {
         $categorie = new Categorie();
 
         if ($request->isMethod('POST')) {
-            $nom = trim((string) $request->request->get('nom', ''));
-            $description = trim((string) $request->request->get('description', ''));
+            $categorie
+                ->setNomCategorie($this->nullableTrimmedString($request->request->get('nom')))
+                ->setDescriptionCategorie(trim((string) $request->request->get('description', '')));
 
-            $errors = [];
-            if ($nom === '') {
-                $errors[] = 'Le nom de la catégorie est obligatoire.';
+            $violations = $validator->validate($categorie);
+            if (count($violations) > 0) {
+                $this->addValidationFlashes($violations);
             } else {
-                $len = mb_strlen($nom);
-                if ($len < 2) {
-                    $errors[] = 'Le nom doit contenir au moins 2 caractères.';
-                }
-                if ($len > 255) {
-                    $errors[] = 'Le nom ne doit pas dépasser 255 caractères.';
-                }
-            }
-            if (mb_strlen($description) > 1000) {
-                $errors[] = 'La description est trop longue (max 1000 caractères).';
-            }
-
-            if (!empty($errors)) {
-                foreach ($errors as $err) {
-                    $this->addFlash('error', $err);
-                }
-            } else {
-                $categorie
-                    ->setNomCategorie($nom)
-                    ->setDescriptionCategorie($description);
-
                 $entityManager->persist($categorie);
                 $entityManager->flush();
 
-                $this->addFlash('success', 'Catégorie créée avec succès.');
+                $this->addFlash('success', 'Categorie creee avec succes.');
+
                 return $this->redirectToRoute('app_admin_marketplace_list', ['tab' => 'categories']);
             }
         }
@@ -463,36 +408,32 @@ class MarketplaceAdminController extends AbstractController
     }
 
     #[Route('/categorie/{id}/edit', name: 'categorie_edit', methods: ['GET', 'POST'])]
-    public function categorieEdit(Request $request, int $id, CategorieRepository $categorieRepository, EntityManagerInterface $entityManager): Response
-    {
+    public function categorieEdit(
+        Request $request,
+        int $id,
+        CategorieRepository $categorieRepository,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator
+    ): Response {
         $categorie = $categorieRepository->find($id);
         if (!$categorie instanceof Categorie) {
-            throw $this->createNotFoundException('Catégorie introuvable.');
+            throw $this->createNotFoundException('Categorie introuvable.');
         }
 
         if ($request->isMethod('POST')) {
-            $nom = trim((string) $request->request->get('nom', ''));
-            $description = trim((string) $request->request->get('description', ''));
+            $categorie
+                ->setNomCategorie($this->nullableTrimmedString($request->request->get('nom')))
+                ->setDescriptionCategorie(trim((string) $request->request->get('description', '')));
 
-            if ($nom === '') {
-                $this->addFlash('error', 'Le nom de la catégorie est obligatoire.');
+            $violations = $validator->validate($categorie);
+            if (count($violations) > 0) {
+                $this->addValidationFlashes($violations);
             } else {
-                $len = mb_strlen($nom);
-                if ($len < 2) {
-                    $this->addFlash('error', 'Le nom doit contenir au moins 2 caractères.');
-                } elseif ($len > 255) {
-                    $this->addFlash('error', 'Le nom ne doit pas dépasser 255 caractères.');
-                } elseif (mb_strlen($description) > 1000) {
-                    $this->addFlash('error', 'La description est trop longue (max 1000 caractères).');
-                } else {
-                    $categorie
-                        ->setNomCategorie($nom)
-                        ->setDescriptionCategorie($description);
-                    $entityManager->flush();
+                $entityManager->flush();
 
-                    $this->addFlash('success', 'Catégorie modifiée avec succès.');
-                    return $this->redirectToRoute('app_admin_marketplace_list', ['tab' => 'categories']);
-                }
+                $this->addFlash('success', 'Categorie modifiee avec succes.');
+
+                return $this->redirectToRoute('app_admin_marketplace_list', ['tab' => 'categories']);
             }
         }
 
@@ -503,10 +444,15 @@ class MarketplaceAdminController extends AbstractController
     }
 
     #[Route('/categorie/{id}/delete', name: 'categorie_delete', methods: ['POST'])]
-    public function categorieDelete(Request $request, int $id, CategorieRepository $categorieRepository, EntityManagerInterface $entityManager): Response
-    {
+    public function categorieDelete(
+        Request $request,
+        int $id,
+        CategorieRepository $categorieRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
         if (!$this->isCsrfTokenValid('delete_categorie_' . $id, (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
+
             return $this->redirectToRoute('app_admin_marketplace_list', ['tab' => 'categories']);
         }
 
@@ -514,9 +460,63 @@ class MarketplaceAdminController extends AbstractController
         if ($categorie instanceof Categorie) {
             $entityManager->remove($categorie);
             $entityManager->flush();
-            $this->addFlash('success', 'Catégorie supprimée avec succès.');
+            $this->addFlash('success', 'Categorie supprimee avec succes.');
         }
 
         return $this->redirectToRoute('app_admin_marketplace_list', ['tab' => 'categories']);
+    }
+
+    /**
+     * @param list<Categorie> $categoriesEntities
+     *
+     * @return list<array{id:int|null, nom:string|null}>
+     */
+    private function buildCategoriesForSelect(array $categoriesEntities): array
+    {
+        return array_map(static function (Categorie $categorie): array {
+            return [
+                'id' => $categorie->getId(),
+                'nom' => $categorie->getNomCategorie(),
+            ];
+        }, $categoriesEntities);
+    }
+
+    private function nullableTrimmedString(mixed $value): ?string
+    {
+        $trimmed = trim((string) $value);
+
+        return $trimmed === '' ? null : $trimmed;
+    }
+
+    private function moveUploadedImage(UploadedFile $uploadedFile): ?string
+    {
+        $ext = strtolower($uploadedFile->getClientOriginalExtension() ?: '');
+        $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+        if (!in_array($ext, $allowedExt, true)) {
+            $this->addFlash('error', "Le format de l'image est invalide (jpg, png, gif, webp). ");
+
+            return null;
+        }
+
+        $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/images';
+        $newFilename = uniqid('article_', true) . '.' . ($ext !== '' ? $ext : 'jpg');
+
+        try {
+            $uploadedFile->move($uploadsDir, $newFilename);
+
+            return $newFilename;
+        } catch (FileException) {
+            $this->addFlash('error', "Erreur lors de l'upload de l'image.");
+
+            return null;
+        }
+    }
+
+    private function addValidationFlashes(ConstraintViolationListInterface $violations): void
+    {
+        foreach ($violations as $violation) {
+            $this->addFlash('error', $violation->getMessage());
+        }
     }
 }

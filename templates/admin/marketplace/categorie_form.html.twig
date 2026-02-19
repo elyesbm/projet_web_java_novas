@@ -1,23 +1,39 @@
 {% extends 'admin/base_admin.html.twig' %}
 
-{% block title %}{{ mode|default('create') == 'create' ? 'Nouvelle' : 'Modifier' }} catégorie - NOVAS Admin{% endblock %}
-{% block page_title %}{{ mode|default('create') == 'create' ? 'Nouvelle catégorie' : 'Modifier la catégorie' }}{% endblock %}
-{% block page_subtitle %}{{ mode|default('create') == 'create' ? 'Ajouter une catégorie au marketplace' : 'Modifier la catégorie existante' }}{% endblock %}
+{% block title %}{{ mode|default('create') == 'create' ? 'Nouvelle' : 'Modifier' }} categorie - NOVAS Admin{% endblock %}
+{% block page_title %}{{ mode|default('create') == 'create' ? 'Nouvelle categorie' : 'Modifier la categorie' }}{% endblock %}
+{% block page_subtitle %}{{ mode|default('create') == 'create' ? 'Ajouter une categorie au marketplace' : 'Modifier la categorie existante' }}{% endblock %}
 
 {% block body %}
 <div class="max-w-3xl mx-auto">
-    <form method="post" class="space-y-6">
+    {% set category_errors = app.flashes('error') %}
+    {% if category_errors is not empty %}
+        <div class="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-rose-700">
+            <p class="font-semibold mb-2">Veuillez corriger les erreurs suivantes :</p>
+            <ul class="list-disc pl-5 space-y-1 text-sm">
+                {% for message in category_errors %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form id="admin-marketplace-category-form" method="post" class="space-y-6" novalidate>
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6 space-y-4">
             <div class="space-y-2">
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Nom de la catégorie <span class="text-rose-500">*</span>
+                    Nom de la categorie <span class="text-rose-500">*</span>
                 </label>
                 <input
                     type="text"
+                    id="nom"
                     name="nom"
                     value="{{ categorie is defined and categorie ? categorie.nomCategorie : '' }}"
                     class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-rose-500"
                     placeholder="ex : Livres, Electronique..."
+                    required
+                    minlength="2"
+                    maxlength="255"
                 >
             </div>
             <div class="space-y-2">
@@ -25,17 +41,19 @@
                     Description
                 </label>
                 <textarea
+                    id="description"
                     name="description"
                     rows="4"
                     class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-rose-500 resize-none"
-                    placeholder="Description courte de la catégorie (optionnel)..."
+                    placeholder="Description courte de la categorie (optionnel)..."
+                    maxlength="255"
                 >{{ categorie is defined and categorie ? categorie.descriptionCategorie : '' }}</textarea>
             </div>
         </div>
 
         <div class="flex gap-3">
             <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-medium shadow-lg shadow-rose-500/25 transition-all">
-                {{ mode|default('create') == 'create' ? 'Créer la catégorie' : 'Enregistrer' }}
+                {{ mode|default('create') == 'create' ? 'Creer la categorie' : 'Enregistrer' }}
             </button>
             <a href="{{ path('app_admin_marketplace_list') }}" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium transition-colors">
                 Annuler
@@ -45,3 +63,37 @@
 </div>
 {% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const form = document.getElementById('admin-marketplace-category-form');
+            if (!form) return;
+
+            form.addEventListener('submit', function (e) {
+                const errors = [];
+                const nomInput = document.getElementById('nom');
+                const descriptionInput = document.getElementById('description');
+
+                const nom = (nomInput?.value || '').trim();
+                const description = (descriptionInput?.value || '').trim();
+
+                if (nom.length < 2) {
+                    errors.push('Le nom de la categorie est obligatoire et doit contenir au moins 2 caracteres.');
+                }
+                if (nom.length > 255) {
+                    errors.push('Le nom de la categorie ne doit pas depasser 255 caracteres.');
+                }
+                if (description.length > 255) {
+                    errors.push('La description ne doit pas depasser 255 caracteres.');
+                }
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    errors.forEach(msg => showToast(msg, 'error'));
+                    if (nomInput) nomInput.focus();
+                }
+            });
+        })();
+    </script>
+{% endblock %}

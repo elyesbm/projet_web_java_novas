@@ -3,9 +3,8 @@
 {% block title %}QR Code - Reservation #{{ reservation.id }}{% endblock %}
 
 {% block body %}
+{% include 'front/partials/_auth_nav.html.twig' %}
 <div class="min-h-screen bg-background">
-    {% include 'front/partials/_auth_nav.html.twig' %}
-
     <div class="pt-32 px-6 pb-12 flex items-center justify-center">
         <div class="glass-card rounded-3xl p-8 max-w-md w-full text-center">
             <h1 class="text-xl font-semibold mb-2">QR Code d'acces</h1>

@@ -15,6 +15,12 @@ class LoginSuccessListener
 
     public function onLoginSuccess(LoginSuccessEvent $event): void
     {
+        $request = $event->getRequest();
+        if ($request->hasSession()) {
+            // Rotate the session id at login to avoid stale session reuse.
+            $request->getSession()->migrate(true);
+        }
+
         $user = $event->getUser();
         $roles = $user->getRoles();
 

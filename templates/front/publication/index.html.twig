@@ -3,9 +3,8 @@
 {% block title %}Publications - NoVas{% endblock %}
 
 {% block body %}
+{% include 'front/partials/_auth_nav.html.twig' %}
 <div class="min-h-screen bg-background">
-    {% include 'front/partials/_auth_nav.html.twig' %}
-
     <!-- Header -->
     <section class="pt-32 pb-8 px-6 relative overflow-hidden">
         <div class="absolute inset-0 gradient-orb"></div>
@@ -56,14 +55,14 @@
         </div>
     </section>
 
-    {# ✅ Recherche + Tri (même form) #}
+    {# ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Recherche + Tri (mÃƒÆ’Ã‚Âªme form) #}
 <form method="get"
       action="{{ path('app_publications_index') }}"
       class="mt-6 mb-10 max-w-4xl mx-auto">
 
     <div class="flex flex-col md:flex-row md:items-center gap-4">
 
-        {# 🔎 Recherche #}
+        {# ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ…Â½ Recherche #}
         <div class="relative flex-1">
             <input
                 type="text"
@@ -81,7 +80,7 @@
             </button>
         </div>
 
-        {# 🔽 Tri (submit auto) #}
+        {# ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â½ Tri (submit auto) #}
         <div class="md:w-72 w-full">
             <select
                 name="sort"
@@ -90,15 +89,15 @@
                        text-sm focus:outline-none focus:border-primary transition-all"
             >
                 <option value="created_desc" {{ (sort ?? app.request.query.get('sort')) == 'created_desc' ? 'selected' : '' }}>
-                    Dernière création
+                    Derni&egrave;re cr&eacute;ation
                 </option>
                 <option value="updated_desc" {{ (sort ?? app.request.query.get('sort')) == 'updated_desc' ? 'selected' : '' }}>
-                    Dernière modification
+                    Derni&egrave;re modification
                 </option>
             </select>
         </div>
 
-        {# ✅ conserver le filtre contexte si actif #}
+        {# ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ conserver le filtre contexte si actif #}
         {% if contexte_filter is not null %}
             <input type="hidden" name="contexte" value="{{ contexte_filter }}">
         {% endif %}
@@ -148,7 +147,7 @@
                                         <p class="text-sm text-muted-foreground">{{ pub.auteur.ROLE }}</p>
                                     {% endif %}
 
-                                    <p class="text-xs text-muted-foreground mt-0.5">{{ pub.dateCreation|date('d M Y à H:i') }}</p>
+                                    <p class="text-xs text-muted-foreground mt-0.5">{{ pub.dateCreation|date('d M Y   H:i') }}</p>
                                 </div>
                             </div>
 
@@ -199,7 +198,7 @@
                                 {{ pub.statut == 1 ? 'actif' : 'inactif' }}
                             </span>
 
-                            {# ✅ Modifier/Supprimer UNIQUEMENT si auteur connecté #}
+                            {# ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Modifier/Supprimer UNIQUEMENT si auteur connectÃƒÆ’Ã‚Â© #}
                             {% if pub.auteur and pub.auteur.id == current_user_id %}
                                 <!-- Modifier -->
                                 <a href="{{ path('app_publication_modifier', { id: pub.id }) }}"
@@ -255,7 +254,7 @@
                                                             <span class="text-xs text-muted-foreground">{{ comment.dateCreation|date('d M H:i') }}</span>
                                                         </div>
 
-                                                        {# ✅ Modifier/Supprimer commentaire UNIQUEMENT si auteur connecté #}
+                                                        {# ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Modifier/Supprimer commentaire UNIQUEMENT si auteur connectÃƒÆ’Ã‚Â© #}
                                                         {% if comment.auteur and comment.auteur.id == current_user_id %}
                                                             <div class="flex items-center gap-2">
                                                                 <!-- Modifier commentaire -->
@@ -315,7 +314,7 @@
                                 {% endif %}
 
                                 <div class="flex-1 relative">
-                                {# ✅ erreurs de validation #}
+                                {# ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ erreurs de validation #}
 {% if cform.contenu.vars.errors|length > 0 %}
     <div class="mt-2 text-sm text-red-400">
         {{ form_errors(cform.contenu) }}
@@ -407,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
         comments.classList.remove('hidden');
     }
 
-    // 2 Scroller vers la publication (avec léger délai pour être sûr)
+    // 2 Scroller vers la publication (avec lÃƒÆ’Ã‚Â©ger dÃƒÆ’Ã‚Â©lai pour ÃƒÆ’Ã‚Âªtre sÃƒÆ’Ã‚Â»r)
     const pubEl = document.getElementById('pub-' + openId);
     if (pubEl) {
         setTimeout(() => {

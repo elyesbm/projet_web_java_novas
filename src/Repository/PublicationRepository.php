@@ -16,29 +16,46 @@ class PublicationRepository extends ServiceEntityRepository
         parent::__construct($registry, Publication::class);
     }
 
-    //    /**
-    //     * @return Publication[] Returns an array of Publication objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @return list<Publication>
+     */
+    public function findActiveWithFilters(?string $q, ?int $contexteFilter, string $sort = 'created_desc'): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.auteur', 'a')
+            ->addSelect('a')
+            ->andWhere('p.statut = :statut')
+            ->setParameter('statut', 1);
 
-    //    public function findOneBySomeField($value): ?Publication
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
-    
+        if ($contexteFilter !== null && \in_array($contexteFilter, [1, 2], true)) {
+            $qb->andWhere('p.contexte = :contexte')
+                ->setParameter('contexte', $contexteFilter);
+        }
+
+        $needle = trim((string) $q);
+        if ($needle !== '') {
+            $qb->andWhere(
+                'LOWER(p.titre) LIKE :q 
+                 OR LOWER(p.contenu) LIKE :q 
+                 OR LOWER(a.NOM) LIKE :q 
+                 OR LOWER(a.PRENOM) LIKE :q'
+            )->setParameter('q', '%' . mb_strtolower($needle) . '%');
+        }
+
+        switch ($sort) {
+            case 'updated_desc':
+                $qb->addOrderBy('p.date_modification', 'DESC')
+                    ->addOrderBy('p.date_creation', 'DESC');
+                break;
+            case 'created_desc':
+            default:
+                $qb->addOrderBy('p.date_creation', 'DESC');
+                break;
+        }
+
+        /** @var list<Publication> $result */
+        $result = $qb->getQuery()->getResult();
+
+        return $result;
+    }
 }

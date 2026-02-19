@@ -30,7 +30,7 @@ class Reservation
     #[Assert\Length(max: 255)]
     private ?string $email_user = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
     #[Assert\Length(
         max: 255,
         maxMessage: 'Le commentaire ne peut pas dépasser {{ limit }} caractères.'
@@ -62,7 +62,7 @@ class Reservation
         return $this->nom_user;
     }
 
-    public function setNomUser(string $nom_user): static
+    public function setNomUser(?string $nom_user): static
     {
         $this->nom_user = $nom_user;
         return $this;
@@ -73,7 +73,7 @@ class Reservation
         return $this->email_user;
     }
 
-    public function setEmailUser(string $email_user): static
+    public function setEmailUser(?string $email_user): static
     {
         $this->email_user = $email_user;
         return $this;

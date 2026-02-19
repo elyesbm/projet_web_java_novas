@@ -19,13 +19,11 @@ class AtelierController extends AbstractController
         $contexte = $request->query->get('contexte');
         $sort = $request->query->get('sort', 'date_asc');
 
-        $contexteInt = null;
-        if ($contexte !== null && $contexte !== '') {
-            $contexteInt = (int) $contexte;
-            if ($contexteInt !== 0 && $contexteInt !== 1) {
-                $contexteInt = null;
-            }
-        }
+        $contexteInt = match ((string) $contexte) {
+            '0', 'soft' => 0,
+            '1', 'hard' => 1,
+            default => null,
+        };
 
         $validSorts = ['date_asc', 'date_desc', 'titre_asc', 'titre_desc'];
         if (!in_array($sort, $validSorts, true)) {

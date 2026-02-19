@@ -169,7 +169,7 @@
                             <i data-lucide="filter" class="w-4 h-4"></i>
                             Appliquer
                         </button>
-                        {% if search or contexte is not null %}
+                        {% if search or contexte is not null or sort|default('id_desc') != 'id_desc' %}
                             <a href="{{ path('app_admin_ateliers_list') }}"
                                class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors flex items-center gap-2">
                                 <i data-lucide="x" class="w-4 h-4"></i>
@@ -192,7 +192,7 @@
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Atelier</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Date</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Contexte</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Places</th>
+                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Places et statut</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Actions</th>
                             </tr>
                         </thead>
@@ -212,12 +212,15 @@
                                             <p class="text-sm text-slate-500">
                                                 Type : {{ atelier.typeAtelier|capitalize }}
                                             </p>
+                                            <p class="text-xs text-slate-500">ID: {{ atelier.id }}</p>
+                                            <p class="text-xs text-slate-500">{{ atelier.descriptionAtelier ? (atelier.descriptionAtelier|slice(0, 80) ~ (atelier.descriptionAtelier|length > 80 ? '...' : '')) : '-' }}</p>
                                         </div>
                                     </div>
                                 </td>
 
                                 <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                                    {{ atelier.dateAtelier|date('d M Y') }}
+                                    <p>{{ atelier.dateAtelier|date('d M Y') }}</p>
+                                    <p class="text-xs text-slate-500">{{ atelier.dateAtelier|date('l') }}</p>
                                 </td>
 
                                 <td class="px-6 py-4">
@@ -233,10 +236,13 @@
                                 </td>
 
                                 <td class="px-6 py-4">
-                                    <span class="text-sm font-medium text-rose-600">
-                                        {{ atelier.capacite }}
-                                    </span>
-                                    <span class="text-sm text-slate-500">restantes</span>
+                                    {% set reservedCount = atelier.reservations|length %}
+                                    {% set remainingCount = atelier.capacite > reservedCount ? (atelier.capacite - reservedCount) : 0 %}
+                                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ reservedCount }}/{{ atelier.capacite }} reservees</p>
+                                    <p class="text-xs text-slate-500">Disponibles: {{ remainingCount }}</p>
+                                    <p class="text-xs {{ atelier.statutAtelier == 1 ? 'text-emerald-600' : 'text-slate-500' }}">
+                                        Statut: {{ atelier.statutAtelier == 1 ? 'Actif' : 'Inactif' }}
+                                    </p>
                                 </td>
 
                                 <td class="px-6 py-4 text-right">

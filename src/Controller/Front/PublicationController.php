@@ -5,6 +5,7 @@ namespace App\Controller\Front;
 use App\Entity\Commentaire;
 use App\Entity\Publication;
 use App\Form\CommentaireType;
+use App\Form\PublicationEditType;
 use App\Form\PublicationType;
 use App\Repository\PublicationRepository;
 use App\Repository\UserRepository;
@@ -18,7 +19,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class PublicationController extends AbstractController
 {
     /**
-     * ✅ User courant OU fallback (1er user en base)
+     * Ã¢Å“â€¦ User courant OU fallback (1er user en base)
      */
     private function getCurrentUserOrFallback(UserRepository $userRepo)
     {
@@ -31,79 +32,49 @@ class PublicationController extends AbstractController
         return $user;
     }
 
-  #[Route('/', name: 'app_publications_index', methods: ['GET'])]
-public function index(Request $request, PublicationRepository $repo, UserRepository $userRepo): Response
-{
-    $contexteFilter = $request->query->get('contexte');
+    #[Route('/', name: 'app_publications_index', methods: ['GET'])]
+    public function index(Request $request, PublicationRepository $repo, UserRepository $userRepo): Response
+    {
+        $q = trim((string) $request->query->get('q', ''));
 
-    // ✅ q: recherche (titre + contenu + nom/prénom auteur)
-    $q = trim((string) $request->query->get('q', ''));
+        $sort = (string) $request->query->get('sort', 'created_desc');
+        $sort = \in_array($sort, ['created_desc', 'updated_desc'], true) ? $sort : 'created_desc';
 
-    // ✅ sort : created_desc / updated_desc
-    $sort = (string) $request->query->get('sort', 'created_desc');
-
-    // ✅ ordre (updated: fallback sur date_creation)
-    $orderBy = match ($sort) {
-        'updated_desc' => ['date_modification' => 'DESC', 'date_creation' => 'DESC'],
-        default        => ['date_creation' => 'DESC'],
-    };
-
-    // ✅ uniquement les pubs actives
-    $criteria = ['statut' => 1];
-
-    if ($contexteFilter !== null && in_array((int) $contexteFilter, [1, 2], true)) {
-        $criteria['contexte'] = (int) $contexteFilter;
-    }
-
-    // ✅ récupère depuis DB trié
-    $publications = $repo->findBy($criteria, $orderBy);
-
-    // ✅ filtre en mémoire (titre + contenu + auteur nom/prénom)
-    if ($q !== '') {
-        $publications = array_values(array_filter($publications, function ($pub) use ($q) {
-            $titre = (string) ($pub->getTitre() ?? '');
-            $contenu = (string) ($pub->getContenu() ?? '');
-
-            $auteurNom = '';
-            $auteurPrenom = '';
-            if ($pub->getAuteur()) {
-                $auteurNom = (string) ($pub->getAuteur()->getNOM() ?? '');
-                $auteurPrenom = (string) ($pub->getAuteur()->getPRENOM() ?? '');
+        $rawContexte = $request->query->get('contexte');
+        $contexteFilter = null;
+        if ($rawContexte !== null && $rawContexte !== '') {
+            $contexte = (int) $rawContexte;
+            if (\in_array($contexte, [1, 2], true)) {
+                $contexteFilter = $contexte;
             }
+        }
 
-            return stripos($titre, $q) !== false
-                || stripos($contenu, $q) !== false
-                || stripos($auteurNom, $q) !== false
-                || stripos($auteurPrenom, $q) !== false;
-        }));
+        $publications = $repo->findActiveWithFilters($q, $contexteFilter, $sort);
+
+        $currentUser = $this->getCurrentUserOrFallback($userRepo);
+
+        $commentForms = [];
+        foreach ($publications as $pub) {
+            $commentForms[$pub->getId()] = $this->createForm(
+                CommentaireType::class,
+                new Commentaire(),
+                [
+                    'action' => $this->generateUrl('app_commentaire_ajouter', ['id' => $pub->getId()]) . '#pub-' . $pub->getId(),
+                    'method' => 'POST',
+                ]
+            )->createView();
+        }
+
+        return $this->render('front/publication/index.html.twig', [
+            'publications' => $publications,
+            'comment_forms' => $commentForms,
+            'current_user_id' => $currentUser ? $currentUser->getId() : null,
+            'contexte_filter' => $contexteFilter,
+            'q' => $q,
+            'sort' => $sort,
+            'open_comments_for' => (int) $request->query->get('open', 0),
+        ]);
     }
-
-    // ✅ user courant / fallback
-    $currentUser = $this->getCurrentUserOrFallback($userRepo);
-
-    // ✅ Forms commentaires par publication
-    $commentForms = [];
-    foreach ($publications as $pub) {
-        $commentForms[$pub->getId()] = $this->createForm(
-            CommentaireType::class,
-            new Commentaire(),
-            [
-        'action' => $this->generateUrl('app_commentaire_ajouter', ['id' => $pub->getId()]) . '#pub-' . $pub->getId(),
-                'method' => 'POST',
-            ]
-        )->createView();
-    }
-
-    return $this->render('front/publication/index.html.twig', [
-        'publications' => $publications,
-        'comment_forms' => $commentForms,
-        'current_user_id' => $currentUser ? $currentUser->getId() : null,
-        'contexte_filter' => $contexteFilter !== null ? (int) $contexteFilter : null,
-        'q' => $q,
-        'sort' => $sort,
-    ]);
-}
-
 
     #[Route('/nouvelle', name: 'app_publication_nouvelle', methods: ['GET', 'POST'])]
     public function nouvelle(
@@ -135,7 +106,7 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
             $em->persist($pub);
             $em->flush();
 
-            $this->addFlash('success', 'Publication créée.');
+            $this->addFlash('success', 'Publication crÃƒÂ©ÃƒÂ©e.');
             return $this->redirectToRoute('app_publications_index');
         }
 
@@ -160,26 +131,28 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
 
         $user = $this->getCurrentUserOrFallback($userRepo);
         if (!$user || !$pub->getAuteur() || $pub->getAuteur()->getId() !== $user->getId()) {
-            $this->addFlash('error', 'Action non autorisée.');
+            $this->addFlash('error', 'Action non autorisÃƒÂ©e.');
             return $this->redirectToRoute('app_publications_index');
         }
 
-        if ($request->isMethod('POST')) {
-            $pub->setTitre($request->request->get('titre'));
-            $pub->setContenu($request->request->get('contenu'));
-                $pub->setDateModification(new \DateTime());
-            $contexte = (int) $request->request->get('contexte');
-            if ($contexte >= 1 && $contexte <= 3) {
-                $pub->setContexte($contexte);
-            }
+        // Normalize legacy context values (e.g. 0) to keep exactly 2 front choices.
+        if (!\in_array($pub->getContexte(), [1, 2], true)) {
+            $pub->setContexte(2);
+        }
 
+        $form = $this->createForm(PublicationEditType::class, $pub);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $pub->setDateModification(new \DateTime('now', new \DateTimeZone('Europe/Paris')));
             $em->flush();
-            $this->addFlash('success', 'Publication modifiée.');
+            $this->addFlash('success', 'Publication modifiÃƒÂ©e.');
             return $this->redirectToRoute('app_publications_index');
         }
 
         return $this->render('front/publication/modifier.html.twig', [
             'publication' => $pub,
+            'form' => $form->createView(),
         ]);
     }
 
@@ -199,7 +172,7 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
 
         $user = $this->getCurrentUserOrFallback($userRepo);
         if (!$user || !$pub->getAuteur() || $pub->getAuteur()->getId() !== $user->getId()) {
-            $this->addFlash('error', 'Action non autorisée.');
+            $this->addFlash('error', 'Action non autorisÃƒÂ©e.');
             return $this->redirectToRoute('app_publications_index');
         }
 
@@ -211,14 +184,14 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
         $em->remove($pub);
         $em->flush();
 
-        $this->addFlash('success', 'Publication supprimée.');
+        $this->addFlash('success', 'Publication supprimÃƒÂ©e.');
         return $this->redirectToRoute('app_publications_index');
     }
 
     #[Route('/{id}/signaler', name: 'app_publication_signaler', methods: ['GET'])]
     public function signaler(): Response
     {
-        $this->addFlash('warning', 'Publication signalée.');
+        $this->addFlash('warning', 'Publication signalÃƒÂ©e.');
         return $this->redirectToRoute('app_publications_index');
     }
 
@@ -239,7 +212,7 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
             return $this->json(['ok' => false], 404);
         }
 
-        // ⚠️ volontairement simple (double-like géré plus tard)
+        // Ã¢Å¡Â Ã¯Â¸Â volontairement simple (double-like gÃƒÂ©rÃƒÂ© plus tard)
         $pub->incrementLikes();
         $em->flush();
 

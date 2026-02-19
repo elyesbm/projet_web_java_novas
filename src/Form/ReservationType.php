@@ -3,7 +3,6 @@
 namespace App\Form;
 
 
-use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -18,10 +17,15 @@ class ReservationType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('nom_user', TextType::class)
-            ->add('email_user', EmailType::class)
+            ->add('nom_user', TextType::class, [
+                'empty_data' => '',
+            ])
+            ->add('email_user', EmailType::class, [
+                'empty_data' => '',
+            ])
             ->add('commentaire_reservation', TextareaType::class, [
                 'required' => false,
+                'empty_data' => '',
             ]);
     }
 

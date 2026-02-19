@@ -3,6 +3,7 @@
 {% block title %}Offres d'emploi etudiant - NoVas{% endblock %}
 
 {% block body %}
+{% include 'front/partials/_auth_nav.html.twig' %}
 {% set q = q|default('') %}
 {% set categorie = categorie|default('') %}
 {% set lieu = lieu|default('') %}
@@ -11,8 +12,6 @@
 {% set dir = dir|default('desc') %}
 
 <!-- Navigation -->
-{% include 'front/partials/_auth_nav.html.twig' %}
-
 <!-- Hero Section -->
 <section class="relative pt-32 pb-16 overflow-hidden">
     <div class="absolute inset-0 gradient-orb"></div>
@@ -139,7 +138,7 @@
                             {% if 'tutor' in cat %}bg-primary/20 text-primary
                             {% elseif 'aide' in cat %}bg-accent/20 text-accent
                             {% else %}bg-primary/10 text-primary{% endif %}">
-                            {{ offre.categorieOffre|default('�') }}
+                            {{ offre.categorieOffre|default('â€”') }}
                         </span>
                     </div>
                     <h3 class="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
@@ -151,11 +150,11 @@
                     <div class="flex items-center gap-4 mb-4 text-sm">
                         <div class="flex items-center gap-1.5 text-muted-foreground">
                             <i data-lucide="map-pin" class="w-4 h-4"></i>
-                            <span>{{ offre.lieu|default('�') }}</span>
+                            <span>{{ offre.lieu|default('â€”') }}</span>
                         </div>
                         <div class="flex items-center gap-1.5 text-muted-foreground">
                             <i data-lucide="calendar" class="w-4 h-4"></i>
-                            <span>{{ offre.dateCreationOffre ? offre.dateCreationOffre|date('d/m/Y') : '�' }}</span>
+                            <span>{{ offre.dateCreationOffre ? offre.dateCreationOffre|date('d/m/Y') : 'â€”' }}</span>
                         </div>
                     </div>
                     <div class="flex items-center justify-between pt-4 border-t border-white/10">

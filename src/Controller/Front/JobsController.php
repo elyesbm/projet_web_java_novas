@@ -96,14 +96,14 @@ class JobsController extends AbstractController
         if (!$user) {
             $user = $userRepo->findOneBy([]); // fallback any user
             if (!$user) {
-                $this->addFlash('danger', 'Aucun utilisateur trouvÃ© en base. CrÃ©e un user dâ€™abord.');
+                $this->addFlash('danger', 'Aucun utilisateur trouvé en base. Crée un utilisateur d\'abord.');
                 return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
             }
         }
 
         $already = $candRepo->findOneBy(['offre' => $offre, 'candidat' => $user]);
         if ($already) {
-            $this->addFlash('warning', 'Vous avez dÃ©jÃ  postulÃ© Ã  cette offre.');
+            $this->addFlash('warning', 'Vous avez déjà postulé à cette offre.');
             return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
         }
 
@@ -123,7 +123,7 @@ class JobsController extends AbstractController
         $em->persist($c);
         $em->flush();
 
-        $this->addFlash('success', 'Candidature envoyÃ©e ?');
+        $this->addFlash('success', 'Candidature envoyée.');
         return $this->redirectToRoute('front_jobs_my_candidatures');
     }
 
@@ -173,7 +173,7 @@ class JobsController extends AbstractController
         if (!$user) {
             $user = $userRepo->findOneBy([]);
             if (!$user) {
-                $this->addFlash('danger', 'Aucun utilisateur trouvÃ© en base. CrÃ©e un user dâ€™abord.');
+                $this->addFlash('danger', 'Aucun utilisateur trouvé en base. Crée un utilisateur d\'abord.');
                 return $this->redirectToRoute('front_jobs_index');
             }
         }
@@ -289,7 +289,7 @@ class JobsController extends AbstractController
         $em->persist($o);
         $em->flush();
 
-        $this->addFlash('success', 'Offre ajoutÃ©e ?');
+        $this->addFlash('success', 'Offre ajoutée.');
         return $this->redirectToRoute('front_jobs_index');
     }
 
@@ -350,7 +350,7 @@ class JobsController extends AbstractController
 
             $em->flush();
 
-            $this->addFlash('success', 'Offre modifiÃ©e ?');
+            $this->addFlash('success', 'Offre modifiée.');
             return $this->redirectToRoute('front_jobs_my_offres');
         }
 
@@ -388,7 +388,7 @@ class JobsController extends AbstractController
         $em->remove($offre);
         $em->flush();
 
-        $this->addFlash('success', 'Offre supprimÃ©e ???');
+        $this->addFlash('success', 'Offre supprimée.');
         return $this->redirectToRoute('front_jobs_my_offres');
     }
 
@@ -475,8 +475,8 @@ class JobsController extends AbstractController
     {
         return [
             OffreCategorie::TUTORAT->value => 'Tutorat',
-            OffreCategorie::AIDE->value => 'Aide acadÃ©mique',
-            OffreCategorie::CREATION->value => 'CrÃ©ation',
+            OffreCategorie::AIDE->value => 'Aide académique',
+            OffreCategorie::CREATION->value => 'Création',
         ];
     }
 
@@ -484,7 +484,7 @@ class JobsController extends AbstractController
     {
         return [
             OffreLieu::EN_LIGNE->value => 'En ligne',
-            OffreLieu::PRESENTIEL->value => 'PrÃ©sentiel',
+            OffreLieu::PRESENTIEL->value => 'Présentiel',
         ];
     }
 
@@ -492,7 +492,7 @@ class JobsController extends AbstractController
     {
         return [
             OffreStatut::OUVERTE->value => 'Ouverte',
-            OffreStatut::FERMEE->value => 'FermÃ©e',
+            OffreStatut::FERMEE->value => 'Fermée',
         ];
     }
 
@@ -509,15 +509,15 @@ class JobsController extends AbstractController
     private function validateJobForm(array $form, array &$errors): void
     {
         if ($form['titre_offre'] === '' || mb_strlen($form['titre_offre']) < 3) {
-            $errors['titre_offre'] = 'Le titre est obligatoire (min 3 caractÃ¨res).';
+            $errors['titre_offre'] = 'Le titre est obligatoire (min 3 caractères).';
         }
 
         if ($form['description_offre'] === '' || mb_strlen($form['description_offre']) < 10) {
-            $errors['description_offre'] = 'La description est obligatoire (min 10 caractÃ¨res).';
+            $errors['description_offre'] = 'La description est obligatoire (min 10 caractères).';
         }
 
         if (! array_key_exists($form['categorie_offre'], $this->categorieOptions())) {
-            $errors['categorie_offre'] = 'CatÃ©gorie invalide.';
+            $errors['categorie_offre'] = 'Catégorie invalide.';
         }
 
         if (! array_key_exists($form['lieu'], $this->lieuOptions())) {
@@ -529,7 +529,6 @@ class JobsController extends AbstractController
         }
     }
 }
-
 
 
 

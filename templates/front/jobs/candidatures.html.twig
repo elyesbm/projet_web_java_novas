@@ -3,10 +3,9 @@
 {% block title %}Candidatures - {{ offre.titreOffre|default('Offre') }} - NoVas{% endblock %}
 
 {% block body %}
+{% include 'front/partials/_auth_nav.html.twig' %}
 {% set can_manage = can_manage|default(false) %}
 <!-- Navigation -->
-{% include 'front/partials/_auth_nav.html.twig' %}
-
 <!-- Content -->
 <section class="relative pt-32 pb-16 min-h-screen">
     <div class="absolute inset-0 gradient-orb"></div>
@@ -18,7 +17,7 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <span class="text-sm text-muted-foreground">Offre</span>
-                    <h1 class="text-xl font-semibold">{{ offre.titreOffre|default('�') }}</h1>
+                    <h1 class="text-xl font-semibold">{{ offre.titreOffre|default('â€”') }}</h1>
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
@@ -51,10 +50,10 @@
                                 {{ candidature.candidat ? (candidature.candidat.PRENOM ~ ' ' ~ candidature.candidat.NOM) : 'Candidat' }}
                             </h3>
                             <p class="text-sm text-muted-foreground">
-                                {{ candidature.candidat and candidature.candidat.EMAIL ? candidature.candidat.EMAIL : '�' }}
+                                {{ candidature.candidat and candidature.candidat.EMAIL ? candidature.candidat.EMAIL : 'â€”' }}
                             </p>
                             <p class="text-xs text-muted-foreground mt-2">
-                                Postule le {{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : '�' }}
+                                Postule le {{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : 'â€”' }}
                             </p>
                         </div>
                     </div>

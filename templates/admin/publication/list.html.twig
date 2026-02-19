@@ -2,7 +2,7 @@
 
 {% block title %}Publications - NOVAS Admin{% endblock %}
 {% block page_title %}Publications & Forum{% endblock %}
-{% block page_subtitle %}Modération des contenus{% endblock %}
+{% block page_subtitle %}Mod&eacute;ration des commentaires{% endblock %}
 
 {% block body %}
 <div class="space-y-6">
@@ -32,7 +32,7 @@
                 <i data-lucide="flag" class="w-6 h-6"></i>
             </div>
             <p class="text-3xl font-bold text-slate-900 dark:text-white">12</p>
-            <p class="text-sm text-slate-500">Signalés</p>
+            <p class="text-sm text-slate-500">Signal&eacute;s</p>
         </div>
 
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
@@ -44,7 +44,7 @@
         </div>
     </div>
 
-    {# ✅ Recherche + Tri (BACK) #}
+    {# Recherche + Tri (BACK) #}
     <form method="get" action="{{ path('app_admin_publications_list') }}"
           class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-4">
         <div class="flex flex-col md:flex-row md:items-center gap-4">
@@ -72,11 +72,14 @@
                     class="w-full h-12 bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700 rounded-xl px-4
                            text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500 transition-all"
                 >
-                    <option value="created_desc" {{ (sort ?? app.request.query.get('sort')) == 'created_desc' ? 'selected' : '' }}>
-                        Dernière création
+                    <option value="all" {{ (sort ?? app.request.query.get('sort')) == 'all' ? 'selected' : '' }}>
+                        Toutes
                     </option>
-                    <option value="updated_desc" {{ (sort ?? app.request.query.get('sort')) == 'updated_desc' ? 'selected' : '' }}>
-                        Dernière modification
+                    <option value="approved" {{ (sort ?? app.request.query.get('sort')) == 'approved' ? 'selected' : '' }}>
+                        Approuv&eacute;es
+                    </option>
+                    <option value="archived" {{ (sort ?? app.request.query.get('sort')) == 'archived' ? 'selected' : '' }}>
+                        Archiv&eacute;es
                     </option>
                 </select>
             </div>
@@ -84,7 +87,7 @@
             <a href="{{ path('app_admin_publications_list') }}"
                class="h-12 inline-flex items-center justify-center px-4 rounded-xl text-sm font-semibold
                       bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition">
-                Réinitialiser
+                R&eacute;initialiser
             </a>
         </div>
     </form>
@@ -100,7 +103,7 @@
 
                 <button onclick="switchTab('signales')" id="tab-signales"
                         class="py-4 text-sm font-semibold text-rose-500 hover:text-rose-600 flex items-center gap-2">
-                    Signalés
+                    Signal&eacute;s
                     <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-xs">3</span>
                 </button>
             </div>
@@ -129,18 +132,26 @@
                             <p class="text-sm text-slate-500">
                                 {{ pub.dateCreation ? pub.dateCreation|date('d/m/Y H:i') : '' }}
                                 {% if pub.dateModification %}
-                                    <span class="text-xs text-slate-400"> • modifié {{ pub.dateModification|date('d/m/Y H:i') }}</span>
+                                    <span class="text-xs text-slate-400">&bull; modifi&eacute; le {{ pub.dateModification|date('d/m/Y H:i') }}</span>
                                 {% endif %}
                             </p>
                         </div>
 
-                        <span class="ml-auto px-3 py-1 rounded-full text-xs font-medium
-                            {{ contexte == 'academic' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                               contexte == 'personal' ? 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400' :
-                               'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' }}">
+                        <div class="ml-auto flex items-center gap-2">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium
+                                {{ contexte == 'academic' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                   contexte == 'personal' ? 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400' :
+                                   'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' }}">
+                                {{ contexte == 'academic' ? 'Acad&eacute;mique' : contexte == 'personal' ? 'Personnelle' : 'Entraide' }}
+                            </span>
 
-                            {{ contexte == 'academic' ? 'Académique' : contexte == 'personal' ? 'Personnel' : 'Entraide' }}
-                        </span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium
+                                {{ pub.statut == 1
+                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' }}">
+                                {{ pub.statut == 1 ? 'Approuv&eacute;e' : 'Archiv&eacute;e' }}
+                            </span>
+                        </div>
                     </div>
 
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">{{ pub.titre }}</h3>
@@ -153,7 +164,7 @@
                             <i data-lucide="heart" class="w-4 h-4"></i>{{ pub.likes ?? 0 }} likes
                         </span>
 
-                        {# ✅ Un seul bouton commentaires #}
+                        {# Un seul bouton commentaires #}
                         <button
                             type="button"
                             onclick="toggleAdminComments({{ pub.id }})"
@@ -166,7 +177,7 @@
                         <div class="ml-auto flex gap-2">
                             <a href="{{ path('app_admin_publications_edit', {id: pub.id}) }}"
                                class="px-3 py-2 rounded-lg bg-violet-50 dark:bg-violet-900/20 text-violet-600 text-sm font-medium hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors">
-                                Modérer
+                                Mod&eacute;rer
                             </a>
 
                             <form method="post" action="{{ path('app_admin_publications_delete', {id: pub.id}) }}"
@@ -189,7 +200,7 @@
                                             {{ c.auteur ? (c.auteur.PRENOM ~ ' ' ~ c.auteur.NOM) : 'Utilisateur' }}
                                         </span>
                                         <span class="text-xs text-slate-500">
-                                            • {{ c.dateCreation ? c.dateCreation|date('d/m/Y H:i') : '' }}
+                                            &bull; {{ c.dateCreation ? c.dateCreation|date('d/m/Y H:i') : '' }}
                                         </span>
                                     </div>
 
@@ -197,7 +208,7 @@
                                         type="button"
                                         class="p-2 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/30 text-rose-600 transition-colors"
                                         title="Supprimer"
-                                        onclick="if(confirm('Supprimer ce commentaire ?')) showToast('Suppression à implémenter', 'warning')"
+                                        onclick="if(confirm('Supprimer ce commentaire ?')) showToast('Suppression a implementer', 'warning')"
                                     >
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                                     </button>
@@ -216,7 +227,7 @@
             {% endfor %}
         </div>
 
-        {# ===================== ONGLET SIGNALÉS ===================== #}
+        {# ===================== ONGLET SIGNALES ===================== #}
         <div class="p-6 hidden space-y-6" id="content-signales">
             <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-6">
                 <div class="flex items-start gap-4">
@@ -225,16 +236,16 @@
                     </div>
                     <div class="flex-1">
                         <div class="flex items-center gap-2 mb-2">
-                            <h3 class="font-semibold text-amber-900 dark:text-amber-400">Publication signalée</h3>
+                            <h3 class="font-semibold text-amber-900 dark:text-amber-400">Publication signal&eacute;e</h3>
                             <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-xs">3 signalements</span>
                         </div>
-                        <p class="text-amber-700 dark:text-amber-300 text-sm mb-4">Cette publication a été signalée pour "contenu inapproprié"</p>
+                        <p class="text-amber-700 dark:text-amber-300 text-sm mb-4">Cette publication a &eacute;t&eacute; signal&eacute;e pour "contenu inappropri&eacute;"</p>
                         <div class="bg-white dark:bg-slate-800 rounded-xl p-4 mb-4">
-                            <p class="text-slate-600 dark:text-slate-400 text-sm">"Ce contenu est offensant et ne respecte pas les règles de la communauté..."</p>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm">"Ce contenu est offensant et ne respecte pas les r&egrave;gles de la communaut&eacute;..."</p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="showToast('Publication approuvée', 'success')" class="px-4 py-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 text-sm font-medium hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors">Approuver</button>
-                            <button onclick="showToast('Publication masquée', 'warning')" class="px-4 py-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 text-sm font-medium hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">Masquer</button>
+                            <button onclick="showToast('Publication approuv&eacute;e', 'success')" class="px-4 py-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 text-sm font-medium hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors">Approuver</button>
+                            <button onclick="showToast('Publication masqu&eacute;e', 'warning')" class="px-4 py-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 text-sm font-medium hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">Masquer</button>
                             <a href="{{ path('app_admin_publications_edit', {id: 1}) }}" class="px-4 py-2 rounded-lg bg-violet-100 dark:bg-violet-900/30 text-violet-700 text-sm font-medium hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors">Examiner</a>
                         </div>
                     </div>

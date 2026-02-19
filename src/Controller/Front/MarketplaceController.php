@@ -20,6 +20,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Route('/marketplace')]
 class MarketplaceController extends AbstractController
 {
+    private const CART_SESSION_KEY = 'marketplace_cart';
+
     #[Route('/', name: 'app_marketplace_index')]
     public function index(Request $request, ArticleRepository $articleRepository, CategorieRepository $categorieRepository): Response
     {
@@ -119,11 +121,12 @@ class MarketplaceController extends AbstractController
         return $this->render('front/marketplace/index.html.twig', [
             'categories' => $categories,
             'articles' => $articles,
+            'cart_count' => $this->getCartCount($request),
         ]);
     }
 
     #[Route('/article/{id}', name: 'app_marketplace_detail', requirements: ['id' => '\d+'])]
-    public function detail(int $id, ArticleRepository $articleRepository): Response
+    public function detail(int $id, Request $request, ArticleRepository $articleRepository): Response
     {
         $articleEntity = $articleRepository->find($id);
         if (!$articleEntity instanceof Article) {
@@ -143,7 +146,7 @@ class MarketplaceController extends AbstractController
             'titre' => $articleEntity->getTitreArticle(),
             'contenu' => $articleEntity->getContenueArticle(),
             'image' => $detailImage,
-            'images' => [$detailImage, 'workshop.jpg', 'student-hero.jpg'],
+            'images' => [$detailImage],
             'type' => $articleEntity->getTypeArticle() ?: 'academic',
             'prix' => $articleEntity->getPrixArticle() ?? 0,
             'statut' => $articleEntity->getStatutArticle() ?? 'disponible',
@@ -173,7 +176,113 @@ class MarketplaceController extends AbstractController
         return $this->render('front/marketplace/detail.html.twig', [
             'article' => $article,
             'articles_similaires' => $articles_similaires,
+            'cart_count' => $this->getCartCount($request),
         ]);
+    }
+
+    #[Route('/article/{id}/panier', name: 'app_marketplace_cart_add', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function addToCart(int $id, Request $request, ArticleRepository $articleRepository): Response
+    {
+        if (!$this->isCsrfTokenValid('add_to_cart_' . $id, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+
+            return $this->redirectToRoute('app_marketplace_detail', ['id' => $id]);
+        }
+
+        $article = $articleRepository->find($id);
+        if (!$article instanceof Article) {
+            $this->addFlash('error', 'Article introuvable.');
+
+            return $this->redirectToRoute('app_marketplace_index');
+        }
+
+        $cart = $this->getCart($request);
+        $cart[$id] = (int) ($cart[$id] ?? 0) + 1;
+        $this->setCart($request, $cart);
+
+        $this->addFlash('success', 'Produit ajoute au panier.');
+
+        return $this->redirectToRoute('app_marketplace_cart');
+    }
+
+    #[Route('/panier', name: 'app_marketplace_cart', methods: ['GET'])]
+    public function cart(Request $request, ArticleRepository $articleRepository): Response
+    {
+        $cart = $this->getCart($request);
+        $ids = array_map('intval', array_keys($cart));
+        $articles = $ids !== [] ? $articleRepository->findBy(['id' => $ids]) : [];
+
+        $items = [];
+        $total = 0.0;
+        foreach ($articles as $article) {
+            if (!$article instanceof Article) {
+                continue;
+            }
+
+            $id = (int) $article->getId();
+            $quantity = (int) ($cart[$id] ?? 0);
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $unitPrice = (float) ($article->getPrixArticle() ?? 0);
+            $subtotal = $unitPrice * $quantity;
+            $total += $subtotal;
+
+            $image = $article->getImageArticle() ?: 'skills-learning.jpg';
+            $imagesDir = $this->getParameter('kernel.project_dir') . '/public/images';
+            if (!is_file($imagesDir . '/' . $image)) {
+                $image = 'skills-learning.jpg';
+            }
+
+            $items[] = [
+                'id' => $id,
+                'titre' => $article->getTitreArticle(),
+                'image' => $image,
+                'prix_unitaire' => $unitPrice,
+                'quantite' => $quantity,
+                'sous_total' => $subtotal,
+            ];
+        }
+
+        return $this->render('front/marketplace/panier.html.twig', [
+            'items' => $items,
+            'total' => $total,
+            'cart_count' => $this->getCartCount($request),
+        ]);
+    }
+
+    #[Route('/panier/{id}/supprimer', name: 'app_marketplace_cart_remove', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function removeFromCart(int $id, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('remove_from_cart_' . $id, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+
+            return $this->redirectToRoute('app_marketplace_cart');
+        }
+
+        $cart = $this->getCart($request);
+        unset($cart[$id]);
+        $this->setCart($request, $cart);
+
+        $this->addFlash('success', 'Produit retire du panier.');
+
+        return $this->redirectToRoute('app_marketplace_cart');
+    }
+
+    #[Route('/panier/vider', name: 'app_marketplace_cart_clear', methods: ['POST'])]
+    public function clearCart(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('clear_cart', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+
+            return $this->redirectToRoute('app_marketplace_cart');
+        }
+
+        $this->setCart($request, []);
+        $this->addFlash('success', 'Panier vide.');
+
+        return $this->redirectToRoute('app_marketplace_cart');
     }
 
     #[Route('/mes-articles', name: 'app_marketplace_mes')]
@@ -633,11 +742,16 @@ class MarketplaceController extends AbstractController
 
         return $this->render('front/marketplace/categories/index.html.twig', [
             'categories' => $categories,
+            'cart_count' => $this->getCartCount($request),
         ]);
     }
 
     #[Route('/categorie/ajouter', name: 'app_marketplace_categorie_ajouter', methods: ['GET', 'POST'])]
-    public function ajouterCategorie(Request $request, EntityManagerInterface $entityManager): Response
+    public function ajouterCategorie(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator
+    ): Response
     {
         // public category creation: no authentication required
 
@@ -645,33 +759,21 @@ class MarketplaceController extends AbstractController
             $nom = trim((string) $request->request->get('nom', ''));
             $description = trim((string) $request->request->get('description', ''));
 
-            $errors = [];
-            if ($nom === '') {
-                $errors[] = 'Le nom de la catégorie est obligatoire.';
-            } else {
-                $len = mb_strlen($nom);
-                if ($len < 2) {
-                    $errors[] = 'Le nom doit contenir au moins 2 caractères.';
-                }
-                if ($len > 255) {
-                    $errors[] = 'Le nom ne doit pas dépasser 255 caractères.';
-                }
-            }
-            if (mb_strlen($description) > 1000) {
-                $errors[] = 'La description est trop longue (max 1000 caractères).';
-            }
+            $categorie = new Categorie();
+            $categorie
+                ->setNomCategorie($nom !== '' ? $nom : null)
+                ->setDescriptionCategorie($description);
 
-            if (!empty($errors)) {
-                foreach ($errors as $err) {
-                    $this->addFlash('error', $err);
+            $violations = $validator->validate($categorie);
+            if (count($violations) > 0) {
+                foreach ($violations as $violation) {
+                    $this->addFlash('error', $violation->getMessage());
                 }
+
                 return $this->render('front/marketplace/categories/ajouter.html.twig', [
                     'data' => ['nom' => $nom, 'description' => $description],
                 ]);
             }
-
-            $categorie = new Categorie();
-            $categorie->setNomCategorie($nom)->setDescriptionCategorie($description);
 
             $entityManager->persist($categorie);
             $entityManager->flush();
@@ -733,5 +835,28 @@ class MarketplaceController extends AbstractController
         return $this->redirectToRoute('app_marketplace_categories');
     }
 
-    
+    private function getCart(Request $request): array
+    {
+        $session = $request->getSession();
+        if ($session === null) {
+            return [];
+        }
+
+        $cart = $session->get(self::CART_SESSION_KEY, []);
+
+        return is_array($cart) ? $cart : [];
+    }
+
+    private function setCart(Request $request, array $cart): void
+    {
+        $session = $request->getSession();
+        if ($session !== null) {
+            $session->set(self::CART_SESSION_KEY, $cart);
+        }
+    }
+
+    private function getCartCount(Request $request): int
+    {
+        return array_sum(array_map('intval', $this->getCart($request)));
+    }
 }

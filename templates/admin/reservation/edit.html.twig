@@ -15,6 +15,7 @@
         </div>
         <div>
             <h2 class="text-2xl font-bold">Réservation #{{ reservation.id }}</h2>
+            <p class="text-indigo-100 text-sm">Participant ID: {{ reservation.user ? reservation.user.id : 'N/A' }}</p>
             <p class="text-indigo-100">{{ reservation.nomUser }} • {{ reservation.atelier ? reservation.atelier.titreAtelier : '—' }}</p>
         </div>
     </div>
@@ -23,6 +24,7 @@
 <div class="space-y-6">
     <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700">
         <h3 class="font-semibold text-slate-900 dark:text-white mb-4">Statut</h3>
+        {{ form_errors(form) }}
         {{ form_row(form.statutReservation, {
             label: false,
             attr: { class: 'w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white' }
@@ -41,3 +43,4 @@
 
 {{ form_end(form) }}
 {% endblock %}
+

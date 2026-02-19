@@ -42,21 +42,21 @@
                         </p>
                     </div>
                     <div>
-                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Téléphone</p>
+                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">T&eacute;l&eacute;phone</p>
                         <p class="text-foreground flex items-center gap-2">
                             <i data-lucide="phone" class="w-4 h-4 text-primary"></i>
                             {{ user.NUMERO is not null and user.NUMERO != '' ? user.NUMERO : '—' }}
                         </p>
                     </div>
                     <div>
-                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Rôle</p>
+                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">R&ocirc;le</p>
                         <p class="flex items-center gap-2">
                             {% if user.ROLE == 'ROLE_ADMIN' %}
                                 <span class="px-3 py-1.5 rounded-full text-sm font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">Admin</span>
                             {% elseif user.ROLE == 'ROLE_PSY' %}
                                 <span class="px-3 py-1.5 rounded-full text-sm font-medium bg-teal-500/20 text-teal-400 border border-teal-500/30">Psy</span>
                             {% else %}
-                                <span class="px-3 py-1.5 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">Étudiant</span>
+                                <span class="px-3 py-1.5 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">&Eacute;tudiant</span>
                             {% endif %}
                         </p>
                     </div>
@@ -68,7 +68,7 @@
             </div>
 
             <div class="mt-10 pt-8 border-t border-border/50">
-                <h3 class="text-sm font-semibold text-foreground mb-4">Résumé de l’activité</h3>
+                <h3 class="text-sm font-semibold text-foreground mb-4">R&eacute;sum&eacute; de l&rsquo;activit&eacute;</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div class="glass-card rounded-xl p-4 text-center">
                         <p class="text-2xl font-bold text-primary">{{ user.publications|length }}</p>
@@ -80,11 +80,11 @@
                     </div>
                     <div class="glass-card rounded-xl p-4 text-center">
                         <p class="text-2xl font-bold text-academic">{{ user.reservations|length }}</p>
-                        <p class="text-xs text-muted-foreground">Réservations</p>
+                        <p class="text-xs text-muted-foreground">R&eacute;servations</p>
                     </div>
                     <div class="glass-card rounded-xl p-4 text-center">
                         <p class="text-2xl font-bold text-personal">{{ user.offrejobs|length }}</p>
-                        <p class="text-xs text-muted-foreground">Offres créées</p>
+                        <p class="text-xs text-muted-foreground">Offres cr&eacute;&eacute;es</p>
                     </div>
                 </div>
             </div>
@@ -92,7 +92,7 @@
             <div class="mt-8 flex flex-wrap gap-4">
                 <a href="{{ path('app_home') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border hover:bg-white/5 transition-colors text-sm font-medium">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    Retour à l’accueil
+                    Retour &agrave; l&rsquo;accueil
                 </a>
                 <a href="{{ path('app_user_edit') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors text-sm font-medium shadow-lg shadow-primary/25">
                     <i data-lucide="edit" class="w-4 h-4"></i>

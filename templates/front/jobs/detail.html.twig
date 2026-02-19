@@ -3,9 +3,8 @@
 {% block title %}{{ offre.titreOffre }} - NoVas Jobs{% endblock %}
 
 {% block body %}
-<!-- Navigation -->
 {% include 'front/partials/_auth_nav.html.twig' %}
-
+<!-- Navigation -->
 <!-- Job Detail -->
 <section class="relative pt-32 pb-16">
     <div class="absolute inset-0 gradient-orb"></div>
@@ -18,7 +17,7 @@
             <i data-lucide="chevron-right" class="w-4 h-4"></i>
             <a href="{{ path('front_jobs_index') }}" class="hover:text-foreground">Jobs</a>
             <i data-lucide="chevron-right" class="w-4 h-4"></i>
-            <span class="text-foreground">Détail</span>
+            <span class="text-foreground">Detail</span>
         </div>
 
         <div class="grid lg:grid-cols-3 gap-8">
@@ -44,9 +43,9 @@
                             </div>
                         </div>
 
-                        {# DB n'a pas rémunération => on garde UI "—" #}
+                        {# DB n'a pas remuneration => on garde UI "--" #}
                         <div class="text-right">
-                            <p class="text-3xl font-bold text-primary">—</p>
+                            <p class="text-3xl font-bold text-primary">--</p>
                             <p class="text-sm text-muted-foreground">/heure</p>
                         </div>
                     </div>
@@ -57,15 +56,15 @@
                             <span>{{ offre.lieu }}</span>
                         </div>
 
-                        {# DB n'a pas durée => placeholder #}
+                        {# DB n'a pas duree => placeholder #}
                         <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5">
                             <i data-lucide="clock" class="w-4 h-4 text-primary"></i>
-                            <span>—</span>
+                            <span>--</span>
                         </div>
 
                         <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5">
                             <i data-lucide="calendar" class="w-4 h-4 text-primary"></i>
-                            <span>Publié le {{ offre.dateCreationOffre ? offre.dateCreationOffre|date('d/m/Y') : '—' }}</span>
+                            <span>Publie le {{ offre.dateCreationOffre ? offre.dateCreationOffre|date('d/m/Y') : '--' }}</span>
                         </div>
 
                         <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5">
@@ -83,29 +82,29 @@
                             <p class="text-muted-foreground leading-relaxed whitespace-pre-line">{{ offre.descriptionOffre }}</p>
                         </div>
 
-                        {# champs non existants dans DB => on les enlève sans casser le design #}
+                        {# champs non existants dans DB => on les enleve sans casser le design #}
                     </div>
                 </div>
 
                 <!-- Creator Card -->
                 <div class="glass-card rounded-2xl p-6">
-                    <h3 class="text-lg font-semibold mb-4">À propos du créateur</h3>
+                    <h3 class="text-lg font-semibold mb-4">A propos du createur</h3>
                     <div class="flex items-center gap-4">
                         <div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-xl font-bold text-primary">
                             {{ (offre.createur and offre.createur.email) ? offre.createur.email|first : '?' }}
                         </div>
                         <div class="flex-1">
                             <p class="font-semibold text-lg">{{ (offre.createur and offre.createur.email) ? offre.createur.email : 'Utilisateur' }}</p>
-                            <p class="text-sm text-muted-foreground">Créateur de l'offre</p>
+                            <p class="text-sm text-muted-foreground">Createur de l'offre</p>
 
                             <div class="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                                 <span class="flex items-center gap-1">
                                     <i data-lucide="award" class="w-4 h-4"></i>
-                                    Offre publiée
+                                    Offre publiee
                                 </span>
                                 <span class="flex items-center gap-1">
                                     <i data-lucide="star" class="w-4 h-4 text-primary fill-primary"></i>
-                                    —/5
+                                    --/5
                                 </span>
                             </div>
                         </div>
@@ -125,7 +124,7 @@
                     {% for label, messages in app.flashes %}
                         {% for message in messages %}
                             <div class="mb-4 p-4 rounded-xl border border-white/10 bg-background/40 text-sm">
-                                <b class="text-primary">{{ label|upper }}</b> — {{ message }}
+                                <b class="text-primary">{{ label|upper }}</b> - {{ message }}
                             </div>
                         {% endfor %}
                     {% endfor %}
@@ -135,8 +134,8 @@
                         <div class="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-4">
                             <i data-lucide="check" class="w-8 h-8 text-accent"></i>
                         </div>
-                        <h3 class="font-semibold mb-2">Candidature envoyée !</h3>
-                        <p class="text-sm text-muted-foreground mb-4">Vous avez déjà postulé à cette offre.</p>
+                        <h3 class="font-semibold mb-2">Candidature envoyee !</h3>
+                        <p class="text-sm text-muted-foreground mb-4">Vous avez deja postule a cette offre.</p>
                         <a href="{{ path('front_jobs_my_candidatures') }}" class="block w-full py-3 rounded-xl bg-primary/10 text-primary text-center font-medium hover:bg-primary/20 transition">
                             Voir mes candidatures
                         </a>
@@ -148,7 +147,7 @@
                             <i data-lucide="settings" class="w-8 h-8 text-primary"></i>
                         </div>
                         <h3 class="font-semibold mb-2">Votre offre</h3>
-                        <p class="text-sm text-muted-foreground mb-4">Gérez les candidatures reçues.</p>
+                        <p class="text-sm text-muted-foreground mb-4">Gerez les candidatures recues.</p>
 
                         {# Creator side: see candidatures for this offer #}
                         <a href="{{ path('front_jobs_candidatures', {'id': offre.id}) }}"
@@ -163,14 +162,14 @@
                     </div>
 
                     {% else %}
-                    <h3 class="text-lg font-semibold mb-4">Postuler à cette offre</h3>
+                    <h3 class="text-lg font-semibold mb-4">Postuler a cette offre</h3>
 
                     <form action="{{ path('front_jobs_apply', {'id': offre.id}) }}" method="POST" class="space-y-4">
                         <input type="hidden" name="_token" value="{{ csrf_token('jobs_apply_' ~ offre.id) }}">
                         <div>
                             <label class="block text-sm font-medium mb-2">Votre message</label>
                             <textarea name="message_candidature" rows="4"
-                                      placeholder="Présentez-vous et expliquez pourquoi vous êtes intéressé..."
+                                      placeholder="Presentez-vous et expliquez pourquoi vous etes interesse..."
                                       class="w-full px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none resize-none text-sm" required></textarea>
                         </div>
                         <button type="submit" class="w-full py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition shadow-lg shadow-primary/25">
@@ -179,7 +178,7 @@
                     </form>
 
                     <p class="text-xs text-muted-foreground text-center mt-4">
-                        Le créateur recevra votre candidature et vous répondra sous 48h.
+                        Le createur recevra votre candidature et vous repondra sous 48h.
                     </p>
                     {% endif %}
                 </div>
@@ -192,9 +191,9 @@
                         <a href="{{ path('front_jobs_detail', {'id': similar.id}) }}" class="block p-4 rounded-xl bg-white/5 hover:bg-white/10 transition group">
                             <div class="flex justify-between items-start mb-2">
                                 <h4 class="font-medium text-sm group-hover:text-primary transition-colors">{{ similar.titreOffre }}</h4>
-                                <span class="text-primary font-semibold text-sm">—</span>
+                                <span class="text-primary font-semibold text-sm">--</span>
                             </div>
-                            <p class="text-xs text-muted-foreground">{{ similar.categorieOffre }} • {{ similar.lieu }}</p>
+                            <p class="text-xs text-muted-foreground">{{ similar.categorieOffre }} - {{ similar.lieu }}</p>
                         </a>
                         {% else %}
                             <p class="text-sm text-muted-foreground">Aucune offre similaire.</p>

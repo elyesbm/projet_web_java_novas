@@ -6,52 +6,75 @@
 
 {% block body %}
 <div class="max-w-5xl mx-auto">
-    <form method="post" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {# Main Form #}
+    {% set marketplace_errors = app.flashes('error') %}
+    {% if marketplace_errors is not empty %}
+        <div class="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-rose-700">
+            <p class="font-semibold mb-2">Veuillez corriger les erreurs suivantes :</p>
+            <ul class="list-disc pl-5 space-y-1 text-sm">
+                {% for message in marketplace_errors %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form id="admin-marketplace-form" method="post" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-6" novalidate>
+
         <div class="lg:col-span-2 space-y-6">
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">Informations de l'article</h3>
-                
+
                 <div class="space-y-2 mb-6">
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Titre <span class="text-rose-500">*</span></label>
                     <input
                         type="text"
+                        id="titre"
                         name="titre"
                         value="{{ article is defined and article ? article.titreArticle : '' }}"
                         class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-rose-500 text-lg"
                         placeholder="ex: MacBook Pro M2"
+                        required
+                        minlength="2"
+                        maxlength="255"
                     >
                 </div>
 
                 <div class="space-y-2 mb-6">
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Description <span class="text-rose-500">*</span></label>
                     <textarea
+                        id="contenu"
                         name="contenu"
                         rows="5"
                         class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-rose-500 resize-none"
-                        placeholder="Décrivez votre article..."
+                        placeholder="Decrivez votre article..."
+                        required
+                        minlength="10"
+                        maxlength="255"
                     >{{ article is defined and article ? article.contenueArticle : '' }}</textarea>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Prix (€) <span class="text-rose-500">*</span></label>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Prix (DT) <span class="text-rose-500">*</span></label>
                         <input
                             type="text"
+                            id="prix"
                             name="prix"
                             value="{{ article is defined and article and article.prixArticle is not null ? article.prixArticle : '' }}"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-rose-500 text-2xl font-bold text-rose-600"
                             placeholder="0.00"
+                            required
                         >
                     </div>
                     <div class="space-y-2">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Catégorie <span class="text-rose-500">*</span></label>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Categorie <span class="text-rose-500">*</span></label>
                         <select
+                            id="categorie"
                             name="categorie"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-rose-500"
+                            required
                         >
-                            <option value="">Sélectionner une catégorie</option>
+                            <option value="">Selectionner une categorie</option>
                             {% if categories is defined %}
                                 {% for cat in categories %}
                                     <option value="{{ cat.id }}" {% if article is defined and article and article.categorie and article.categorie.id == cat.id %}selected{% endif %}>
@@ -85,7 +108,7 @@
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-rose-500"
                         >
                             <option value="disponible" {{ currentStatut == 'disponible' ? 'selected' }}>Disponible</option>
-                            <option value="reserve" {{ currentStatut == 'reserve' ? 'selected' }}>Réservé</option>
+                            <option value="reserve" {{ currentStatut == 'reserve' ? 'selected' }}>Reserve</option>
                             <option value="vendu" {{ currentStatut == 'vendu' ? 'selected' }}>Vendu</option>
                         </select>
                     </div>
@@ -96,6 +119,7 @@
                         <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Image (depuis votre PC)</label>
                         <input
                             type="file"
+                            id="image"
                             name="image"
                             accept="image/*"
                             class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
@@ -105,6 +129,7 @@
                         <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Image (nom de fichier / URL relative)</label>
                         <input
                             type="text"
+                            id="image_article"
                             name="image_article"
                             value="{{ article is defined and article and article.imageArticle ? article.imageArticle : '' }}"
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-rose-500 text-sm"
@@ -130,15 +155,14 @@
                     {% endif %}
                 </div>
                 <p class="text-xs text-slate-500 mt-1">
-                    Vous pouvez soit sélectionner une image depuis votre PC, soit saisir directement le nom de fichier stocké dans <code>public/images</code>.
+                    Vous pouvez soit selectionner une image depuis votre PC, soit saisir directement le nom de fichier stocke dans <code>public/images</code>.
                 </p>
             </div>
         </div>
 
-        {# Sidebar Preview + actions persistantes #}
         <div class="space-y-6">
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6 sticky top-6">
-                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Aperçu</h3>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Apercu</h3>
                 <div class="aspect-[4/3] rounded-xl bg-slate-100 dark:bg-slate-700 mb-4 flex items-center justify-center text-slate-400 overflow-hidden">
                     {% if article is defined and article and article.imageArticle %}
                         <img
@@ -156,7 +180,7 @@
                     {{ article is defined and article and article.titreArticle ? article.titreArticle : 'Titre de l\'article' }}
                 </h4>
                 <p class="text-2xl font-bold text-rose-600 mb-3">
-                    {{ article is defined and article and article.prixArticle is not null ? (article.prixArticle|number_format(2, ',', ' ')) ~ ' €' : '-- €' }}
+                    {{ article is defined and article and article.prixArticle is not null ? (article.prixArticle|number_format(2, ',', ' ')) ~ ' DT' : '-- DT' }}
                 </p>
                 <div class="flex items-center gap-2 text-sm text-slate-500">
                     <i data-lucide="map-pin" class="w-4 h-4"></i>
@@ -164,7 +188,6 @@
                 </div>
             </div>
 
-            {# Bloc boutons toujours visible (sticky bas) #}
             <div class="flex flex-col gap-3 lg:sticky lg:bottom-6">
                 <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-medium shadow-lg shadow-rose-500/25 transition-all">
                     {{ mode|default('create') == 'create' ? 'Publier l\'article' : 'Enregistrer' }}
@@ -176,4 +199,44 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const form = document.getElementById('admin-marketplace-form');
+            if (!form) return;
+
+            form.addEventListener('submit', function (e) {
+                const errors = [];
+                const titre = document.getElementById('titre');
+                const contenu = document.getElementById('contenu');
+                const prix = document.getElementById('prix');
+                const categorie = document.getElementById('categorie');
+                const image = document.getElementById('image');
+                const imageArticle = document.getElementById('image_article');
+
+                const titreVal = (titre?.value || '').trim();
+                const contenuVal = (contenu?.value || '').trim();
+                const prixVal = (prix?.value || '').trim();
+                const categorieVal = (categorie?.value || '').trim();
+                const imageVal = (imageArticle?.value || '').trim();
+                const hasFile = !!(image && image.files && image.files.length > 0);
+
+                if (titreVal.length < 2) errors.push('Le titre doit contenir au moins 2 caracteres.');
+                if (contenuVal.length < 10) errors.push('La description doit contenir au moins 10 caracteres.');
+                if (!prixVal) errors.push('Le prix est obligatoire.');
+                if (prixVal && !/^\d+(?:[.,]\d+)?$/.test(prixVal)) errors.push('Le prix doit etre un nombre valide.');
+                if (!categorieVal) errors.push('La categorie est obligatoire.');
+                if (!hasFile && imageVal === '') errors.push("L'image est obligatoire (fichier ou nom d'image).");
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    errors.forEach(msg => showToast(msg, 'error'));
+                    if (titre && titreVal.length < 2) titre.focus();
+                }
+            });
+        })();
+    </script>
 {% endblock %}

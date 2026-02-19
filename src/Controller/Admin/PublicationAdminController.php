@@ -19,19 +19,23 @@ class PublicationAdminController extends AbstractController
         PublicationRepository $publicationRepo,
         CommentaireRepository $commentRepo
     ): Response {
-        // ✅ recherche + tri
         $q = trim((string) $request->query->get('q', ''));
-        $sort = (string) $request->query->get('sort', 'created_desc'); // created_desc | updated_desc
+        $sort = (string) $request->query->get('sort', 'all'); // all | approved | archived
 
-        $orderBy = match ($sort) {
-            'updated_desc' => ['date_modification' => 'DESC'],
-            default        => ['date_creation' => 'DESC'],
-        };
+        if (!in_array($sort, ['all', 'approved', 'archived'], true)) {
+            $sort = 'all';
+        }
 
-        // ✅ publications triées (DB)
-        $publications = $publicationRepo->findBy([], $orderBy);
+        $criteria = [];
+        if ($sort === 'approved') {
+            $criteria['statut'] = 1;
+        } elseif ($sort === 'archived') {
+            $criteria['statut'] = 0;
+        }
 
-        // ✅ filtre recherche (titre + contenu + auteur nom/prénom)
+        $publications = $publicationRepo->findBy($criteria, ['date_creation' => 'DESC']);
+
+        // ✅ filtre recherche (titre + contenu + auteur nom/prénom) sur le statut sélectionné
         if ($q !== '') {
             $publications = array_values(array_filter($publications, function ($pub) use ($q) {
                 $titre = (string) ($pub->getTitre() ?? '');
@@ -51,7 +55,6 @@ class PublicationAdminController extends AbstractController
             }));
         }
 
-        // ✅ stats (inchangées)
         $totalCommentaires = $commentRepo->count([]);
         $totalPublications = $publicationRepo->count([]);
 
@@ -60,7 +63,6 @@ class PublicationAdminController extends AbstractController
             $totalLikes += $publication->getLikes() ?? 0;
         }
 
-        // ✅ commentaires (inchangé, si tu l’utilises encore dans le twig)
         $commentaires = $commentRepo->findBy([], ['date_creation' => 'DESC']);
 
         return $this->render('admin/publication/list.html.twig', [
@@ -69,8 +71,6 @@ class PublicationAdminController extends AbstractController
             'totalPublications' => $totalPublications,
             'totalCommentaires' => $totalCommentaires,
             'totalLikes' => $totalLikes,
-
-            // ✅ pour twig (recherche + tri)
             'q' => $q,
             'sort' => $sort,
         ]);

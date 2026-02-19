@@ -3,9 +3,8 @@
 {% block title %}Ateliers - NoVas{% endblock %}
 
 {% block body %}
+{% include 'front/partials/_auth_nav.html.twig' %}
 <div class="min-h-screen bg-background">
-    {% include 'front/partials/_auth_nav.html.twig' %}
-
     <!-- Header -->
     <section class="pt-32 pb-12 px-6">
         <div class="max-w-7xl mx-auto">
@@ -63,8 +62,8 @@
                                 name="contexte"
                                 class="w-full h-12 px-4 bg-secondary border border-white/10 rounded-xl focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer">
                             <option value="">Tous les ateliers</option>
-                            <option value="0" {{ contexte == 0 ? 'selected' : '' }}>Soft Skill</option>
-                            <option value="1" {{ contexte == 1 ? 'selected' : '' }}>Hard Skill</option>
+                            <option value="0" {{ contexte is same as(0) ? 'selected' : '' }}>Soft Skill</option>
+                            <option value="1" {{ contexte is same as(1) ? 'selected' : '' }}>Hard Skill</option>
                         </select>
                     </div>
 
@@ -90,7 +89,7 @@
                             <i data-lucide="filter" class="w-5 h-5"></i>
                             <span>Filtrer</span>
                         </button>
-                        {% if search or contexte is not null %}
+                        {% if search or contexte is not null or sort|default('date_asc') != 'date_asc' %}
                             <a href="{{ path('app_reservation_ateliers') }}"
                                class="h-12 px-6 bg-secondary border border-white/10 text-foreground rounded-xl font-medium hover:bg-white/5 transition-all flex items-center gap-2">
                                 <i data-lucide="x" class="w-5 h-5"></i>
@@ -184,7 +183,7 @@
                             </div>
                         </div>
 
-                        <!-- ACTION (DEV MODE – USER FIXE) -->
+                        <!-- ACTION (DEV MODE Ã¢â‚¬â€œ USER FIXE) -->
                         {% if places_restantes > 0 %}
                             <a href="{{ path('app_reservation_reserver', { id: atelier.id }) }}"
                                class="flex items-center justify-center gap-2 w-full h-12 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 group/btn">
@@ -207,7 +206,7 @@
 </div>
 
 <script>
-// Recherche en temps réel avec debounce (soumission automatique après 500ms d'inactivité)
+// Recherche en temps rÃƒÂ©el avec debounce (soumission automatique aprÃƒÂ¨s 500ms d'inactivitÃƒÂ©)
 (function() {
     const searchInput = document.getElementById('search');
     const contexteSelect = document.getElementById('contexte');
@@ -220,10 +219,10 @@
         form.submit();
     }
 
-    // Recherche en temps réel sur le champ de recherche
+    // Recherche en temps rÃƒÂ©el sur le champ de recherche
     if (searchInput) {
         searchInput.addEventListener('input', function() {
-            // Annuler le timeout précédent
+            // Annuler le timeout prÃƒÂ©cÃƒÂ©dent
             if (timeoutId) {
                 clearTimeout(timeoutId);
             }
@@ -233,7 +232,7 @@
         });
     }
 
-    // Soumission immédiate sur changement de filtre contexte ou tri
+    // Soumission immÃƒÂ©diate sur changement de filtre contexte ou tri
     if (contexteSelect) {
         contexteSelect.addEventListener('change', function() {
             if (timeoutId) {

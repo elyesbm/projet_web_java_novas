@@ -1,0 +1,105 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Panier - Marketplace{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background">
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="{{ path('app_marketplace_index') }}" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                <span class="text-sm">Retour au marketplace</span>
+            </a>
+            <div class="relative w-10 h-10 rounded-xl bg-secondary border border-white/10 flex items-center justify-center text-primary">
+                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                {% if cart_count|default(0) > 0 %}
+                    <span class="absolute -top-2 -right-2 min-w-[1.2rem] h-5 px-1 rounded-full bg-primary text-white text-[11px] font-semibold flex items-center justify-center">{{ cart_count }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <section class="pt-32 pb-10 px-6">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
+            <div>
+                <h1 class="font-serif text-3xl md:text-4xl font-medium mb-2">Mon panier</h1>
+                <p class="text-muted-foreground">{{ cart_count|default(0) }} produit(s) ajout&eacute;(s).</p>
+            </div>
+            {% if items is not empty %}
+                <form method="post" action="{{ path('app_marketplace_cart_clear') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('clear_cart') }}">
+                    <button type="submit" class="px-5 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors">
+                        Vider le panier
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="px-6 pb-24">
+        <div class="max-w-7xl mx-auto">
+            {% for flash in app.flashes('success') %}
+                <div class="mb-4 p-4 rounded-xl bg-green-500/20 text-green-400 text-sm">{{ flash }}</div>
+            {% endfor %}
+            {% for flash in app.flashes('error') %}
+                <div class="mb-4 p-4 rounded-xl bg-red-500/20 text-red-400 text-sm">{{ flash }}</div>
+            {% endfor %}
+
+            {% if items is empty %}
+                <div class="glass-card rounded-2xl p-12 text-center">
+                    <i data-lucide="shopping-cart" class="w-14 h-14 text-muted-foreground mx-auto mb-4"></i>
+                    <p class="text-muted-foreground mb-4">Votre panier est vide.</p>
+                    <a href="{{ path('app_marketplace_index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90">
+                        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                        Voir les produits
+                    </a>
+                </div>
+            {% else %}
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 space-y-4">
+                        {% for item in items %}
+                            <div class="glass-card rounded-2xl p-4 flex items-center gap-4">
+                                <img src="{{ asset('images/' ~ item.image) }}" alt="{{ item.titre }}" class="w-20 h-20 rounded-xl object-cover" onerror="this.onerror=null;this.src='{{ asset('images/skills-learning.jpg') }}';">
+                                <div class="flex-1 min-w-0">
+                                    <a href="{{ path('app_marketplace_detail', {id: item.id}) }}" class="font-medium hover:text-primary transition-colors">{{ item.titre }}</a>
+                                    <p class="text-sm text-muted-foreground mt-1">Quantit&eacute;: {{ item.quantite }}</p>
+                                    <p class="text-sm text-muted-foreground">Prix unitaire: {{ item.prix_unitaire|number_format(2, ',', ' ') }} DT</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-primary mb-2">{{ item.sous_total|number_format(2, ',', ' ') }} DT</p>
+                                    <div class="flex items-center gap-2 justify-end">
+                                        <form method="post" action="{{ path('app_marketplace_cart_add', {id: item.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('add_to_cart_' ~ item.id) }}">
+                                            <button type="submit" class="text-sm px-3 py-1 rounded-lg bg-secondary border border-white/10 text-foreground hover:bg-white/5 transition-colors">
+                                                +1
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{{ path('app_marketplace_cart_remove', {id: item.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('remove_from_cart_' ~ item.id) }}">
+                                            <button type="submit" class="text-sm px-3 py-1 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors">
+                                                Supprimer
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="glass-card rounded-2xl p-5 h-fit">
+                        <h2 class="font-medium text-lg mb-4">R&eacute;capitulatif</h2>
+                        <div class="flex items-center justify-between text-sm text-muted-foreground mb-2">
+                            <span>Articles</span>
+                            <span>{{ cart_count|default(0) }}</span>
+                        </div>
+                        <div class="border-t border-white/10 my-3"></div>
+                        <div class="flex items-center justify-between text-lg font-semibold">
+                            <span>Total</span>
+                            <span class="text-primary">{{ total|number_format(2, ',', ' ') }} DT</span>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

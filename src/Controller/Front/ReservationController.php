@@ -33,6 +33,7 @@ class ReservationController extends AbstractController
 
         $search = $request->query->get('search', '');
         $statut = $request->query->get('statut');
+        $sort = (string) $request->query->get('sort', 'date_asc');
 
         $statutInt = null;
         if ($statut !== null && $statut !== '') {
@@ -42,11 +43,17 @@ class ReservationController extends AbstractController
             }
         }
 
-        $all = $reservationRepository->searchAndFilterByUser($user, $search, $statutInt);
+        $allowedSorts = ['date_asc', 'date_desc', 'statut_asc', 'statut_desc', 'titre_asc', 'titre_desc', 'recent'];
+        if (!in_array($sort, $allowedSorts, true)) {
+            $sort = 'date_asc';
+        }
+
+        $all = $reservationRepository->searchAndFilterByUser($user, $search, $statutInt, $sort);
 
         $today = new \DateTimeImmutable('today');
         $reservations = [];
         $historique = [];
+        $historiqueIds = [];
 
         foreach ($all as $reservation) {
             $atelier = $reservation->getAtelier();
@@ -61,14 +68,18 @@ class ReservationController extends AbstractController
             }
 
             $historique[] = $reservation;
+            $historiqueIds[$reservation->getId()] = true;
         }
 
         return $this->render('front/reservation/mes_reservations.html.twig', [
             'user' => $user,
             'reservations' => $reservations,
             'historique' => $historique,
+            'reservations_all' => $all,
+            'historique_ids' => $historiqueIds,
             'search' => $search,
             'statut' => $statutInt,
+            'sort' => $sort,
         ]);
     }
 
