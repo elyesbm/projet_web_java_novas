@@ -170,7 +170,7 @@
                             </a>
 
                             <form method="post" action="{{ path('app_admin_publications_delete', {id: pub.id}) }}"
-                                  onsubmit="return confirm('Supprimer cette publication ?');">
+                                  >
                                 <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_pub_' ~ pub.id) }}">
                                 <button class="p-2 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/30 text-rose-600 transition-colors" title="Supprimer">
                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -197,7 +197,7 @@
                                         type="button"
                                         class="p-2 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/30 text-rose-600 transition-colors"
                                         title="Supprimer"
-                                        onclick="if(confirm('Supprimer ce commentaire ?')) showToast('Suppression à implémenter', 'warning')"
+                                        disabled
                                     >
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                                     </button>
