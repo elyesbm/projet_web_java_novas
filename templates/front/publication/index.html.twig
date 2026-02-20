@@ -220,7 +220,7 @@
                                 </a>
 
                                 <!-- Supprimer -->
-                                <form action="{{ path('app_publication_supprimer', { id: pub.id }) }}" method="post" class="inline">
+                                <form action="{{ path('app_publication_supprimer', { id: pub.id }) }}" method="post" class="inline" onsubmit="return confirm('Supprimer cette publication ?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_publication_' ~ pub.id) }}">
                                     <button type="submit" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors" title="Supprimer la publication">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -280,7 +280,8 @@
 
                                                                 <!-- Supprimer commentaire -->
                                                                 <form action="{{ path('app_commentaire_supprimer', { id: comment.id }) }}"
-                                                                      method="post">
+                                                                      method="post"
+                                                                      onsubmit="return confirm('Supprimer ce commentaire ?');">
                                                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
                                                                     <button type="submit"
                                                                             class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
