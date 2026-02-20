@@ -3,6 +3,7 @@
 namespace App\Controller\Front;
 
 use App\Repository\AtelierRepository;
+use App\Repository\ReservationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,7 @@ class AtelierController extends AbstractController
 {
     #[Route('', name: 'app_ateliers')]
     #[Route('', name: 'app_reservation_ateliers')]
-    public function index(Request $request, AtelierRepository $atelierRepository): Response
+    public function index(Request $request, AtelierRepository $atelierRepository, ReservationRepository $reservationRepository): Response
     {
         $search = $request->query->get('search', '');
         $contexte = $request->query->get('contexte');
@@ -33,12 +34,15 @@ class AtelierController extends AbstractController
         }
 
         $ateliers = $atelierRepository->searchAndFilter($search, $contexteInt, $sort);
+        $topAtelierRow = $reservationRepository->findTopAtelierByReservations();
 
         return $this->render('front/reservation/ateliers.html.twig', [
             'ateliers' => $ateliers,
             'search' => $search,
             'contexte' => $contexteInt,
             'sort' => $sort,
+            'topAtelier' => $topAtelierRow['atelier'] ?? null,
+            'topAtelierCount' => $topAtelierRow['total'] ?? 0,
         ]);
     }
 }

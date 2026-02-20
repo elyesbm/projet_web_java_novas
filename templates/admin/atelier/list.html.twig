@@ -7,6 +7,34 @@
 
 {% block body %}
 <div class="space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center">
+                        <i data-lucide="star" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Atelier le plus reserve</h3>
+                        <p class="text-sm text-slate-500">Selon le nombre de reservations</p>
+                    </div>
+                </div>
+
+                {% if topAtelier %}
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="min-w-0">
+                            <p class="font-semibold text-slate-900 dark:text-white truncate">{{ topAtelier.titreAtelier }}</p>
+                            <p class="text-sm text-slate-500">{{ topAtelierCount }} reservations</p>
+                        </div>
+                        <a href="{{ path('app_admin_ateliers_edit', { id: topAtelier.id }) }}"
+                           class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 transition-colors text-sm font-medium">
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            Voir
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="text-sm text-slate-500">Aucune reservation pour le moment.</p>
+                {% endif %}
+            </div>
+
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-700 flex items-center gap-4">
@@ -206,9 +234,16 @@
                                             <i data-lucide="calendar-days" class="w-5 h-5"></i>
                                         </div>
                                         <div>
-                                            <p class="font-semibold text-slate-900 dark:text-white">
-                                                {{ atelier.titreAtelier }}
-                                            </p>
+                                            <div class="flex items-center gap-2">
+                                                <p class="font-semibold text-slate-900 dark:text-white">
+                                                    {{ atelier.titreAtelier }}
+                                                </p>
+                                                {% if topAtelier and atelier.id == topAtelier.id %}
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                                                        Top reserve
+                                                    </span>
+                                                {% endif %}
+                                            </div>
                                             <p class="text-sm text-slate-500">
                                                 Type : {{ atelier.typeAtelier|capitalize }}
                                             </p>
@@ -233,10 +268,12 @@
                                 </td>
 
                                 <td class="px-6 py-4">
+                                    {% set places_restantes = atelier.capacite is not null ? (atelier.capacite - atelier.reservations|length) : 0 %}
                                     <span class="text-sm font-medium text-rose-600">
-                                        {{ atelier.capacite }}
+                                        {{ places_restantes }}
                                     </span>
                                     <span class="text-sm text-slate-500">restantes</span>
+                                    <span class="text-xs text-slate-400">/ {{ atelier.capacite|default(0) }}</span>
                                 </td>
 
                                 <td class="px-6 py-4 text-right">

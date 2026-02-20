@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Atelier;
 use App\Entity\Reservation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -143,6 +144,35 @@ class ReservationRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Retourne l'atelier le plus reserve (toutes reservations confondues).
+     *
+     * @return array{atelier:\App\Entity\Atelier,total:int}|null
+     */
+    public function findTopAtelierByReservations(): ?array
+    {
+        $row = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('a AS atelier, COUNT(r.id) AS total')
+            ->from(Atelier::class, 'a')
+            ->leftJoin('a.reservations', 'r')
+            ->groupBy('a.id')
+            ->having('COUNT(r.id) > 0')
+            ->orderBy('total', 'DESC')
+            ->addOrderBy('a.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if (!$row) {
+            return null;
+        }
+
+        $row['total'] = (int) $row['total'];
+
+        return $row;
     }
 
     //    /**

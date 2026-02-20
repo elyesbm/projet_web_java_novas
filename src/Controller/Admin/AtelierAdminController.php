@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Atelier;
 use App\Form\AtelierType;
 use App\Repository\AtelierRepository;
+use App\Repository\ReservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,7 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class AtelierAdminController extends AbstractController
 {
     #[Route('/', name: 'list')]
-    public function list(Request $request, AtelierRepository $atelierRepository): Response
+    public function list(Request $request, AtelierRepository $atelierRepository, ReservationRepository $reservationRepository): Response
     {
         $search = $request->query->get('search', '');
         $contexte = $request->query->get('contexte');
@@ -37,6 +38,7 @@ class AtelierAdminController extends AbstractController
         $ateliers = $atelierRepository->searchFilterAndSort($search, $contexteInt, $sort);
         $statsContexte = $atelierRepository->countByContexte();
         $nextAtelier = $atelierRepository->findNextUpcomingAtelier();
+        $topAtelierRow = $reservationRepository->findTopAtelierByReservations();
 
         return $this->render('admin/atelier/list.html.twig', [
             'ateliers' => $ateliers,
@@ -45,6 +47,8 @@ class AtelierAdminController extends AbstractController
             'sort' => $sort,
             'statsContexte' => $statsContexte,
             'nextAtelier' => $nextAtelier,
+            'topAtelier' => $topAtelierRow['atelier'] ?? null,
+            'topAtelierCount' => $topAtelierRow['total'] ?? 0,
             'totalAteliers' => $atelierRepository->count([]),
         ]);
     }
