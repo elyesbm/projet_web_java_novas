@@ -47,7 +47,7 @@ class Publication
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "Le contexte est obligatoire.")]
-#[Assert\Choice(choices: [0, 1, 2], message: "Contexte invalide.")]
+#[Assert\Choice(choices: [1, 2], message: "Contexte invalide.")]
 private ?int $contexte = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'publications')]
@@ -106,9 +106,9 @@ public function setDateModification(?\DateTimeInterface $date): self
 
     public function getId(): ?int { return $this->id; }
     public function getTitre(): ?string { return $this->titre; }
-    public function setTitre(string $titre): static { $this->titre = $titre; return $this; }
+    public function setTitre(?string $titre): static { $this->titre = $titre; return $this; }
     public function getContenu(): ?string { return $this->contenu; }
-    public function setContenu(string $contenu): static { $this->contenu = $contenu; return $this; }
+    public function setContenu(?string $contenu): static { $this->contenu = $contenu; return $this; }
     public function getImageAuteur(): ?string { return $this->image_auteur; }
     public function setImageAuteur(string $image_auteur): static { $this->image_auteur = $image_auteur; return $this; }
     public function getStatut(): ?int { return $this->statut; }
@@ -116,7 +116,7 @@ public function setDateModification(?\DateTimeInterface $date): self
     public function getDateCreation(): ?\DateTimeInterface { return $this->date_creation; }
     public function setDateCreation(\DateTimeInterface $date_creation): static { $this->date_creation = $date_creation; return $this; }
     public function getContexte(): ?int { return $this->contexte; }
-    public function setContexte(int $contexte): static { $this->contexte = $contexte; return $this; }
+    public function setContexte(?int $contexte): static { $this->contexte = $contexte; return $this; }
     public function getAuteur(): ?User { return $this->auteur; }
     public function setAuteur(?User $auteur): static { $this->auteur = $auteur; return $this; }
     public function getCommentaires(): Collection { return $this->commentaires; }

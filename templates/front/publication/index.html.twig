@@ -27,7 +27,7 @@
                     Echangez avec la <span class="italic text-primary">communaute</span>
                 </h1>
                 <p class="text-muted-foreground max-w-2xl mx-auto">
-                    Partagez vos experiences, posez vos questions et entraidez-vous avec d'autres etudiants.
+                    2222222Partagez vos experiences, posez vos questions et entraidez-vous avec d'autres etudiants.
                 </p>
             </div>
 
@@ -210,7 +210,7 @@
                                 </a>
 
                                 <!-- Supprimer -->
-                                <form action="{{ path('app_publication_supprimer', { id: pub.id }) }}" method="post" class="inline" onsubmit="return confirm('Supprimer cette publication ?');">
+                                <form action="{{ path('app_publication_supprimer', { id: pub.id }) }}" method="post" class="inline">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_publication_' ~ pub.id) }}">
                                     <button type="submit" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors" title="Supprimer la publication">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -270,8 +270,7 @@
 
                                                                 <!-- Supprimer commentaire -->
                                                                 <form action="{{ path('app_commentaire_supprimer', { id: comment.id }) }}"
-                                                                      method="post"
-                                                                      onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                                                      method="post">
                                                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
                                                                     <button type="submit"
                                                                             class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
@@ -301,7 +300,7 @@
 
                             <!-- Add Comment -->
 
-                            {{ form_start(cform, { attr: { class: 'flex gap-4' } }) }}
+                            {{ form_start(cform, { attr: { class: 'flex gap-4', novalidate: 'novalidate' } }) }}
                             <input type="hidden" name="return_q" value="{{ q ?? '' }}">
 <input type="hidden" name="return_sort" value="{{ sort ?? 'created_desc' }}">
 <input type="hidden" name="return_contexte" value="{{ contexte_filter ?? '' }}">

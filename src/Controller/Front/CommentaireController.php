@@ -130,23 +130,19 @@ public function ajouter(
             return $this->redirectToRoute('app_publications_index');
         }
 
-        if ($request->isMethod('POST')) {
-            $contenu = trim((string) $request->request->get('contenu'));
-            if ($contenu === '') {
-                $this->addFlash('error', 'Le contenu ne peut pas être vide.');
-                return $this->redirectToRoute('app_commentaire_modifier', ['id' => $id]);
-            }
+        $form = $this->createForm(CommentaireType::class, $comment);
+        $form->handleRequest($request);
 
-            $comment->setContenu($contenu);
+        if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
 
             $this->addFlash('success', 'Commentaire modifié.');
             return $this->redirectToRoute('app_publications_index');
         }
 
-        // ⚠️ adapte le nom si ton fichier s'appelle modifier2.html.twig
         return $this->render('front/publication/modifier2.html.twig', [
             'commentaire' => $comment,
+            'form' => $form->createView(),
         ]);
     }
 

@@ -119,6 +119,7 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
         }
 
         $pub = new Publication();
+        $pub->setContexte(1);
         $form = $this->createForm(PublicationType::class, $pub);
         $form->handleRequest($request);
 
@@ -164,15 +165,13 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
             return $this->redirectToRoute('app_publications_index');
         }
 
-        if ($request->isMethod('POST')) {
-            $pub->setTitre($request->request->get('titre'));
-            $pub->setContenu($request->request->get('contenu'));
-                $pub->setDateModification(new \DateTime());
-            $contexte = (int) $request->request->get('contexte');
-            if ($contexte >= 1 && $contexte <= 3) {
-                $pub->setContexte($contexte);
-            }
+        $form = $this->createForm(PublicationType::class, $pub, [
+            'with_anonyme' => false,
+        ]);
+        $form->handleRequest($request);
 
+        if ($form->isSubmitted() && $form->isValid()) {
+            $pub->setDateModification(new \DateTime('now', new \DateTimeZone('Europe/Paris')));
             $em->flush();
             $this->addFlash('success', 'Publication modifiée.');
             return $this->redirectToRoute('app_publications_index');
@@ -180,6 +179,7 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
 
         return $this->render('front/publication/modifier.html.twig', [
             'publication' => $pub,
+            'form' => $form->createView(),
         ]);
     }
 

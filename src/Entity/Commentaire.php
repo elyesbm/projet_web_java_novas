@@ -44,7 +44,7 @@ class Commentaire
     public function getDateCreation(): ?\DateTimeInterface { return $this->date_creation; }
     public function setDateCreation(\DateTimeInterface $date_creation): static { $this->date_creation = $date_creation; return $this; }
     public function getContenu(): ?string { return $this->contenu; }
-    public function setContenu(string $contenu): static { $this->contenu = $contenu; return $this; }
+    public function setContenu(?string $contenu): static { $this->contenu = $contenu; return $this; }
     public function getAuteur(): ?User { return $this->auteur; }
     public function setAuteur(?User $auteur): static { $this->auteur = $auteur; return $this; }
     public function getPublication(): ?Publication { return $this->publication; }
