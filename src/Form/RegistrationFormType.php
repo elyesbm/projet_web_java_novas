@@ -48,6 +48,24 @@ class RegistrationFormType extends AbstractType
                     'attr' => ['class' => $inputClass, 'placeholder' => '••••••••'],
                 ],
             ])
+            ->add('photo', FileType::class, [
+                'label' => 'Photo pour reconnaissance faciale (optionnel)',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp'],
+                        'mimeTypesMessage' => 'Veuillez envoyer une image (JPEG, PNG ou WebP).',
+                    ]),
+                ],
+                'attr' => ['class' => 'hidden', 'accept' => 'image/*'],
+            ])
+            ->add('face_encoding', HiddenType::class, [
+                'mapped' => false,
+                'required' => false,
+                'attr' => ['id' => 'face_encoding_input'],
+            ])
         ;
     }
 

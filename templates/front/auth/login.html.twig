@@ -87,6 +87,29 @@
                     <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
                 </button>
             </form>
+            </div>
+
+            {# Connexion par reconnaissance faciale #}
+            <div id="form-face" class="hidden space-y-5">
+                <p class="text-muted-foreground text-sm">Positionnez votre visage face à la caméra puis cliquez sur « Se connecter », ou utilisez la même photo qu’à l’inscription.</p>
+                <div class="relative w-full aspect-video max-w-sm mx-auto rounded-xl bg-secondary border border-white/10 overflow-hidden">
+                    <video id="face-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                    <img id="face-photo-preview" src="" alt="" class="hidden absolute inset-0 w-full h-full object-cover">
+                    <canvas id="face-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 justify-center items-center">
+                    <button type="button" id="btn-login-face" class="w-full sm:w-auto h-12 px-6 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
+                        <i data-lucide="scan-face" class="w-5 h-5"></i>
+                        Caméra
+                    </button>
+                    <label class="w-full sm:w-auto h-12 px-6 bg-secondary border border-white/10 rounded-xl font-medium hover:bg-white/5 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <i data-lucide="upload" class="w-5 h-5"></i>
+                        Utiliser une photo
+                        <input type="file" id="face-photo-input" accept="image/*" class="hidden">
+                    </label>
+                </div>
+                <p id="face-login-status" class="text-sm text-center min-h-[1.5rem]"></p>
+            </div>
             
             <!-- Divider -->
             <div class="relative my-8">
@@ -132,5 +155,130 @@
         }
         lucide.createIcons();
     }
+    // Onglets login
+    document.getElementById('tab-classic').addEventListener('click', function() {
+        document.getElementById('form-classic').classList.remove('hidden');
+        document.getElementById('form-face').classList.add('hidden');
+        document.querySelectorAll('.tab-login').forEach(function(t) { t.classList.remove('bg-primary', 'text-white'); t.classList.add('text-muted-foreground'); });
+        this.classList.add('bg-primary', 'text-white'); this.classList.remove('text-muted-foreground');
+        stopFaceVideo();
+    });
+    document.getElementById('tab-face').addEventListener('click', function() {
+        document.getElementById('form-classic').classList.add('hidden');
+        document.getElementById('form-face').classList.remove('hidden');
+        document.querySelectorAll('.tab-login').forEach(function(t) { t.classList.remove('bg-primary', 'text-white'); t.classList.add('text-muted-foreground'); });
+        this.classList.add('bg-primary', 'text-white'); this.classList.remove('text-muted-foreground');
+        startFaceVideo();
+    });
+    function startFaceVideo() {
+        var v = document.getElementById('face-video');
+        if (!v || !navigator.mediaDevices) return;
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } }).then(function(stream) {
+            v.srcObject = stream;
+            window._faceStream = stream;
+        }).catch(function() {
+            document.getElementById('face-login-status').textContent = 'Accès à la caméra refusé ou indisponible.';
+        });
+    }
+    function stopFaceVideo() {
+        if (window._faceStream) {
+            window._faceStream.getTracks().forEach(function(t) { t.stop(); });
+            window._faceStream = null;
+        }
+        var v = document.getElementById('face-video');
+        if (v) v.srcObject = null;
+    }
 </script>
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+(function() {
+    var loginFaceUrl = {{ path('app_login_face')|json_encode|raw }};
+    var csrfToken = {{ csrf_token('authenticate')|json_encode|raw }};
+    var MODELS_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/build/weights';
+    var modelsLoaded = false;
+    function loadModels() {
+        if (modelsLoaded) return Promise.resolve();
+        return Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_URL)
+        ]).then(function() { modelsLoaded = true; });
+    }
+    function sendDescriptorAndLogin(descriptor, statusEl, btn) {
+        if (!descriptor || descriptor.length !== 128) return;
+        if (btn) btn.disabled = true;
+        statusEl.textContent = 'Vérification en cours...';
+        fetch(loginFaceUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ descriptor: descriptor, _csrf_token: csrfToken })
+        }).then(function(res) {
+            if (res && res.redirected) {
+                window.location.href = res.url;
+                return;
+            }
+            if (res && !res.ok) {
+                statusEl.textContent = 'Erreur. Réessayez ou connectez-vous avec email et mot de passe.';
+            }
+            if (btn) btn.disabled = false;
+        }).catch(function(err) {
+            console.error(err);
+            statusEl.textContent = 'Erreur. Réessayez ou connectez-vous avec email et mot de passe.';
+            if (btn) btn.disabled = false;
+        });
+    }
+
+    document.getElementById('btn-login-face').addEventListener('click', function() {
+        var video = document.getElementById('face-video');
+        var statusEl = document.getElementById('face-login-status');
+        var btn = this;
+        if (!video || !video.srcObject) {
+            statusEl.textContent = 'Veuillez autoriser la caméra (onglet Reconnaissance faciale).';
+            return;
+        }
+        btn.disabled = true;
+        statusEl.textContent = 'Vérification en cours...';
+        loadModels().then(function() {
+            return faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320 })).withFaceLandmarks().withFaceDescriptor();
+        }).then(function(detection) {
+            if (!detection) {
+                statusEl.textContent = 'Aucun visage détecté. Placez votre visage face à la caméra.';
+                btn.disabled = false;
+                return;
+            }
+            sendDescriptorAndLogin(Array.from(detection.descriptor), statusEl, btn);
+        }).catch(function(err) {
+            console.error(err);
+            statusEl.textContent = 'Erreur. Réessayez ou connectez-vous avec email et mot de passe.';
+            btn.disabled = false;
+        });
+    });
+
+    document.getElementById('face-photo-input').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        var statusEl = document.getElementById('face-login-status');
+        var img = new Image();
+        img.onload = function() {
+            statusEl.textContent = 'Analyse de la photo...';
+            loadModels().then(function() {
+                return faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+            }).then(function(detection) {
+                if (!detection) {
+                    statusEl.textContent = 'Aucun visage détecté sur cette photo. Utilisez une photo où votre visage est bien visible.';
+                    return;
+                }
+                sendDescriptorAndLogin(Array.from(detection.descriptor), statusEl, null);
+            }).catch(function(err) {
+                console.error(err);
+                statusEl.textContent = 'Erreur. Réessayez ou connectez-vous avec email et mot de passe.';
+            });
+        };
+        img.src = URL.createObjectURL(file);
+        e.target.value = '';
+    });
+})();
+</script>
+{% endblock %}
 {% endblock %}

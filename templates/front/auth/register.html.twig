@@ -100,6 +100,28 @@
                     </div>
                 </div>
                 
+                {# Photo pour reconnaissance faciale (optionnel) #}
+                <div class="space-y-2" id="face-registration-block">
+                    <label class="block text-sm font-medium mb-1">Photo pour reconnaissance faciale (optionnel)</label>
+                    <p class="text-muted-foreground text-xs mb-2">Enregistrez une photo de votre visage pour pouvoir vous connecter plus tard sans mot de passe.</p>
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="relative w-32 h-32 rounded-xl bg-secondary border border-white/10 overflow-hidden flex items-center justify-center">
+                            <img id="photo-preview" src="" alt="" class="hidden w-full h-full object-cover">
+                            <span id="photo-placeholder" class="text-muted-foreground text-sm">Aucune photo</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors">
+                                <i data-lucide="camera" class="w-4 h-4"></i>
+                                Choisir une photo
+                                {{ form_widget(registrationForm.photo, {'attr': {'id': 'photo-input'}}) }}
+                            </label>
+                            <button type="button" id="clear-photo-btn" class="hidden px-4 py-2 border border-white/10 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors">Retirer</button>
+                        </div>
+                        <p id="face-status" class="text-xs hidden"></p>
+                    </div>
+                    {{ form_widget(registrationForm.face_encoding) }}
+                </div>
+                
                 {# Confirmation mot de passe #}
                 <div class="space-y-2">
                     {{ form_label(registrationForm.plainPassword.second, null, {'label_attr': {'class': 'block text-sm font-medium mb-1'}}) }}
@@ -150,4 +172,80 @@
         lucide.createIcons();
     }
 </script>
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+(function() {
+    const photoInput = document.getElementById('photo-input');
+    const photoPreview = document.getElementById('photo-preview');
+    const photoPlaceholder = document.getElementById('photo-placeholder');
+    const clearPhotoBtn = document.getElementById('clear-photo-btn');
+    const faceStatus = document.getElementById('face-status');
+    const faceEncodingInput = document.getElementById('face_encoding_input');
+    const MODELS_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/build/weights';
+
+    let modelsLoaded = false;
+    function loadModels() {
+        if (modelsLoaded) return Promise.resolve();
+        return Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_URL)
+        ]).then(function() { modelsLoaded = true; });
+    }
+
+    function showStatus(msg, isError) {
+        faceStatus.textContent = msg;
+        faceStatus.classList.remove('hidden', 'text-rose-400', 'text-emerald-400');
+        faceStatus.classList.add(isError ? 'text-rose-400' : 'text-emerald-400');
+    }
+
+    function clearPhoto() {
+        photoInput.value = '';
+        photoPreview.src = '';
+        photoPreview.classList.add('hidden');
+        photoPlaceholder.classList.remove('hidden');
+        clearPhotoBtn.classList.add('hidden');
+        if (faceEncodingInput) faceEncodingInput.value = '';
+        faceStatus.classList.add('hidden');
+    }
+
+    if (clearPhotoBtn) clearPhotoBtn.addEventListener('click', clearPhoto);
+
+    if (photoInput && faceEncodingInput) {
+        photoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const img = new Image();
+            img.onload = function() {
+                photoPreview.src = img.src;
+                photoPreview.classList.remove('hidden');
+                photoPlaceholder.classList.add('hidden');
+                clearPhotoBtn.classList.remove('hidden');
+                faceStatus.classList.remove('hidden');
+                showStatus('Analyse du visage...', false);
+                loadModels().then(function() {
+                    return faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+                        .withFaceLandmarks()
+                        .withFaceDescriptor();
+                }).then(function(detection) {
+                    if (!detection) {
+                        showStatus('Aucun visage détecté. Choisissez une photo où votre visage est bien visible.', true);
+                        faceEncodingInput.value = '';
+                        return;
+                    }
+                    faceEncodingInput.value = JSON.stringify(Array.from(detection.descriptor));
+                    showStatus('Visage enregistré. Vous pourrez vous connecter par reconnaissance faciale.', false);
+                }).catch(function(err) {
+                    console.error(err);
+                    showStatus('Erreur lors de l\'analyse. Réessayez.', true);
+                    faceEncodingInput.value = '';
+                });
+            };
+            img.src = URL.createObjectURL(file);
+        });
+    }
+})();
+</script>
+{% endblock %}
 {% endblock %}

@@ -127,6 +127,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getBackupCodes(): ?array { return $this->backupCodes; }
     public function setBackupCodes(?array $backupCodes): static { $this->backupCodes = $backupCodes; return $this; }
 
+    public function getFaceEncoding(): ?array { return $this->faceEncoding; }
+    public function setFaceEncoding(?array $faceEncoding): static { $this->faceEncoding = $faceEncoding; return $this; }
+    public function hasFaceEncoding(): bool { return $this->faceEncoding !== null && \count($this->faceEncoding) > 0; }
+
     public function getRoles(): array
     {
         $role = $this->ROLE ?? 'ROLE_USER';
