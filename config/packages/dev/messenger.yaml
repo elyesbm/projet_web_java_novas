@@ -1,7 +1,0 @@
-framework:
-  messenger:
-    transports:
-      sync: 'sync://'
-    routing:
-      # Send emails immediately in dev (no worker needed)
-      Symfony\Component\Mailer\Messenger\SendEmailMessage: sync
