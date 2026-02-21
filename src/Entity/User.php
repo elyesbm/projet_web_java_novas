@@ -59,6 +59,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $backupCodes = null;
 
+    /** Encodage facial 128D (face-api.js) pour connexion par reconnaissance faciale */
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $faceEncoding = null;
+
     // 🔗 RELATIONS
     #[ORM\OneToMany(mappedBy: 'auteur', targetEntity: Article::class)]
     private Collection $articles;

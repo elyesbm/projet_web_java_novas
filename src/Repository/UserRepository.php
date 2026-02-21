@@ -66,6 +66,20 @@ class UserRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Utilisateurs ayant un encodage facial enregistré (pour reconnaissance faciale).
+     * @return User[]
+     */
+    public function findWithFaceEncoding(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.faceEncoding IS NOT NULL')
+            ->andWhere('u.ACTIF = :actif')
+            ->setParameter('actif', true)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */
