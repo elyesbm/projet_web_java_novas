@@ -4,9 +4,12 @@ namespace App\Controller\Front;
 
 use App\Entity\Commentaire;
 use App\Entity\Publication;
+use App\Entity\PublicationReaction;
+use App\Entity\User;
 use App\Form\CommentaireType;
 use App\Form\PublicationType;
 use App\Repository\PublicationRepository;
+use App\Repository\PublicationReactionRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -37,6 +40,7 @@ class PublicationController extends AbstractController
         Request $request,
         PublicationRepository $repo,
         UserRepository $userRepo,
+        PublicationReactionRepository $reactionRepo,
         PaginatorInterface $paginator
     ): Response
     {
@@ -80,6 +84,37 @@ class PublicationController extends AbstractController
         $page = (int) $publicationsPage->getCurrentPageNumber();
 
         $currentUser = $this->getCurrentUserOrFallback($userRepo);
+        $authenticatedUser = $this->getUser();
+
+        $userReactions = [];
+        $dislikeCounts = [];
+        $likeCounts = [];
+        foreach ($publicationsPage as $pub) {
+            $pubId = $pub->getId();
+            if ($pubId === null) {
+                continue;
+            }
+
+            $likeCounts[$pubId] = (int) $reactionRepo->count([
+                'publication' => $pub,
+                'value' => 1,
+            ]);
+            $dislikeCounts[$pubId] = (int) $reactionRepo->count([
+                'publication' => $pub,
+                'value' => -1,
+            ]);
+
+            $userReactions[$pubId] = 0;
+            if ($authenticatedUser instanceof User) {
+                $existingReaction = $reactionRepo->findOneBy([
+                    'publication' => $pub,
+                    'user' => $authenticatedUser,
+                ]);
+                if ($existingReaction) {
+                    $userReactions[$pubId] = $existingReaction->getValue();
+                }
+            }
+        }
 
         $commentForms = [];
         foreach ($publicationsPage as $pub) {
@@ -104,6 +139,9 @@ class PublicationController extends AbstractController
             'per_page' => $perPage,
             'total_publications' => $totalPublications,
             'total_pages' => $totalPages,
+            'user_reactions' => $userReactions,
+            'dislike_counts' => $dislikeCounts,
+            'like_counts' => $likeCounts,
         ]);
     }
 
@@ -229,12 +267,12 @@ class PublicationController extends AbstractController
     public function like(
         int $id,
         PublicationRepository $repo,
-        UserRepository $userRepo,
+        PublicationReactionRepository $reactionRepo,
         EntityManagerInterface $em
     ): Response {
-        $user = $this->getCurrentUserOrFallback($userRepo);
-        if (!$user) {
-            return $this->json(['ok' => false], 400);
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(['ok' => false, 'message' => 'Connexion requise.'], 401);
         }
 
         $pub = $repo->find($id);
@@ -242,13 +280,88 @@ class PublicationController extends AbstractController
             return $this->json(['ok' => false], 404);
         }
 
-        // ⚠️ volontairement simple (double-like géré plus tard)
-        $pub->incrementLikes();
-        $em->flush();
+        $result = $this->applyReaction($pub, $user, 1, $reactionRepo, $em);
 
-        return $this->json([
-            'ok'    => true,
-            'likes' => $pub->getLikes(),
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/dislike', name: 'app_publication_dislike', methods: ['POST'])]
+    public function dislike(
+        int $id,
+        PublicationRepository $repo,
+        PublicationReactionRepository $reactionRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(['ok' => false, 'message' => 'Connexion requise.'], 401);
+        }
+
+        $pub = $repo->find($id);
+        if (!$pub || $pub->getStatut() != 1) {
+            return $this->json(['ok' => false], 404);
+        }
+
+        $result = $this->applyReaction($pub, $user, -1, $reactionRepo, $em);
+
+        return $this->json($result);
+    }
+
+    private function applyReaction(
+        Publication $pub,
+        User $user,
+        int $newValue,
+        PublicationReactionRepository $reactionRepo,
+        EntityManagerInterface $em
+    ): array {
+        $reaction = $reactionRepo->findOneBy([
+            'publication' => $pub,
+            'user' => $user,
         ]);
+
+        $previousValue = $reaction?->getValue();
+        $changed = false;
+
+        if ($reaction === null) {
+            $reaction = (new PublicationReaction())
+                ->setPublication($pub)
+                ->setUser($user)
+                ->setValue($newValue);
+
+            $em->persist($reaction);
+            $changed = true;
+        } elseif ($previousValue === $newValue) {
+            $em->remove($reaction);
+            $reaction = null;
+            $changed = true;
+        } elseif ($previousValue !== $newValue) {
+            $reaction->setValue($newValue);
+            $changed = true;
+        }
+
+        if ($changed) {
+            $em->flush();
+        }
+
+        $likes = (int) $reactionRepo->count([
+            'publication' => $pub,
+            'value' => 1,
+        ]);
+        $dislikes = (int) $reactionRepo->count([
+            'publication' => $pub,
+            'value' => -1,
+        ]);
+
+        if ($pub->getLikes() !== $likes) {
+            $pub->setLikes($likes);
+            $em->flush();
+        }
+
+        return [
+            'ok'    => true,
+            'likes' => $likes,
+            'dislikes' => $dislikes,
+            'user_reaction' => $reaction?->getValue() ?? 0,
+        ];
     }
 }

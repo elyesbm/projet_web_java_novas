@@ -113,6 +113,9 @@
                 {% set isAnonymous = (pub.imageAuteur == 'ANONYMOUS') %}
                 {% set contextMap = { 1: 'academic', 2: 'personal', 3: 'help' } %}
                 {% set contexte = contextMap[pub.contexte] ?? 'help' %}
+                {% set userReaction = user_reactions[pub.id]|default(0) %}
+                {% set likeCount = like_counts[pub.id]|default(0) %}
+                {% set dislikeCount = dislike_counts[pub.id]|default(0) %}
 
                 <article class="glass-card rounded-3xl overflow-hidden hover:border-primary/30 transition-all" id="pub-{{ pub.id }}">
                     <!-- Header -->
@@ -176,11 +179,25 @@
                             <button
                                 type="button"
                                 onclick="likePublication({{ pub.id }})"
-                                class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
+                                id="like-btn-{{ pub.id }}"
+                                class="flex items-center gap-2 {{ userReaction == 1 ? 'text-primary' : 'text-muted-foreground' }} hover:text-primary transition-colors group"
                             >
                                 <i data-lucide="heart" class="w-5 h-5 group-hover:fill-primary/20"></i>
                                 <span class="text-sm" id="likes-{{ pub.id }}">
-                                    {{ pub.likes ?? 0 }}
+                                    {{ likeCount }}
+                                </span>
+                            </button>
+
+                            <!-- Dislikes -->
+                            <button
+                                type="button"
+                                onclick="dislikePublication({{ pub.id }})"
+                                id="dislike-btn-{{ pub.id }}"
+                                class="flex items-center gap-2 {{ userReaction == -1 ? 'text-rose-400' : 'text-muted-foreground' }} hover:text-rose-400 transition-colors"
+                            >
+                                <i data-lucide="thumbs-down" class="w-5 h-5"></i>
+                                <span class="text-sm" id="dislikes-{{ pub.id }}">
+                                    {{ dislikeCount }}
                                 </span>
                             </button>
 
@@ -407,7 +424,15 @@
 
 <script>
 function likePublication(pubId) {
-    fetch(`/publications/${pubId}/like`, {
+    reactPublication(pubId, 'like');
+}
+
+function dislikePublication(pubId) {
+    reactPublication(pubId, 'dislike');
+}
+
+function reactPublication(pubId, action) {
+    fetch(`/publications/${pubId}/${action}`, {
         method: 'POST',
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
@@ -417,11 +442,35 @@ function likePublication(pubId) {
     .then(data => {
         if (data.ok) {
             document.getElementById('likes-' + pubId).innerText = data.likes;
+            document.getElementById('dislikes-' + pubId).innerText = data.dislikes;
+            updateReactionButtons(pubId, data.user_reaction);
+            return;
         }
+        alert('Action impossible');
     })
     .catch(() => {
-        alert('Erreur lors du like');
+        alert('Erreur lors de la reaction');
     });
+}
+
+function updateReactionButtons(pubId, userReaction) {
+    const likeBtn = document.getElementById('like-btn-' + pubId);
+    const dislikeBtn = document.getElementById('dislike-btn-' + pubId);
+    if (!likeBtn || !dislikeBtn) return;
+
+    likeBtn.classList.remove('text-primary', 'text-muted-foreground');
+    dislikeBtn.classList.remove('text-rose-400', 'text-muted-foreground');
+
+    if (userReaction === 1) {
+        likeBtn.classList.add('text-primary');
+        dislikeBtn.classList.add('text-muted-foreground');
+    } else if (userReaction === -1) {
+        likeBtn.classList.add('text-muted-foreground');
+        dislikeBtn.classList.add('text-rose-400');
+    } else {
+        likeBtn.classList.add('text-muted-foreground');
+        dislikeBtn.classList.add('text-muted-foreground');
+    }
 }
 </script>
 {% if open_comments_for is defined and open_comments_for %}
