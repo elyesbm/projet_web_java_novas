@@ -32,7 +32,7 @@
             {% endfor %}
 
             {# ⬇️ IMPORTANT : 'novalidate' désactive la validation HTML5 pour forcer la validation serveur #}
-            {{ form_start(registrationForm, { 'attr': { 'class': 'space-y-5', 'novalidate': 'novalidate' } }) }}
+            {{ form_start(registrationForm, { 'attr': { 'class': 'space-y-5', 'novalidate': 'novalidate', 'enctype': 'multipart/form-data' } }) }}
                 
                 {# Ligne Prénom + Nom #}
                 <div class="grid grid-cols-2 gap-4">
@@ -182,15 +182,19 @@
     const clearPhotoBtn = document.getElementById('clear-photo-btn');
     const faceStatus = document.getElementById('face-status');
     const faceEncodingInput = document.getElementById('face_encoding_input');
-    const MODELS_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/build/weights';
+    var MODELS_LOCAL = '{{ asset('js/face-api-weights')|e('js') }}';
+    var MODELS_CDN = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
 
     let modelsLoaded = false;
     function loadModels() {
         if (modelsLoaded) return Promise.resolve();
+        function tryLocalThenCdn(net) {
+            return net.loadFromUri(MODELS_LOCAL).catch(function() { return net.loadFromUri(MODELS_CDN); });
+        }
         return Promise.all([
-            faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_URL),
-            faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
-            faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_URL)
+            tryLocalThenCdn(faceapi.nets.tinyFaceDetector),
+            tryLocalThenCdn(faceapi.nets.faceLandmark68Net),
+            tryLocalThenCdn(faceapi.nets.faceRecognitionNet)
         ]).then(function() { modelsLoaded = true; });
     }
 

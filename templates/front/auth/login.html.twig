@@ -33,8 +33,18 @@
                     {{ error.message ?? (error.messageKey|trans(error.messageData, 'security')) }}
                 </div>
             {% endif %}
+            {% for message in app.flashes('error') %}
+                <div class="mb-5 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm">{{ message }}</div>
+            {% endfor %}
 
-            {# Formulaire avec novalidate pour forcer la validation serveur #}
+            {# Choix : Email/MDP ou Reconnaissance faciale #}
+            <div class="flex rounded-xl bg-secondary border border-white/10 p-1 mb-5">
+                <button type="button" id="tab-classic" class="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all tab-login bg-primary text-white">Email et mot de passe</button>
+                <button type="button" id="tab-face" class="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all tab-login text-muted-foreground">Reconnaissance faciale</button>
+            </div>
+
+            {# Formulaire Email + Mot de passe #}
+            <div id="form-classic">
             <form action="{{ path('app_login') }}" method="post" class="space-y-5" novalidate>
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                 
@@ -195,14 +205,18 @@
 (function() {
     var loginFaceUrl = {{ path('app_login_face')|json_encode|raw }};
     var csrfToken = {{ csrf_token('authenticate')|json_encode|raw }};
-    var MODELS_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/build/weights';
+    var MODELS_LOCAL = {{ asset('js/face-api-weights')|json_encode|raw }};
+    var MODELS_CDN = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
     var modelsLoaded = false;
     function loadModels() {
         if (modelsLoaded) return Promise.resolve();
+        function tryLocalThenCdn(net) {
+            return net.loadFromUri(MODELS_LOCAL).catch(function() { return net.loadFromUri(MODELS_CDN); });
+        }
         return Promise.all([
-            faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_URL),
-            faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
-            faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_URL)
+            tryLocalThenCdn(faceapi.nets.tinyFaceDetector),
+            tryLocalThenCdn(faceapi.nets.faceLandmark68Net),
+            tryLocalThenCdn(faceapi.nets.faceRecognitionNet)
         ]).then(function() { modelsLoaded = true; });
     }
     function sendDescriptorAndLogin(descriptor, statusEl, btn) {
