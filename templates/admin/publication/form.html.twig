@@ -114,8 +114,7 @@
                 <div class="space-y-3">
 
     {# Approuver #}
-    <form method="post" action="{{ path('app_admin_publications_approve', {id: publication.id}) }}"
-          onsubmit="return confirm('Approuver cette publication ?');">
+    <form method="post" action="{{ path('app_admin_publications_approve', {id: publication.id}) }}">
         <input type="hidden" name="_token" value="{{ csrf_token('admin_pub_action_' ~ publication.id) }}">
         <button type="submit"
                 class="w-full p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors text-left">
@@ -130,8 +129,7 @@
     </form>
 
     {# Masquer #}
-    <form method="post" action="{{ path('app_admin_publications_hide', {id: publication.id}) }}"
-          onsubmit="return confirm('Masquer cette publication ?');">
+    <form method="post" action="{{ path('app_admin_publications_hide', {id: publication.id}) }}">
         <input type="hidden" name="_token" value="{{ csrf_token('admin_pub_action_' ~ publication.id) }}">
         <button type="submit"
                 class="w-full p-4 rounded-xl border-2 border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors text-left">
@@ -146,8 +144,7 @@
     </form>
 
     {# Supprimer #}
-    <form method="post" action="{{ path('app_admin_publications_delete', {id: publication.id}) }}"
-          onsubmit="return confirm('SUPPRIMER définitivement ?');">
+    <form method="post" action="{{ path('app_admin_publications_delete', {id: publication.id}) }}">
         <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_pub_' ~ publication.id) }}">
         <button type="submit"
                 class="w-full p-4 rounded-xl border-2 border-rose-500 bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors text-left">

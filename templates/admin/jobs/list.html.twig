@@ -156,8 +156,7 @@
                                             <i data-lucide="pencil" class="w-4 h-4"></i>
                                         </a>
 
-                                        <form method="post" action="{{ path('app_admin_jobs_delete', {id: offre.id}) }}"
-                                              onsubmit="return confirm('Supprimer cette offre ?');">
+                                        <form method="post" action="{{ path('app_admin_jobs_delete', {id: offre.id}) }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('admin_jobs_delete_' ~ offre.id) }}">
                                             <button type="submit"
                                                     class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-rose-600">

@@ -304,6 +304,7 @@
                             <input type="hidden" name="return_q" value="{{ q ?? '' }}">
 <input type="hidden" name="return_sort" value="{{ sort ?? 'created_desc' }}">
 <input type="hidden" name="return_contexte" value="{{ contexte_filter ?? '' }}">
+<input type="hidden" name="return_page" value="{{ page ?? 1 }}">
 
                                 {% if app.user and app.user.IMAGE %}
                                     <img src="{{ asset('images/' ~ app.user.IMAGE) }}" alt="Moi" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30">
@@ -357,6 +358,37 @@
                 </article>
             {% endfor %}
         </div>
+
+        {% if total_pages is defined and total_pages > 1 %}
+            {% set pagination_params = { sort: sort ?? 'created_desc' } %}
+            {% if q is defined and q is not empty %}
+                {% set pagination_params = pagination_params|merge({ q: q }) %}
+            {% endif %}
+            {% if contexte_filter is defined and contexte_filter is not null %}
+                {% set pagination_params = pagination_params|merge({ contexte: contexte_filter }) %}
+            {% endif %}
+
+            <div class="max-w-4xl mx-auto mt-8 flex items-center justify-center gap-2">
+                {% set prev_page = page > 1 ? page - 1 : 1 %}
+                <a href="{{ path('app_publications_index', pagination_params|merge({ page: prev_page })) }}"
+                   class="px-3 py-2 rounded-lg text-sm border border-white/10 {{ page > 1 ? 'bg-secondary hover:bg-white/5 text-foreground' : 'bg-secondary/40 text-muted-foreground pointer-events-none opacity-50' }}">
+                    Prec
+                </a>
+
+                {% for p in 1..total_pages %}
+                    <a href="{{ path('app_publications_index', pagination_params|merge({ page: p })) }}"
+                       class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-sm border {{ p == page ? 'bg-primary text-white border-primary' : 'bg-secondary border-white/10 text-foreground hover:bg-white/5' }}">
+                        {{ p }}
+                    </a>
+                {% endfor %}
+
+                {% set next_page = page < total_pages ? page + 1 : total_pages %}
+                <a href="{{ path('app_publications_index', pagination_params|merge({ page: next_page })) }}"
+                   class="px-3 py-2 rounded-lg text-sm border border-white/10 {{ page < total_pages ? 'bg-secondary hover:bg-white/5 text-foreground' : 'bg-secondary/40 text-muted-foreground pointer-events-none opacity-50' }}">
+                    Suiv
+                </a>
+            </div>
+        {% endif %}
     </section>
 </div>
 

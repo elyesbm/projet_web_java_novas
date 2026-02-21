@@ -41,6 +41,7 @@ public function ajouter(
     $returnQ = (string) $request->request->get('return_q', '');
     $returnSort = (string) $request->request->get('return_sort', 'created_desc');
     $returnContexte = $request->request->get('return_contexte'); // peut être null
+    $returnPage = max(1, (int) $request->request->get('return_page', 1));
 
     $comment = new Commentaire();
     $form = $this->createForm(CommentaireType::class, $comment);
@@ -73,6 +74,7 @@ public function ajouter(
         'open' => $id,
         'q' => $returnQ,
         'sort' => $returnSort,
+        'page' => $returnPage,
     ];
     if ($returnContexte !== null && $returnContexte !== '') {
         $params['contexte'] = (int) $returnContexte;
