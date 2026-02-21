@@ -1,0 +1,39 @@
+{% if pageCount > 1 %}
+    {% set pageParam = pageParameterName %}
+    <nav class="inline-flex items-center gap-2 text-sm" aria-label="Pagination">
+        {% if previous is defined %}
+            <a class="h-9 px-3 inline-flex items-center rounded-lg border border-white/10 bg-secondary hover:bg-white/5 transition-colors"
+               href="{{ path(route, query|merge({ (pageParam): previous })) }}">
+                Precedent
+            </a>
+        {% else %}
+            <span class="h-9 px-3 inline-flex items-center rounded-lg border border-white/10 bg-secondary opacity-50 cursor-not-allowed">
+                Precedent
+            </span>
+        {% endif %}
+
+        {% for page in pagesInRange %}
+            {% if page == current %}
+                <span class="h-9 min-w-[36px] px-3 inline-flex items-center justify-center rounded-lg bg-primary text-white font-semibold">
+                    {{ page }}
+                </span>
+            {% else %}
+                <a class="h-9 min-w-[36px] px-3 inline-flex items-center justify-center rounded-lg border border-white/10 bg-secondary hover:bg-white/5 transition-colors"
+                   href="{{ path(route, query|merge({ (pageParam): page })) }}">
+                    {{ page }}
+                </a>
+            {% endif %}
+        {% endfor %}
+
+        {% if next is defined %}
+            <a class="h-9 px-3 inline-flex items-center rounded-lg border border-white/10 bg-secondary hover:bg-white/5 transition-colors"
+               href="{{ path(route, query|merge({ (pageParam): next })) }}">
+                Suivant
+            </a>
+        {% else %}
+            <span class="h-9 px-3 inline-flex items-center rounded-lg border border-white/10 bg-secondary opacity-50 cursor-not-allowed">
+                Suivant
+            </span>
+        {% endif %}
+    </nav>
+{% endif %}

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Atelier;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -25,6 +26,20 @@ class AtelierRepository extends ServiceEntityRepository
      * @return Atelier[]
      */
     public function searchAndFilter(?string $search = null, ?int $contexte = null, ?string $sort = null): array
+    {
+        return $this->searchAndFilterQueryBuilder($search, $contexte, $sort)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Construit la requête pour la recherche et le filtre des ateliers.
+     *
+     * @param string|null $search Terme de recherche (nom d'atelier)
+     * @param int|null $contexte Filtre par contexte : 0 = Soft Skill, 1 = Hard Skill, null = tous
+     * @param string|null $sort Tri : 'date_asc', 'date_desc', 'titre_asc', 'titre_desc', null = date_asc par défaut
+     */
+    public function searchAndFilterQueryBuilder(?string $search = null, ?int $contexte = null, ?string $sort = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('a');
 
@@ -57,7 +72,7 @@ class AtelierRepository extends ServiceEntityRepository
                 break;
         }
 
-        return $qb->getQuery()->getResult();
+        return $qb;
     }
 
     /**
