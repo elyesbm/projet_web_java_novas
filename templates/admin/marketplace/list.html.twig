@@ -10,7 +10,7 @@
     {# Stats dynamiques simples #}
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-gradient-to-br from-rose-500 to-pink-600 rounded-xl p-6 text-white">
-            <p class="text-3xl font-bold">{{ articles|length }}</p>
+            <p class="text-3xl font-bold">{{ articles_total|default(articles|length) }}</p>
             <p class="text-rose-100">Articles totaux</p>
         </div>
     </div>
@@ -26,7 +26,7 @@
 
         {# Articles Tab #}
         <div id="content-articles" class="p-6">
-            <form method="get" class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+            <form method="get" class="mb-6">
                 <input type="hidden" name="tab" value="articles">
                 <div class="flex-1 flex flex-col md:flex-row md:items-center md:gap-3">
                     <div class="w-full md:flex-1 relative mb-3 md:mb-0">
@@ -81,10 +81,18 @@
                     </select>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="mt-4 flex flex-wrap items-center gap-3">
                     <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 text-sm font-semibold hover:bg-slate-900 dark:hover:bg-white transition-colors">
                         Filtrer
                     </button>
+                    <button type="button" data-ai-analyze-open class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        Analyser avec IA
+                    </button>
+                    <a href="{{ path('app_admin_marketplace_export_pdf') }}" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">
+                        <i data-lucide="file-down" class="w-4 h-4"></i>
+                        Exporter PDF
+                    </a>
                     <a href="{{ path('app_admin_marketplace_new') }}" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-lg shadow-rose-500/25">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         Ajouter un article
@@ -120,7 +128,7 @@
                                     {{ article.categorie ? article.categorie.nomCategorie : 'Sans catégorie' }}
                                 </span>
                                 <span class="text-lg font-bold text-rose-600">
-                                    {{ article.prixArticle is not null ? (article.prixArticle|number_format(2, ',', ' ')) ~ ' €' : '-- €' }}
+                                    {{ article.prixArticle is not null ? (article.prixArticle|number_format(2, ',', ' ')) ~ ' DT' : '-- DT' }}
                                 </span>
                             </div>
                             <h3 class="font-semibold text-slate-900 dark:text-white mb-2 line-clamp-2">
@@ -146,6 +154,25 @@
                     <p class="text-sm text-slate-500">Aucun article pour le moment.</p>
                 {% endfor %}
             </div>
+
+            {% if total_pages is defined and total_pages > 1 %}
+                <nav class="mt-8 flex items-center justify-center gap-2" aria-label="Pagination admin marketplace">
+                    <a href="{{ path('app_admin_marketplace_list', app.request.query.all|merge({'tab': 'articles', 'page': current_page > 1 ? current_page - 1 : 1})) }}"
+                       class="h-10 min-w-10 px-3 inline-flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 {{ current_page == 1 ? 'pointer-events-none opacity-40' : 'hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                        &lsaquo;
+                    </a>
+                    {% for p in 1..total_pages %}
+                        <a href="{{ path('app_admin_marketplace_list', app.request.query.all|merge({'tab': 'articles', 'page': p})) }}"
+                           class="h-10 min-w-10 px-3 inline-flex items-center justify-center rounded-xl border text-sm font-semibold {{ p == current_page ? 'border-rose-500 bg-rose-500 text-white' : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                            {{ p }}
+                        </a>
+                    {% endfor %}
+                    <a href="{{ path('app_admin_marketplace_list', app.request.query.all|merge({'tab': 'articles', 'page': current_page < total_pages ? current_page + 1 : total_pages})) }}"
+                       class="h-10 min-w-10 px-3 inline-flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 {{ current_page == total_pages ? 'pointer-events-none opacity-40' : 'hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                        &rsaquo;
+                    </a>
+                </nav>
+            {% endif %}
         </div>
 
         {# Categories Tab #}
@@ -177,6 +204,10 @@
                     <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 text-sm font-semibold hover:bg-slate-900 dark:hover:bg-white transition-colors">
                         Filtrer
                     </button>
+                    <a href="{{ path('app_admin_marketplace_categorie_export_pdf', app.request.query.all|merge({'tab': 'categories'})) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">
+                        <i data-lucide="file-down" class="w-4 h-4"></i>
+                        Exporter PDF
+                    </a>
                     <a href="{{ path('app_admin_marketplace_categorie_new') }}" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-lg shadow-rose-500/25">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         Nouvelle catégorie
@@ -220,11 +251,61 @@
                     <p class="text-sm text-slate-500">Aucune catégorie pour le moment.</p>
                 {% endfor %}
             </div>
+            {% if total_pages_cat is defined and total_pages_cat > 1 %}
+                <nav class="mt-8 flex items-center justify-center gap-2" aria-label="Pagination categories admin">
+                    <a href="{{ path('app_admin_marketplace_list', app.request.query.all|merge({'tab': 'categories', 'page_cat': current_page_cat > 1 ? current_page_cat - 1 : 1})) }}"
+                       class="h-10 min-w-10 px-3 inline-flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 {{ current_page_cat == 1 ? 'pointer-events-none opacity-40' : 'hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                        &lsaquo;
+                    </a>
+                    {% for p in 1..total_pages_cat %}
+                        <a href="{{ path('app_admin_marketplace_list', app.request.query.all|merge({'tab': 'categories', 'page_cat': p})) }}"
+                           class="h-10 min-w-10 px-3 inline-flex items-center justify-center rounded-xl border text-sm font-semibold {{ p == current_page_cat ? 'border-rose-500 bg-rose-500 text-white' : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                            {{ p }}
+                        </a>
+                    {% endfor %}
+                    <a href="{{ path('app_admin_marketplace_list', app.request.query.all|merge({'tab': 'categories', 'page_cat': current_page_cat < total_pages_cat ? current_page_cat + 1 : total_pages_cat})) }}"
+                       class="h-10 min-w-10 px-3 inline-flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 {{ current_page_cat == total_pages_cat ? 'pointer-events-none opacity-40' : 'hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                        &rsaquo;
+                    </a>
+                </nav>
+            {% endif %}
         </div>
     </div>
 </div>
 
 {% block javascripts %}
+<div id="ai-analyze-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-black/60 p-4">
+    <div class="w-full max-w-xl bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-2xl">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold text-slate-900 dark:text-white">Analyser avec IA</h2>
+            <button type="button" data-ai-analyze-close class="w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700">X</button>
+        </div>
+
+        <form id="ai-analyze-form" class="space-y-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('marketplace_ai_analyze') }}">
+            <div>
+                <label for="ai-product-name" class="block text-sm mb-2 text-slate-700 dark:text-slate-200">Nom du produit</label>
+                <input id="ai-product-name" name="product_name" required class="h-11 w-full px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-rose-500" />
+            </div>
+            <div>
+                <label for="ai-product-url" class="block text-sm mb-2 text-slate-700 dark:text-slate-200">Lien du produit</label>
+                <input id="ai-product-url" name="product_url" type="url" required placeholder="https://..." class="h-11 w-full px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-rose-500" />
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="submit" id="ai-analyze-submit" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold">Analyser</button>
+                <button type="button" data-ai-analyze-close class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm">Fermer</button>
+            </div>
+        </form>
+
+        <div id="ai-analyze-error" class="hidden mt-4 p-3 rounded-xl bg-red-500/20 text-red-500 text-sm"></div>
+        <div id="ai-analyze-result" class="hidden mt-5 space-y-3">
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"><strong>Prix recommande:</strong> <span id="ai-price"></span></div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"><strong>Qualite des avis:</strong> <span id="ai-reviews"></span></div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"><strong>Note de demande:</strong> <span id="ai-demand"></span>/10</div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"><strong>Justification:</strong> <span id="ai-why"></span></div>
+        </div>
+    </div>
+</div>
 <script>
     function switchTab(tab) {
         document.getElementById('content-articles').classList.toggle('hidden', tab !== 'articles');
@@ -240,6 +321,80 @@
             switchTab('categories');
         }
     })();
+
+    (function () {
+        const modal = document.getElementById('ai-analyze-modal');
+        const form = document.getElementById('ai-analyze-form');
+        if (!modal || !form) return;
+
+        const errorBox = document.getElementById('ai-analyze-error');
+        const resultBox = document.getElementById('ai-analyze-result');
+        const submitBtn = document.getElementById('ai-analyze-submit');
+        const price = document.getElementById('ai-price');
+        const reviews = document.getElementById('ai-reviews');
+        const demand = document.getElementById('ai-demand');
+        const why = document.getElementById('ai-why');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+        function setError(message) {
+            errorBox.textContent = message;
+            errorBox.classList.remove('hidden');
+        }
+        function clearMessages() {
+            errorBox.classList.add('hidden');
+            errorBox.textContent = '';
+            resultBox.classList.add('hidden');
+        }
+
+        document.querySelectorAll('[data-ai-analyze-open]').forEach((el) => el.addEventListener('click', openModal));
+        document.querySelectorAll('[data-ai-analyze-close]').forEach((el) => el.addEventListener('click', closeModal));
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            clearMessages();
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Analyse...';
+
+            const formData = new FormData(form);
+            const payload = {
+                _token: formData.get('_token'),
+                product_name: formData.get('product_name'),
+                product_url: formData.get('product_url')
+            };
+
+            try {
+                const response = await fetch('{{ path('app_marketplace_ai_analyze') }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Analyse impossible');
+                }
+
+                price.textContent = data.recommended_price || 'N/A';
+                reviews.textContent = data.reviews_quality || 'Moyenne';
+                demand.textContent = data.demand_score ?? '0';
+                why.textContent = data.justification || '';
+                resultBox.classList.remove('hidden');
+            } catch (err) {
+                setError(err.message || 'Erreur inattendue.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Analyser';
+            }
+        });
+    })();
 </script>
 {% endblock %}
 {% endblock %}
+

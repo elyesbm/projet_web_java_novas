@@ -8,6 +8,8 @@ use App\Entity\User;
 use App\Repository\ArticleRepository;
 use App\Repository\CategorieRepository;
 use App\Repository\UserRepository;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -66,7 +68,18 @@ class MarketplaceAdminController extends AbstractController
         }
 
         // Utilise la méthode search() existante pour gérer q + critères + tri
-        $articles = $articleRepository->search($q, $criteria, $order);
+        $perPage = 4;
+        $currentPage = max(1, (int) $request->query->get('page', 1));
+        $offset = ($currentPage - 1) * $perPage;
+
+        $totalArticles = $articleRepository->countSearch($q, $criteria);
+        $totalPages = max(1, (int) ceil($totalArticles / $perPage));
+        if ($currentPage > $totalPages) {
+            $currentPage = $totalPages;
+            $offset = ($currentPage - 1) * $perPage;
+        }
+
+        $articles = $articleRepository->searchPaginated($q, $criteria, $order, $perPage, $offset);
 
         // Catégories pour le filtre dans la vue (liste complète)
         $categoriesEntities = $categorieRepository->findAll();
@@ -108,12 +121,142 @@ class MarketplaceAdminController extends AbstractController
                 break;
         }
 
-        $categoriesList = $qb->getQuery()->getResult();
+        $perPageCat = 3;
+        $currentPageCat = max(1, (int) $request->query->get('page_cat', 1));
+        $offsetCat = ($currentPageCat - 1) * $perPageCat;
+
+        $countQb = clone $qb;
+        $categoriesTotal = (int) $countQb
+            ->resetDQLPart('orderBy')
+            ->select('COUNT(c.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $totalPagesCat = max(1, (int) ceil($categoriesTotal / $perPageCat));
+        if ($currentPageCat > $totalPagesCat) {
+            $currentPageCat = $totalPagesCat;
+            $offsetCat = ($currentPageCat - 1) * $perPageCat;
+        }
+
+        $categoriesList = $qb
+            ->setFirstResult($offsetCat)
+            ->setMaxResults($perPageCat)
+            ->getQuery()
+            ->getResult();
 
         return $this->render('admin/marketplace/list.html.twig', [
             'articles' => $articles,
+            'articles_total' => $totalArticles,
+            'current_page' => $currentPage,
+            'total_pages' => $totalPages,
             'categories' => $categoriesEntities,
             'categories_list' => $categoriesList,
+            'categories_total' => $categoriesTotal,
+            'current_page_cat' => $currentPageCat,
+            'total_pages_cat' => $totalPagesCat,
+        ]);
+    }
+
+    #[Route('/export/pdf', name: 'export_pdf', methods: ['GET'])]
+    public function exportPdfDisponibles(ArticleRepository $articleRepository): Response
+    {
+        $articlesEntities = $articleRepository->createQueryBuilder('a')
+            ->leftJoin('a.categorie', 'c')
+            ->addSelect('c')
+            ->where('a.statut_article IS NULL OR LOWER(TRIM(a.statut_article)) = :statut')
+            ->setParameter('statut', 'disponible')
+            ->orderBy('a.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $articles = array_map(static function (Article $article): array {
+            $categorie = $article->getCategorie();
+            return [
+                'titre' => (string) ($article->getTitreArticle() ?? 'Sans titre'),
+                'categorie' => $categorie instanceof Categorie ? (string) ($categorie->getNomCategorie() ?? 'Autre') : 'Autre',
+                'prix' => (float) ($article->getPrixArticle() ?? 0),
+                'description' => trim((string) ($article->getContenueArticle() ?? '')),
+                'statut' => (string) ($article->getStatutArticle() ?? 'disponible'),
+            ];
+        }, $articlesEntities);
+
+        $html = $this->renderView('front/marketplace/pdf_disponibles.html.twig', [
+            'articles' => $articles,
+            'generated_at' => new \DateTimeImmutable(),
+        ]);
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Helvetica');
+        $options->set('isFontSubsettingEnabled', false);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="admin-marketplace-produits-disponibles-' . (new \DateTimeImmutable())->format('Ymd-His') . '.pdf"',
+        ]);
+    }
+
+    #[Route('/categorie/export/pdf', name: 'categorie_export_pdf', methods: ['GET'])]
+    public function exportCategoriesPdf(Request $request, CategorieRepository $categorieRepository): Response
+    {
+        $qCat = trim((string) $request->query->get('q_cat', ''));
+        $sortCat = $request->query->get('sort_cat', 'date_desc');
+
+        $qb = $categorieRepository->createQueryBuilder('c');
+        if ($qCat !== '') {
+            $isNumeric = ctype_digit($qCat);
+            $expr = 'c.nom_categorie LIKE :q OR c.description_categorie LIKE :q';
+            if ($isNumeric) {
+                $expr .= ' OR c.id = :qid';
+            }
+            $qb->andWhere('(' . $expr . ')')
+                ->setParameter('q', '%' . $qCat . '%');
+            if ($isNumeric) {
+                $qb->setParameter('qid', (int) $qCat);
+            }
+        }
+
+        switch ($sortCat) {
+            case 'name_asc':
+                $qb->orderBy('c.nom_categorie', 'ASC');
+                break;
+            case 'name_desc':
+                $qb->orderBy('c.nom_categorie', 'DESC');
+                break;
+            case 'date_asc':
+                $qb->orderBy('c.id', 'ASC');
+                break;
+            case 'date_desc':
+            default:
+                $qb->orderBy('c.id', 'DESC');
+                break;
+        }
+
+        $categories = $qb->getQuery()->getResult();
+
+        $html = $this->renderView('admin/marketplace/pdf_categories.html.twig', [
+            'categories' => $categories,
+            'generated_at' => new \DateTimeImmutable(),
+        ]);
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Helvetica');
+        $options->set('isFontSubsettingEnabled', false);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="admin-marketplace-categories-' . (new \DateTimeImmutable())->format('Ymd-His') . '.pdf"',
         ]);
     }
 
