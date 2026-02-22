@@ -25,13 +25,11 @@ class Commentaire
     private ?\DateTimeInterface $date_creation = null;
 
     #[ORM\Column(type: 'text')]
-    #[Assert\NotBlank(message: "Le commentaire ne peut pas être vide.")]
-#[Assert\Length(
-    min: 5,
-    max: 1000,
-    minMessage: "Le contenu doit contenir au moins {{ limit }} caractères.",
-    maxMessage: "Le commentaire ne doit pas dépasser {{ limit }} caractères."
-)]
+    #[Assert\Length(
+        min: 0,
+        max: 1000,
+        maxMessage: "Le commentaire ne doit pas dépasser {{ limit }} caractères."
+    )]
     private ?string $contenu = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'commentaires')]
@@ -63,6 +61,10 @@ class Commentaire
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $deletedAt = null;
+
+    /** Nom du fichier audio (enregistrement vocal) dans uploads/comment_audio/ */
+    #[ORM\Column(name: 'audio_filename', type: 'string', length: 255, nullable: true)]
+    private ?string $audioFilename = null;
 
     public function __construct()
     {
@@ -121,4 +123,6 @@ class Commentaire
     public function setPublication(?Publication $publication): static { $this->publication = $publication; return $this; }
     public function getDeletedAt(): ?\DateTimeInterface { return $this->deletedAt; }
     public function setDeletedAt(?\DateTimeInterface $deletedAt): static { $this->deletedAt = $deletedAt; return $this; }
+    public function getAudioFilename(): ?string { return $this->audioFilename; }
+    public function setAudioFilename(?string $audioFilename): static { $this->audioFilename = $audioFilename; return $this; }
 }

@@ -44,7 +44,16 @@
                 </div>
             </div>
 
-            <p class="text-sm text-foreground">{{ comment.contenu }}</p>
+            {% if comment.contenu %}
+                <p class="text-sm text-foreground">{{ comment.contenu|raw }}</p>
+            {% endif %}
+            {% if comment.audioFilename %}
+                <div class="mt-3">
+                    <audio controls preload="metadata" class="w-full max-w-md h-9 rounded-lg" src="{{ asset('uploads/comment_audio/' ~ comment.audioFilename) }}">
+                        Votre navigateur ne supporte pas la lecture audio.
+                    </audio>
+                </div>
+            {% endif %}
         </div>
 
         {% if comment.children|length > 0 %}

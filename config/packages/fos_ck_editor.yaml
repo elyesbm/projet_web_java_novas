@@ -6,12 +6,20 @@ fos_ck_editor:
     configs:
         publication:
             toolbar:
-                - ['Bold', 'Italic', 'Underline', 'Strike']
+                - ['Smiley', 'Bold', 'Italic', 'Underline', 'Strike']
+                - ['Image', 'Link', 'Unlink']
                 - ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent']
-                - ['Link', 'Unlink']
                 - ['Format', 'Styles']
                 - ['Source']
             uiColor: '#1a1917'
             language: 'fr'
             height: 300
+            contentsCss: ['/css/ckeditor-dark.css']
+        commentaire:
+            toolbar:
+                - ['Smiley', 'Bold', 'Italic', 'Link', 'Unlink']
+                - ['Source']
+            uiColor: '#1a1917'
+            language: 'fr'
+            height: 120
             contentsCss: ['/css/ckeditor-dark.css']

@@ -2,6 +2,19 @@
 
 {% block title %}Publications - NoVas{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* CKEditor (commentaires) : thème sombre */
+.cke_chrome { border-color: rgba(255,255,255,0.1) !important; background: #1a1917 !important; }
+.cke_top { background: #1a1917 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
+.cke_bottom { background: #2a2825 !important; border-top: 1px solid rgba(255,255,255,0.1) !important; color: #a8a29e !important; }
+.cke_toolbar, .cke_toolgroup { background: transparent !important; border: none !important; }
+.cke_button_label, .cke_combo_label, .cke_combo_text { color: #faf7f2 !important; }
+.cke_panel { background: #1a1917 !important; border-color: rgba(255,255,255,0.1) !important; }
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="min-h-screen bg-background">
     {% include 'front/partials/_auth_nav.html.twig' %}
@@ -299,12 +312,15 @@
 
                             <!-- Add Comment -->
 
-                            {{ form_start(cform, { attr: { class: 'flex gap-4 comment-form', novalidate: 'novalidate', 'data-pub-id': pub.id } }) }}
+                            {{ form_start(cform, { attr: { class: 'flex gap-4 comment-form', novalidate: 'novalidate', 'data-pub-id': pub.id, enctype: 'multipart/form-data' } }) }}
                             <input type="hidden" name="return_q" value="{{ q ?? '' }}">
                             <input type="hidden" name="return_sort" value="{{ sort ?? 'created_desc' }}">
                             <input type="hidden" name="return_contexte" value="{{ contexte_filter ?? '' }}">
                             <input type="hidden" name="return_page" value="{{ page ?? 1 }}">
                             {{ form_widget(cform.parent_id, { id: 'comment-parent-id-' ~ pub.id, attr: { 'data-comment-parent': '' } }) }}
+                            <div class="hidden comment-audio-wrapper" data-pub-id="{{ pub.id }}">
+                                {{ form_widget(cform.audio, { id: 'comment-audio-input-' ~ pub.id }) }}
+                            </div>
 
                                 {% if app.user and app.user.IMAGE %}
                                     <img src="{{ asset('images/' ~ app.user.IMAGE) }}" alt="Moi" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30">
@@ -347,7 +363,13 @@
     </div>
 {% endif %}
 
-
+                                    <div class="absolute right-12 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                        <button type="button" class="comment-voice-btn w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" data-pub-id="{{ pub.id }}" title="Enregistrer un message vocal" aria-label="Enregistrement vocal">
+                                            <i data-lucide="mic" class="w-4 h-4"></i>
+                                        </button>
+                                        <span class="comment-voice-status text-xs text-muted-foreground hidden" data-pub-id="{{ pub.id }}">0:00</span>
+                                        <span class="comment-voice-added text-xs text-emerald-400 hidden" data-pub-id="{{ pub.id }}">Vocal ajouté</span>
+                                    </div>
                                     <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors">
                                         <i data-lucide="send" class="w-4 h-4 text-white"></i>
                                     </button>
@@ -437,6 +459,80 @@
                 textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
+    });
+
+    // Enregistrement vocal (MediaRecorder)
+    let voiceRecorder = null;
+    let voiceChunks = [];
+    let voiceStartTime = null;
+    let voiceTimerId = null;
+    let currentVoicePubId = null;
+
+    function startVoiceTimer(pubId) {
+        voiceStartTime = Date.now();
+        const statusEl = document.querySelector('.comment-voice-status[data-pub-id="' + pubId + '"]');
+        if (statusEl) {
+            statusEl.classList.remove('hidden');
+            statusEl.textContent = '0:00';
+        }
+        voiceTimerId = setInterval(function() {
+            const s = Math.floor((Date.now() - voiceStartTime) / 1000);
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            if (statusEl) statusEl.textContent = m + ':' + (sec < 10 ? '0' : '') + sec;
+        }, 500);
+    }
+
+    function stopVoiceTimer(pubId) {
+        if (voiceTimerId) clearInterval(voiceTimerId);
+        voiceTimerId = null;
+        const statusEl = document.querySelector('.comment-voice-status[data-pub-id="' + pubId + '"]');
+        if (statusEl) statusEl.classList.add('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.comment-voice-btn');
+        if (!btn) return;
+        const pubId = btn.getAttribute('data-pub-id');
+        const input = document.getElementById('comment-audio-input-' + pubId);
+        if (!input) return;
+
+        if (voiceRecorder && voiceRecorder.state === 'recording' && currentVoicePubId === pubId) {
+            voiceRecorder.stop();
+            return;
+        }
+
+        if (voiceRecorder && voiceRecorder.state === 'recording') return;
+
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+            const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
+            voiceRecorder = new MediaRecorder(stream);
+            voiceChunks = [];
+            currentVoicePubId = pubId;
+            voiceRecorder.ondataavailable = function(ev) { if (ev.data.size > 0) voiceChunks.push(ev.data); };
+            voiceRecorder.onstop = function() {
+                stream.getTracks().forEach(function(t) { t.stop(); });
+                stopVoiceTimer(pubId);
+                currentVoicePubId = null;
+                if (voiceChunks.length === 0) return;
+                const blob = new Blob(voiceChunks, { type: mime });
+                const file = new File([blob], 'recording.webm', { type: blob.type });
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                input.files = dt.files;
+                const addedEl = document.querySelector('.comment-voice-added[data-pub-id="' + pubId + '"]');
+                if (addedEl) { addedEl.classList.remove('hidden'); }
+                const btn = document.querySelector('.comment-voice-btn[data-pub-id="' + pubId + '"]');
+                if (btn) { const i = btn.querySelector('i'); if (i) i.setAttribute('data-lucide', 'mic'); }
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            };
+            voiceRecorder.start(200);
+            startVoiceTimer(pubId);
+            btn.querySelector('i')?.setAttribute('data-lucide', 'square');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }).catch(function() {
+            alert('Accès au micro refusé ou indisponible.');
+        });
     });
 </script>
 

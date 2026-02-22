@@ -75,6 +75,21 @@ class CommentaireController extends AbstractController
         $comment->setPublication($pub);
         $comment->setImage($user->getIMAGE() ?? '');
 
+        $audioFile = $form->get('audio')->getData();
+        if ($audioFile) {
+            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/comment_audio';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            $ext = $audioFile->guessExtension() ?: 'webm';
+            $filename = sprintf('%s_%s.%s', uniqid('voice_', true), (new \DateTimeImmutable())->format('YmdHis'), $ext);
+            $audioFile->move($uploadDir, $filename);
+            $comment->setAudioFilename($filename);
+            if (trim((string) $comment->getContenu()) === '') {
+                $comment->setContenu('[Message vocal]');
+            }
+        }
+
         $parentId = $form->get('parent_id')->getData();
         if ($parentId && is_numeric($parentId)) {
             $parent = $commentRepo->find((int) $parentId);
