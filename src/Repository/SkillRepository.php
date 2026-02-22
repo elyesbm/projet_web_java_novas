@@ -61,6 +61,51 @@ class SkillRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * Compte les compétences par tendance marché (pour graphique admin).
+     *
+     * @return array{en_hausse: int, stable: int, en_baisse: int, sans_tendance: int}
+     */
+    public function getCountByTendance(): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->select('s.tendanceMarche', 'COUNT(s.id) as cnt')
+            ->groupBy('s.tendanceMarche');
+
+        $result = $qb->getQuery()->getResult();
+        $out = ['en_hausse' => 0, 'stable' => 0, 'en_baisse' => 0, 'sans_tendance' => 0];
+
+        foreach ($result as $row) {
+            $t = $row['tendanceMarche'];
+            $cnt = (int) $row['cnt'];
+            if ($t === 'en_hausse') {
+                $out['en_hausse'] = $cnt;
+            } elseif ($t === 'stable') {
+                $out['stable'] = $cnt;
+            } elseif ($t === 'en_baisse') {
+                $out['en_baisse'] = $cnt;
+            } else {
+                $out['sans_tendance'] += $cnt;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Compétences avec statistiques marché (pour courbe nombre d'offres).
+     *
+     * @return Skill[]
+     */
+    public function findWithMarketStats(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.nombreOffresAssociees IS NOT NULL')
+            ->orderBy('s.nombreOffresAssociees', 'DESC')
+            ->setMaxResults(30)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Skill[] Returns an array of Skill objects
     //     */

@@ -6,6 +6,16 @@
 parameters:
 
 services:
+    App\Service\SkillMarketStatsService:
+        arguments:
+            $adzunaAppId: '%env(ADZUNA_APP_ID)%'
+            $adzunaAppKey: '%env(ADZUNA_APP_KEY)%'
+
+    App\Service\SkillAITutorService:
+        arguments:
+            $geminiApiKey: '%env(GEMINI_API_KEY)%'
+            $xaiApiKey: '%env(default::XAI_API_KEY)%'
+            $openRouterApiKey: '%env(default::OPENROUTER_API_KEY)%'
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.

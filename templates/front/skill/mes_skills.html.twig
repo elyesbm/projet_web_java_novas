@@ -12,6 +12,10 @@
             </a>
             
             <div class="flex items-center gap-4">
+                <a href="{{ path('app_skills_tuteur_ia') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-accent hover:text-accent/90 transition-colors">
+                    <i data-lucide="bot" class="w-4 h-4"></i>
+                    Tuteur IA
+                </a>
                 <a href="{{ path('app_skills_index') }}" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                     Découvrir les skills
                 </a>
@@ -92,8 +96,9 @@
                                 </span>
                             </div>
                             {% if skill.descriptionSkill %}
-                            <p class="text-sm text-muted-foreground mb-4 line-clamp-2">{{ skill.descriptionSkill }}</p>
+                            <p class="text-sm text-muted-foreground mb-2 line-clamp-2">{{ skill.descriptionSkill }}</p>
                             {% endif %}
+                            {% include 'partials/_skill_market_stats.html.twig' with { skill: skill } %}
                         </div>
                     </div>
                     

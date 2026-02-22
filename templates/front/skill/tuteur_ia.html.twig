@@ -1,0 +1,130 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Tuteur IA - Talents & Compétences - NoVas{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background">
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
+                <img src="{{ asset('images/logo.png') }}" alt="NoVas" class="h-10 w-auto">
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="{{ path('app_skills_index') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    Tous les skills
+                </a>
+                <a href="{{ path('app_skills_mes') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Mes Skills
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="pt-28 pb-8 px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center">
+                    <i data-lucide="bot" class="w-7 h-7 text-primary"></i>
+                </div>
+                <div>
+                    <h1 class="font-serif text-2xl md:text-3xl font-medium">Tuteur IA – Talents</h1>
+                    <p class="text-muted-foreground text-sm">Décrivez vos objectifs : l’IA vous suggère les meilleurs talents à développer.</p>
+                </div>
+            </div>
+
+            {% if not aiTutorConfigured %}
+            <div class="glass-card rounded-2xl p-6 border-amber-500/30 mb-6">
+                <p class="text-amber-200 text-sm">Le tuteur IA n’est pas configuré pour l’instant. Les suggestions personnalisées seront bientôt disponibles.</p>
+            </div>
+            {% endif %}
+
+            <div class="glass-card rounded-2xl overflow-hidden flex flex-col" style="min-height: 420px;">
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4 min-h-[280px] max-h-[60vh]">
+                    <div class="flex gap-3" data-role="assistant">
+                        <div class="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="bot" class="w-5 h-5 text-primary"></i>
+                        </div>
+                        <div class="rounded-2xl rounded-tl-none bg-secondary/80 border border-white/10 px-4 py-3 text-sm">
+                            <p>Bonjour ! Je suis votre tuteur pour les compétences. Dites-moi ce que vous voulez apprendre ou dans quel domaine vous souhaitez progresser (ex. tech, communication, management). Je vous proposerai les talents qui ont le meilleur potentiel pour vous.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-white/10">
+                    <form id="chat-form" class="flex gap-3">
+                        <input type="hidden" name="_token" id="csrf-token" value="{{ csrf_token('skill_tuteur_ia') }}">
+                        <input type="text" name="message" id="chat-input" placeholder="Ex : Je veux travailler dans la tech, quels skills me conseilles-tu ?" class="flex-1 h-12 bg-secondary border border-white/10 rounded-xl px-4 text-sm focus:outline-none focus:border-primary placeholder:text-muted-foreground/60" autocomplete="off">
+                        <button type="submit" id="chat-send" class="h-12 px-6 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all flex items-center gap-2 shrink-0">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                            Envoyer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+(function() {
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('chat-input');
+    const messagesContainer = document.getElementById('chat-messages');
+    const sendBtn = document.getElementById('chat-send');
+    const token = form.querySelector('input[name="_token"]').value;
+    let messages = [];
+
+    function addMessage(role, content) {
+        const div = document.createElement('div');
+        div.className = 'flex gap-3';
+        div.setAttribute('data-role', role);
+        if (role === 'user') {
+            div.classList.add('justify-end');
+            div.innerHTML = '<div class="rounded-2xl rounded-tr-none bg-primary/30 border border-primary/40 px-4 py-3 text-sm max-w-[85%]">' + escapeHtml(content) + '</div>';
+        } else {
+            div.innerHTML = '<div class="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0"><i data-lucide="bot" class="w-5 h-5 text-primary"></i></div><div class="rounded-2xl rounded-tl-none bg-secondary/80 border border-white/10 px-4 py-3 text-sm"><p class="whitespace-pre-wrap">' + escapeHtml(content) + '</p></div>';
+        }
+        messagesContainer.appendChild(div);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        if (role === 'assistant') lucide.createIcons();
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function setLoading(loading) {
+        sendBtn.disabled = loading;
+        sendBtn.innerHTML = loading ? '<span class="animate-pulse">...</span>' : '<i data-lucide="send" class="w-5 h-5"></i> Envoyer';
+        if (!loading) lucide.createIcons();
+    }
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const text = (input.value || '').trim();
+        if (!text) return;
+        input.value = '';
+        messages.push({ role: 'user', content: text });
+        addMessage('user', text);
+
+        setLoading(true);
+        try {
+            const res = await fetch('{{ path('app_skills_tuteur_ia_chat') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ message: text, messages: messages, _token: document.getElementById('csrf-token').value })
+            });
+            const data = await res.json();
+            const reply = data.reply || 'Aucune réponse.';
+            messages.push({ role: 'assistant', content: reply });
+            addMessage('assistant', reply);
+        } catch (err) {
+            addMessage('assistant', 'Une erreur est survenue. Réessayez.');
+        }
+        setLoading(false);
+    });
+})();
+</script>
+{% endblock %}

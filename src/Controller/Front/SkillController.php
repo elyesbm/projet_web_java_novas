@@ -6,6 +6,7 @@ use App\Entity\Skill;
 use App\Form\SkillType;
 use App\Repository\SkillRepository;
 use App\Repository\UserRepository;
+use App\Service\SkillAITutorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +20,49 @@ class SkillController extends AbstractController
         private SkillRepository $skillRepository,
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
+        private SkillAITutorService $aiTutorService,
     ) {
+    }
+
+    #[Route('/tuteur-ia', name: 'app_skills_tuteur_ia', methods: ['GET'])]
+    public function tuteurIa(): Response
+    {
+        $availableSkills = $this->skillRepository->findBy([], ['nom_skill' => 'ASC']);
+        $user = $this->getUser();
+
+        return $this->render('front/skill/tuteur_ia.html.twig', [
+            'availableSkills' => $availableSkills,
+            'aiTutorConfigured' => $this->aiTutorService->isConfigured(),
+        ]);
+    }
+
+    #[Route('/tuteur-ia/chat', name: 'app_skills_tuteur_ia_chat', methods: ['POST'])]
+    public function tuteurIaChat(Request $request): Response
+    {
+        $content = json_decode($request->getContent(), true);
+        if (!\is_array($content)) {
+            return $this->json(['reply' => 'Requête invalide.'], Response::HTTP_BAD_REQUEST);
+        }
+        if (!$this->isCsrfTokenValid('skill_tuteur_ia', (string) ($content['_token'] ?? ''))) {
+            return $this->json(['reply' => 'Token de sécurité invalide.'], Response::HTTP_FORBIDDEN);
+        }
+        $userMessage = isset($content['message']) && \is_string($content['message'])
+            ? trim($content['message'])
+            : '';
+        $messages = isset($content['messages']) && \is_array($content['messages'])
+            ? array_slice($content['messages'], -20)
+            : [];
+
+        if ($userMessage === '') {
+            return $this->json(['reply' => 'Veuillez écrire un message.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $availableSkills = $this->skillRepository->findBy([], ['nom_skill' => 'ASC']);
+        $user = $this->getUser();
+
+        $reply = $this->aiTutorService->chat($userMessage, $messages, $availableSkills, $user);
+
+        return $this->json(['reply' => $reply]);
     }
 
     #[Route('/', name: 'app_skills_index')]
