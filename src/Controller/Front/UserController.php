@@ -25,6 +25,35 @@ class UserController extends AbstractController
         ]);
     }
 
+    #[Route('/update-face', name: 'app_user_update_face', methods: ['POST'])]
+    public function updateFace(Request $request, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Non connecté'], 401);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        if (!\is_array($data)) {
+            return $this->json(['error' => 'Données invalides'], 400);
+        }
+
+        // Validation CSRF
+        if (!$this->isCsrfTokenValid('face_encoding', $data['_csrf_token'] ?? '')) {
+            return $this->json(['error' => 'Token CSRF invalide'], 403);
+        }
+
+        $descriptor = $data['descriptor'] ?? null;
+        if (!\is_array($descriptor) || \count($descriptor) !== 128) {
+            return $this->json(['error' => 'Descripteur facial invalide (' . \count((array)$descriptor) . ' valeurs)'], 400);
+        }
+
+        $user->setFaceEncoding($descriptor);
+        $em->flush();
+
+        return $this->json(['success' => true, 'message' => 'Visage enregistré avec succès !']);
+    }
+
     #[Route('/profile/edit', name: 'app_user_edit')]
     public function edit(
         Request $request,

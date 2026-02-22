@@ -60,13 +60,58 @@
                             {% endif %}
                         </p>
                     </div>
-                    
                 </div>
             </div>
-            <!-- 2FA Management -->
+
+            {# 2FA Management #}
             {% include 'front/user/_2fa_management.html.twig' %}
+
+            {# ====== SECTION RECONNAISSANCE FACIALE ====== #}
             <div class="mt-10 pt-8 border-t border-border/50">
-                <h3 class="text-sm font-semibold text-foreground mb-4">Résumé de l’activité</h3>
+                <h3 class="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                    <i data-lucide="scan-face" class="w-4 h-4 text-primary"></i>
+                    Reconnaissance faciale
+                    {% if user.hasFaceEncoding %}
+                        <span class="px-2 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✓ Activée</span>
+                    {% else %}
+                        <span class="px-2 py-0.5 rounded-full text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30">Non configurée</span>
+                    {% endif %}
+                </h3>
+                <p class="text-xs text-muted-foreground mb-4">
+                    {% if user.hasFaceEncoding %}
+                        Votre visage est enregistré. Vous pouvez vous connecter directement par reconnaissance faciale depuis la page de connexion.
+                    {% else %}
+                        Enregistrez votre visage pour pouvoir vous connecter sans mot de passe.
+                    {% endif %}
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 items-start">
+                    <div class="relative w-full sm:w-56 rounded-xl bg-secondary border border-white/10 overflow-hidden flex items-center justify-center" style="aspect-ratio:4/3">
+                        <video id="profile-face-video" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
+                        <canvas id="profile-face-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+                        <span id="profile-cam-placeholder" class="text-muted-foreground text-xs text-center px-2">Caméra désactivée</span>
+                    </div>
+                    <div class="flex flex-col gap-3 flex-1">
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" id="btn-start-profile-cam" class="inline-flex items-center gap-2 px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors">
+                                <i data-lucide="camera" class="w-4 h-4"></i> Ouvrir la caméra
+                            </button>
+                            <button type="button" id="btn-capture-profile-face" class="hidden inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm hover:bg-primary/90 transition-colors">
+                                <i data-lucide="scan-face" class="w-4 h-4"></i> Capturer mon visage
+                            </button>
+                            <label class="inline-flex items-center gap-2 px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm hover:bg-white/5 transition-colors cursor-pointer">
+                                <i data-lucide="upload" class="w-4 h-4"></i> Photo depuis fichier
+                                <input type="file" id="profile-face-photo" accept="image/*" class="hidden">
+                            </label>
+                        </div>
+                        <p id="profile-face-status" class="text-xs min-h-[1.25rem] text-muted-foreground"></p>
+                    </div>
+                </div>
+            </div>
+            {# ====== FIN SECTION RECONNAISSANCE FACIALE ====== #}
+
+            <div class="mt-10 pt-8 border-t border-border/50">
+                <h3 class="text-sm font-semibold text-foreground mb-4">Résumé de l'activité</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div class="glass-card rounded-xl p-4 text-center">
                         <p class="text-2xl font-bold text-primary">{{ user.publications|length }}</p>
@@ -90,7 +135,7 @@
             <div class="mt-8 flex flex-wrap gap-4">
                 <a href="{{ path('app_home') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border hover:bg-white/5 transition-colors text-sm font-medium">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    Retour à l’accueil
+                    Retour à l'accueil
                 </a>
                 <a href="{{ path('app_user_edit') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors text-sm font-medium shadow-lg shadow-primary/25">
                     <i data-lucide="edit" class="w-4 h-4"></i>
@@ -104,4 +149,137 @@
 <script>
     if (typeof lucide !== 'undefined') lucide.createIcons();
 </script>
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+(function() {
+    var updateFaceUrl = {{ path('app_user_update_face')|json_encode|raw }};
+    var csrfToken    = {{ csrf_token('face_encoding')|json_encode|raw }};
+    var MODELS_LOCAL = {{ asset('js/face-api-weights')|json_encode|raw }};
+    var MODELS_CDN   = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+    var modelsLoaded = false;
+    var camStream    = null;
+    var detectTimer  = null;
+
+    function loadModels() {
+        if (modelsLoaded) return Promise.resolve();
+        function tryLocal(net) { return net.loadFromUri(MODELS_LOCAL).catch(function() { return net.loadFromUri(MODELS_CDN); }); }
+        return Promise.all([
+            tryLocal(faceapi.nets.tinyFaceDetector),
+            tryLocal(faceapi.nets.faceLandmark68Net),
+            tryLocal(faceapi.nets.faceRecognitionNet)
+        ]).then(function() { modelsLoaded = true; });
+    }
+
+    function setStatus(msg, state) {
+        var el = document.getElementById('profile-face-status');
+        el.textContent = msg;
+        el.style.color = state === true ? '#34d399' : (state === false ? '#f87171' : '#a1a1aa');
+    }
+
+    function stopCam() {
+        if (detectTimer) { clearInterval(detectTimer); detectTimer = null; }
+        if (camStream) { camStream.getTracks().forEach(function(t){t.stop();}); camStream = null; }
+        var v = document.getElementById('profile-face-video');
+        if (v) { v.srcObject = null; v.classList.add('hidden'); }
+        var c = document.getElementById('profile-face-canvas');
+        if (c) c.getContext('2d').clearRect(0,0,c.width,c.height);
+        document.getElementById('profile-cam-placeholder').classList.remove('hidden');
+        document.getElementById('btn-start-profile-cam').classList.remove('hidden');
+        document.getElementById('btn-capture-profile-face').classList.add('hidden');
+    }
+
+    function sendDescriptor(descriptor) {
+        setStatus('Enregistrement en cours...', null);
+        fetch(updateFaceUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ descriptor: Array.from(descriptor), _csrf_token: csrfToken })
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            if (data && data.success) {
+                setStatus('✓ ' + data.message, true);
+                stopCam();
+            } else {
+                setStatus('Erreur : ' + (data.error || 'Inconnue'), false);
+            }
+        })
+        .catch(function(err){ console.error(err); setStatus('Erreur réseau.', false); });
+    }
+
+    // Ouvrir la caméra
+    document.getElementById('btn-start-profile-cam').addEventListener('click', function() {
+        var btn = this;
+        btn.disabled = true;
+        setStatus('Activation de la caméra...', null);
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } })
+        .then(function(stream) {
+            camStream = stream;
+            var v = document.getElementById('profile-face-video');
+            v.srcObject = stream;
+            v.classList.remove('hidden');
+            document.getElementById('profile-cam-placeholder').classList.add('hidden');
+            document.getElementById('btn-capture-profile-face').classList.remove('hidden');
+            btn.classList.add('hidden');
+
+            v.addEventListener('play', function onPlay() {
+                v.removeEventListener('play', onPlay);
+                var canvas = document.getElementById('profile-face-canvas');
+                var displaySize = { width: v.videoWidth || 320, height: v.videoHeight || 240 };
+                faceapi.matchDimensions(canvas, displaySize);
+                loadModels().then(function() {
+                    detectTimer = setInterval(async function() {
+                        if (!camStream || v.paused || v.ended) return;
+                        var det = await faceapi.detectSingleFace(v, new faceapi.TinyFaceDetectorOptions());
+                        var ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        if (det) {
+                            faceapi.draw.drawDetections(canvas, faceapi.resizeResults(det, displaySize));
+                            setStatus('✓ Visage détecté ! Cliquez sur "Capturer mon visage".', true);
+                        } else {
+                            setStatus('Positionnez votre visage face à la caméra...', null);
+                        }
+                    }, 200);
+                });
+            });
+        })
+        .catch(function(e){ setStatus('Accès à la caméra refusé.', false); btn.disabled = false; console.error(e); });
+    });
+
+    // Capturer et enregistrer
+    document.getElementById('btn-capture-profile-face').addEventListener('click', function() {
+        var v = document.getElementById('profile-face-video');
+        var btn = this;
+        btn.disabled = true;
+        setStatus('Analyse du visage...', null);
+        loadModels().then(function(){
+            return faceapi.detectSingleFace(v, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+        }).then(function(det){
+            if (!det) { setStatus('Aucun visage détecté. Repositionnez-vous.', false); btn.disabled = false; return; }
+            sendDescriptor(det.descriptor);
+            btn.disabled = false;
+        }).catch(function(err){ console.error(err); setStatus('Erreur lors de la capture.', false); btn.disabled = false; });
+    });
+
+    // Photo depuis fichier
+    document.getElementById('profile-face-photo').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        setStatus('Analyse de la photo...', null);
+        var img = new Image();
+        img.onload = function() {
+            loadModels().then(function(){
+                return faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+            }).then(function(det){
+                if (!det) { setStatus("Aucun visage détecté sur la photo. Choisissez une photo plus claire.", false); return; }
+                sendDescriptor(det.descriptor);
+            }).catch(function(err){ console.error(err); setStatus("Erreur lors de l'analyse.", false); });
+        };
+        img.src = URL.createObjectURL(file);
+        e.target.value = '';
+    });
+})();
+</script>
+{% endblock %}
 {% endblock %}

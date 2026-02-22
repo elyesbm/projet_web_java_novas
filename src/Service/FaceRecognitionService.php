@@ -13,7 +13,7 @@ use App\Repository\UserRepository;
 class FaceRecognitionService
 {
     /** Distance euclidienne max pour considérer une correspondance (photo vs caméra = plus de variance) */
-    private const MATCH_THRESHOLD = 0.75;
+    private const MATCH_THRESHOLD = 0.85;
 
     public function __construct(
         private UserRepository $userRepository

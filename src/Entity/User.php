@@ -63,6 +63,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $faceEncoding = null;
 
+    /** Token de réinitialisation du mot de passe */
+    #[ORM\Column(length: 100, nullable: true, unique: true)]
+    private ?string $resetToken = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $resetTokenExpiresAt = null;
+
     // 🔗 RELATIONS
     #[ORM\OneToMany(mappedBy: 'auteur', targetEntity: Article::class)]
     private Collection $articles;
@@ -134,6 +141,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getFaceEncoding(): ?array { return $this->faceEncoding; }
     public function setFaceEncoding(?array $faceEncoding): static { $this->faceEncoding = $faceEncoding; return $this; }
     public function hasFaceEncoding(): bool { return $this->faceEncoding !== null && \count($this->faceEncoding) > 0; }
+
+    public function getResetToken(): ?string { return $this->resetToken; }
+    public function setResetToken(?string $resetToken): static { $this->resetToken = $resetToken; return $this; }
+    public function getResetTokenExpiresAt(): ?\DateTimeInterface { return $this->resetTokenExpiresAt; }
+    public function setResetTokenExpiresAt(?\DateTimeInterface $dt): static { $this->resetTokenExpiresAt = $dt; return $this; }
+    public function isResetTokenValid(): bool
+    {
+        return $this->resetToken !== null && $this->resetTokenExpiresAt !== null && $this->resetTokenExpiresAt > new \DateTime();
+    }
 
     public function getRoles(): array
     {

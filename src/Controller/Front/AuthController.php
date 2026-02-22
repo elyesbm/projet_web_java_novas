@@ -57,31 +57,48 @@ class AuthController extends AbstractController
     ): Response {
         $content = $request->getContent();
         $data = json_decode($content, true);
-        if (!\is_array($data) || !$this->isCsrfTokenValid('authenticate', $data['_csrf_token'] ?? '')) {
-            $this->addFlash('error', 'Session invalide. Réessayez.');
-            return $this->redirectToRoute('app_login');
+
+        // Toutes les erreurs retournent du JSON (pas de redirection 302 qui casse le fetch JS)
+        if (!\is_array($data)) {
+            return $this->json(['error' => 'Données invalides reçues'], 400);
         }
+
+        // Validation CSRF
+        if (!$this->isCsrfTokenValid('authenticate', $data['_csrf_token'] ?? '')) {
+            return $this->json(['error' => 'Token CSRF invalide. Rechargez la page et réessayez.'], 403);
+        }
+
+        // Validation du descripteur facial
         $descriptor = $data['descriptor'] ?? null;
         if (!\is_array($descriptor) || \count($descriptor) !== 128) {
-            $this->addFlash('error', 'Reconnaissance faciale invalide. Réessayez ou connectez-vous avec email et mot de passe.');
-            return $this->redirectToRoute('app_login');
+            return $this->json([
+                'error' => 'Descripteur facial invalide (' . \count((array) $descriptor) . ' valeurs reçues, 128 attendues)'
+            ], 400);
         }
+
+        // Recherche de l'utilisateur correspondant
         $user = $faceRecognitionService->findUserByDescriptor($descriptor);
         if ($user === null) {
-            $this->addFlash('error', 'Visage non reconnu. Réessayez ou connectez-vous avec email et mot de passe.');
-            return $this->redirectToRoute('app_login');
+            return $this->json(['error' => 'Visage non reconnu. Réessayez ou utilisez email/mot de passe.'], 401);
         }
+
+        // Authentification manuelle - inscription dans la session Symfony
         $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
         $tokenStorage->setToken($token);
         $request->getSession()->set('_security_main', serialize($token));
+        $request->getSession()->save();
+
+        // Calcul de l'URL de redirection selon le rôle
         $roles = $user->getRoles();
         if (in_array('ROLE_ADMIN', $roles, true)) {
-            return $this->redirectToRoute('app_admin_dashboard');
+            $url = $this->generateUrl('app_admin_dashboard');
+        } elseif (in_array('ROLE_PSY', $roles, true)) {
+            $url = $this->generateUrl('app_publications_index');
+        } else {
+            $url = $this->generateUrl('app_user_profile');
         }
-        if (in_array('ROLE_PSY', $roles, true)) {
-            return $this->redirectToRoute('app_publications_index');
-        }
-        return $this->redirectToRoute('app_user_profile');
+
+        return $this->json(['success' => true, 'redirect' => $url]);
     }
 
     #[Route('/register', name: 'app_register')]
@@ -143,7 +160,6 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // ⬇️ IL MANQUAIT CE RETURN ! Toujours retourner une Response
         return $this->render('front/auth/register.html.twig', [
             'registrationForm' => $form,
         ]);

@@ -89,7 +89,7 @@
                         <input type="checkbox" name="remember" class="w-4 h-4 rounded border-white/10 bg-secondary text-primary focus:ring-primary focus:ring-offset-0">
                         <span class="text-muted-foreground">Se souvenir de moi</span>
                     </label>
-                    <a href="#" class="text-primary hover:underline">Mot de passe oublié ?</a>
+                    <a href="{{ path('app_forgot_password') }}" class="text-primary hover:underline">Mot de passe oublié ?</a>
                 </div>
                 
                 <button type="submit" class="w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 group">
@@ -180,23 +180,49 @@
         this.classList.add('bg-primary', 'text-white'); this.classList.remove('text-muted-foreground');
         startFaceVideo();
     });
+    let detectionInterval;
     function startFaceVideo() {
         var v = document.getElementById('face-video');
         if (!v || !navigator.mediaDevices) return;
         navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } }).then(function(stream) {
             v.srcObject = stream;
             window._faceStream = stream;
-        }).catch(function() {
+            
+            v.addEventListener('play', () => {
+                const canvas = document.getElementById('face-canvas');
+                if(!canvas) return;
+                const displaySize = { width: v.videoWidth || v.offsetWidth, height: v.videoHeight || v.offsetHeight };
+                faceapi.matchDimensions(canvas, displaySize);
+                
+                loadModels().then(() => {
+                    detectionInterval = setInterval(async () => {
+                        if(v.paused || v.ended || document.getElementById('form-face').classList.contains('hidden')) return;
+                        const detection = await faceapi.detectSingleFace(v, new faceapi.TinyFaceDetectorOptions());
+                        if (detection) {
+                            const resizedDetections = faceapi.resizeResults(detection, displaySize);
+                            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                            faceapi.draw.drawDetections(canvas, resizedDetections);
+                        } else {
+                            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                        }
+                    }, 200);
+                });
+            });
+        }).catch(function(e) {
             document.getElementById('face-login-status').textContent = 'Accès à la caméra refusé ou indisponible.';
+            console.error(e);
         });
     }
     function stopFaceVideo() {
+        if (typeof detectionInterval !== 'undefined') clearInterval(detectionInterval);
         if (window._faceStream) {
             window._faceStream.getTracks().forEach(function(t) { t.stop(); });
             window._faceStream = null;
         }
         var v = document.getElementById('face-video');
         if (v) v.srcObject = null;
+        var canvas = document.getElementById('face-canvas');
+        if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
     }
 </script>
 {% block javascripts %}
@@ -227,18 +253,23 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify({ descriptor: descriptor, _csrf_token: csrfToken })
-        }).then(function(res) {
-            if (res && res.redirected) {
-                window.location.href = res.url;
-                return;
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data && data.success && data.redirect) {
+                statusEl.textContent = 'Connexion réussie ! Redirection...';
+                window.location.href = data.redirect;
+            } else if (data && data.error) {
+                statusEl.textContent = data.error;
+                if (btn) btn.disabled = false;
+            } else {
+                statusEl.textContent = 'Erreur inconnue. Réessayez.';
+                if (btn) btn.disabled = false;
             }
-            if (res && !res.ok) {
-                statusEl.textContent = 'Erreur. Réessayez ou connectez-vous avec email et mot de passe.';
-            }
-            if (btn) btn.disabled = false;
-        }).catch(function(err) {
+        })
+        .catch(function(err) {
             console.error(err);
-            statusEl.textContent = 'Erreur. Réessayez ou connectez-vous avec email et mot de passe.';
+            statusEl.textContent = 'Erreur réseau. Réessayez.';
             if (btn) btn.disabled = false;
         });
     }
@@ -254,7 +285,7 @@
         btn.disabled = true;
         statusEl.textContent = 'Vérification en cours...';
         loadModels().then(function() {
-            return faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320 })).withFaceLandmarks().withFaceDescriptor();
+            return faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
         }).then(function(detection) {
             if (!detection) {
                 statusEl.textContent = 'Aucun visage détecté. Placez votre visage face à la caméra.';
