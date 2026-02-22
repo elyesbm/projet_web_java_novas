@@ -27,6 +27,10 @@
                     <i data-lucide="sparkles" class="w-4 h-4"></i>
                     Analyser avec IA
                 </button>
+                <a href="{{ path('app_marketplace_export_pdf') }}" class="flex items-center gap-2 px-4 py-2 text-sm bg-secondary border border-white/10 rounded-xl hover:bg-white/5 transition-colors">
+                    <i data-lucide="file-down" class="w-4 h-4"></i>
+                    Exporter PDF
+                </a>
                 <a href="{{ path('app_marketplace_ajouter_public') }}" class="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 w-fit">
                     <i data-lucide="plus" class="w-5 h-5"></i>
                     Ajouter un produit (article)
@@ -158,6 +162,31 @@
                     </div>
                     {% endfor %}
                 </div>
+
+                {% if total_pages is defined %}
+                    <nav class="mt-10 flex items-center justify-center gap-3" aria-label="Pagination des produits">
+                        <a href="{{ path('app_marketplace_index', app.request.query.all|merge({'page': current_page > 1 ? current_page - 1 : 1})) }}"
+                           class="h-16 w-16 inline-flex items-center justify-center rounded-2xl border-2 border-white/20 bg-transparent text-foreground text-3xl leading-none transition-colors {{ current_page == 1 ? 'pointer-events-none opacity-40' : 'hover:border-primary/50 hover:text-primary' }}"
+                           aria-label="Page precedente">
+                            <span>&lsaquo;</span>
+                        </a>
+
+                        <div class="flex items-center gap-3">
+                            {% for p in 1..total_pages %}
+                                <a href="{{ path('app_marketplace_index', app.request.query.all|merge({'page': p})) }}"
+                                   class="h-16 w-16 inline-flex items-center justify-center rounded-2xl border-2 text-3xl font-semibold leading-none transition-colors {{ p == current_page ? 'border-primary bg-primary text-white' : 'border-white/20 bg-transparent text-foreground hover:border-primary/50 hover:text-primary' }}">
+                                    {{ p }}
+                                </a>
+                            {% endfor %}
+                        </div>
+
+                        <a href="{{ path('app_marketplace_index', app.request.query.all|merge({'page': current_page < total_pages ? current_page + 1 : total_pages})) }}"
+                           class="h-16 w-16 inline-flex items-center justify-center rounded-2xl border-2 border-white/20 bg-transparent text-foreground text-3xl leading-none transition-colors {{ current_page == total_pages ? 'pointer-events-none opacity-40' : 'hover:border-primary/50 hover:text-primary' }}"
+                           aria-label="Page suivante">
+                            <span>&rsaquo;</span>
+                        </a>
+                    </nav>
+                {% endif %}
             {% endif %}
         </div>
     </section>

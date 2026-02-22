@@ -7,6 +7,8 @@ use App\Entity\Categorie;
 use App\Entity\User;
 use App\Repository\ArticleRepository;
 use App\Repository\CategorieRepository;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -88,11 +90,18 @@ class MarketplaceController extends AbstractController
 
         // Articles depuis la base selon critÃ¨res ou recherche libre
         $q = trim((string) $request->query->get('q', ''));
-        if ($q !== '') {
-            $articlesEntities = $articleRepository->search($q, $criteria, $order);
-        } else {
-            $articlesEntities = $articleRepository->findBy($criteria, $order);
+        $perPage = 4;
+        $currentPage = max(1, (int) $request->query->get('page', 1));
+        $offset = ($currentPage - 1) * $perPage;
+
+        $totalArticles = $articleRepository->countSearch($q, $criteria);
+        $totalPages = max(1, (int) ceil($totalArticles / $perPage));
+        if ($currentPage > $totalPages) {
+            $currentPage = $totalPages;
+            $offset = ($currentPage - 1) * $perPage;
         }
+
+        $articlesEntities = $articleRepository->searchPaginated($q, $criteria, $order, $perPage, $offset);
         $articles = array_map(function (Article $article): array {
             $categorie = $article->getCategorie();
             $auteur = $article->getAuteur();
@@ -129,6 +138,53 @@ class MarketplaceController extends AbstractController
         return $this->render('front/marketplace/index.html.twig', [
             'categories' => $categories,
             'articles' => $articles,
+            'current_page' => $currentPage,
+            'total_pages' => $totalPages,
+        ]);
+    }
+
+    #[Route('/export/pdf', name: 'app_marketplace_export_pdf', methods: ['GET'])]
+    public function exportPdfDisponibles(ArticleRepository $articleRepository): Response
+    {
+        $articlesEntities = $articleRepository->createQueryBuilder('a')
+            ->leftJoin('a.categorie', 'c')
+            ->addSelect('c')
+            ->where('a.statut_article IS NULL OR LOWER(TRIM(a.statut_article)) = :statut')
+            ->setParameter('statut', 'disponible')
+            ->orderBy('a.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $articles = array_map(static function (Article $article): array {
+            $categorie = $article->getCategorie();
+            return [
+                'titre' => (string) ($article->getTitreArticle() ?? 'Sans titre'),
+                'categorie' => $categorie instanceof Categorie ? (string) ($categorie->getNomCategorie() ?? 'Autre') : 'Autre',
+                'prix' => (float) ($article->getPrixArticle() ?? 0),
+                'description' => trim((string) ($article->getContenueArticle() ?? '')),
+                'statut' => (string) ($article->getStatutArticle() ?? 'disponible'),
+            ];
+        }, $articlesEntities);
+
+        $html = $this->renderView('front/marketplace/pdf_disponibles.html.twig', [
+            'articles' => $articles,
+            'generated_at' => new \DateTimeImmutable(),
+        ]);
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        // Use a core PDF font to avoid font parsing issues on some Windows/iconv setups.
+        $options->set('defaultFont', 'Helvetica');
+        $options->set('isFontSubsettingEnabled', false);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="marketplace-produits-disponibles-' . (new \DateTimeImmutable())->format('Ymd-His') . '.pdf"',
         ]);
     }
 
@@ -949,7 +1005,7 @@ class MarketplaceController extends AbstractController
                         return $this->redirectToRoute('app_marketplace_index');
                     }
 
-                    $this->addFlash('success', 'Votre article a Ã©tÃ© publiÃ© avec succÃ¨s (anonyme). (ID: ' . $article->getId() . ')');
+                    $this->addFlash('success', 'Votre article a ete publie avec succes (anonyme). (ID: ' . $article->getId() . ')');
                     return $this->redirectToRoute('app_marketplace_detail', ['id' => $article->getId()]);
                 }
             }
@@ -1027,7 +1083,7 @@ class MarketplaceController extends AbstractController
 
                     $entityManager->flush();
 
-                    $this->addFlash('success', 'Votre article a Ã©tÃ© modifiÃ© avec succÃ¨s !');
+                    $this->addFlash('success', 'Votre article a ete modifie avec succes !');
                     return $this->redirectToRoute('app_marketplace_index');
                 }
             }
