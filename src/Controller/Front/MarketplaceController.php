@@ -18,13 +18,20 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 #[Route('/marketplace')]
 class MarketplaceController extends AbstractController
 {
     #[Route('/', name: 'app_marketplace_index')]
-    public function index(Request $request, ArticleRepository $articleRepository, CategorieRepository $categorieRepository): Response
+    public function index(Request $request, ArticleRepository $articleRepository, CategorieRepository $categorieRepository, HttpClientInterface $httpClient): Response
     {
+        $sendSmsOnReturn = (string) $request->query->get('send_sms', '') === '1';
+        $stripeSessionId = (string) $request->query->get('session_id', '');
+        if ($sendSmsOnReturn) {
+            $this->sendTwilioPaymentSmsOnce($request, $httpClient, $stripeSessionId);
+        }
+
         // CatÃ©gories depuis la base
         $categoriesEntities = $categorieRepository->findAll();
         $categories = array_map(static function (Categorie $categorie): array {
@@ -344,13 +351,67 @@ class MarketplaceController extends AbstractController
     #[Route('/paiement/success', name: 'app_marketplace_checkout_success', methods: ['GET'])]
     public function checkoutSuccess(Request $request): Response
     {
+        $stripeSessionId = (string) $request->query->get('session_id', '');
+
         $session = $request->getSession();
         $session->remove('marketplace_cart_qty');
         $session->remove('marketplace_cart');
 
         return $this->render('front/marketplace/paiement_success.html.twig', [
-            'session_id' => (string) $request->query->get('session_id', ''),
+            'session_id' => $stripeSessionId,
         ]);
+    }
+
+    private function sendTwilioPaymentSmsOnce(Request $request, HttpClientInterface $httpClient, string $stripeSessionId): void
+    {
+        if ($stripeSessionId === '') {
+            $this->addFlash('error', 'Session Stripe manquante: SMS non envoye.');
+            return;
+        }
+
+        $session = $request->getSession();
+        $alreadySentForSession = (array) $session->get('marketplace_sms_sent_sessions', []);
+        if (($alreadySentForSession[$stripeSessionId] ?? false) === true) {
+            return;
+        }
+
+        $twilioSid = (string) ($_ENV['MARKETPLACE_TWILIO_ACCOUNT_SID'] ?? $_SERVER['MARKETPLACE_TWILIO_ACCOUNT_SID'] ?? '');
+        $twilioToken = (string) ($_ENV['MARKETPLACE_TWILIO_AUTH_TOKEN'] ?? $_SERVER['MARKETPLACE_TWILIO_AUTH_TOKEN'] ?? '');
+        $twilioFrom = (string) ($_ENV['MARKETPLACE_TWILIO_FROM_PHONE'] ?? $_SERVER['MARKETPLACE_TWILIO_FROM_PHONE'] ?? '');
+        $twilioTo = (string) ($_ENV['MARKETPLACE_TWILIO_TO_PHONE'] ?? $_SERVER['MARKETPLACE_TWILIO_TO_PHONE'] ?? '');
+
+        if ($twilioSid === '' || $twilioToken === '' || $twilioFrom === '' || $twilioTo === '') {
+            $this->addFlash('error', 'Configuration Twilio incomplete: SMS non envoye.');
+            return;
+        }
+
+        $smsBody = 'Merci pour votre confiance. Le paiement a ete effectue avec succes et votre commande vous sera livree dans 2 jours.';
+
+        try {
+            $response = $httpClient->request('POST', sprintf('https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json', rawurlencode($twilioSid)), [
+                'auth_basic' => [$twilioSid, $twilioToken],
+                'body' => [
+                    'From' => $twilioFrom,
+                    'To' => $twilioTo,
+                    'Body' => $smsBody,
+                ],
+            ]);
+            $statusCode = $response->getStatusCode();
+            $data = $response->toArray(false);
+
+            if ($statusCode >= 300 || empty($data['sid'])) {
+                $twilioMessage = (string) ($data['message'] ?? 'Erreur inconnue');
+                $twilioCode = (string) ($data['code'] ?? $statusCode);
+                $this->addFlash('error', sprintf('Echec SMS Twilio (code %s): %s', $twilioCode, $twilioMessage));
+                return;
+            }
+
+            $alreadySentForSession[$stripeSessionId] = true;
+            $session->set('marketplace_sms_sent_sessions', $alreadySentForSession);
+            $this->addFlash('success', 'SMS de confirmation envoye.');
+        } catch (TransportExceptionInterface|\Throwable $e) {
+            $this->addFlash('error', 'Erreur reseau Twilio: ' . $e->getMessage());
+        }
     }
 
     #[Route('/panier/ajouter/{id}', name: 'app_marketplace_panier_ajouter', methods: ['POST'], requirements: ['id' => '\d+'])]
@@ -1023,5 +1084,7 @@ class MarketplaceController extends AbstractController
 
     
 }
+
+
 
 

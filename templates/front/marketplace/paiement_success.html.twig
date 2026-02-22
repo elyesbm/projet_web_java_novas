@@ -18,7 +18,7 @@
                     <p class="text-xs text-muted-foreground mb-6">Session Stripe: {{ session_id }}</p>
                 {% endif %}
                 <div class="flex flex-col sm:flex-row justify-center gap-3">
-                    <a href="{{ path('app_marketplace_index') }}" class="px-5 py-3 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors">Retour marketplace</a>
+                    <a href="{{ path('app_marketplace_index', {'send_sms': 1, 'session_id': session_id}) }}" class="px-5 py-3 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors">Retour marketplace</a>
                     <a href="{{ path('app_marketplace_panier') }}" class="px-5 py-3 rounded-xl bg-secondary border border-white/10 hover:bg-white/5 transition-colors">Voir panier</a>
                 </div>
             </div>
@@ -26,3 +26,4 @@
     </section>
 </div>
 {% endblock %}
+
