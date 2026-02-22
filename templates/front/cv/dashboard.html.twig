@@ -1,0 +1,385 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Mon ADN Professionnel — NoVas{% endblock %}
+
+{% block body %}
+{% include 'front/partials/_auth_nav.html.twig' %}
+
+<style>
+.adn-gradient { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%); }
+.score-ring { transform: rotate(-90deg); }
+.score-fill { stroke-linecap: round; transition: stroke-dashoffset 1.5s ease; }
+.skill-chip  { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; font-size:0.75rem; font-weight:500; border:1px solid; }
+.glass-card2 { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); backdrop-filter:blur(20px); }
+.progress-bar { height:6px; border-radius:999px; transition:width 1.5s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.fade-up { animation: fadeUp .6s ease both; }
+</style>
+
+<section class="relative min-h-screen pt-28 pb-20">
+    <!-- Background orbs -->
+    <div class="absolute inset-0 -z-10 overflow-hidden">
+        <div class="absolute top-10 left-1/4 w-96 h-96 bg-primary/15 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-1/4 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-6">
+
+        {# ─── HEADER ─── #}
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 fade-up">
+            <div>
+                <h1 class="font-serif text-3xl font-bold flex items-center gap-3">
+                    <span class="inline-flex w-11 h-11 rounded-xl adn-gradient items-center justify-center text-white">
+                        <i data-lucide="dna" class="w-6 h-6"></i>
+                    </span>
+                    Mon ADN Professionnel
+                </h1>
+                <p class="text-muted-foreground text-sm mt-1">Analyse IA de votre CV — {{ user.PRENOM }} {{ user.NOM }}</p>
+            </div>
+            <button onclick="document.getElementById('upload-modal').classList.remove('hidden')"
+                    class="inline-flex items-center gap-2 px-5 py-3 adn-gradient text-white rounded-xl font-medium hover:opacity-90 transition shadow-lg shadow-primary/30">
+                <i data-lucide="upload" class="w-5 h-5"></i>
+                {% if cvProfile %}Analyser un nouveau CV{% else %}Uploader mon CV{% endif %}
+            </button>
+        </div>
+
+        {% if not cvProfile or not cvProfile.hasBeenAnalyzed %}
+        {# ─── ÉTAT VIDE ─── #}
+        <div class="glass-card rounded-3xl p-12 text-center fade-up" style="animation-delay:.1s">
+            <div class="inline-flex w-20 h-20 rounded-2xl bg-primary/10 border border-primary/20 items-center justify-center mb-6">
+                <i data-lucide="file-search" class="w-10 h-10 text-primary"></i>
+            </div>
+            <h2 class="font-serif text-2xl font-semibold mb-3">Aucun CV analysé</h2>
+            <p class="text-muted-foreground max-w-md mx-auto mb-8">
+                Uploadez votre CV (PDF ou DOCX) et notre IA identifiera vos compétences, générera votre score professionnel et vous donnera des recommandations personnalisées.
+            </p>
+            <button onclick="document.getElementById('upload-modal').classList.remove('hidden')"
+                    class="inline-flex items-center gap-2 px-6 py-3 adn-gradient text-white rounded-xl font-semibold hover:opacity-90 transition shadow-lg shadow-primary/30">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                Analyser mon CV avec l'IA
+            </button>
+        </div>
+
+        {% else %}
+        {# ─── TABLEAU DE BORD ─── #}
+
+        {# Scores principaux #}
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+            {% set scores = [
+                {label: 'Score CV', value: cvProfile.cvScore, icon: 'file-text', desc: 'Qualité & impact du CV'},
+                {label: 'Maturité Pro', value: cvProfile.maturityScore, icon: 'trending-up', desc: 'Profondeur de l\'expérience'},
+                {label: 'Compétitivité', value: cvProfile.competitivenessIndex, icon: 'zap', desc: 'Vs standards du marché'}
+            ] %}
+            {% for s in scores %}
+            {% set color = s.value >= 80 ? 'emerald' : (s.value >= 60 ? 'blue' : (s.value >= 40 ? 'amber' : 'rose')) %}
+            <div class="glass-card2 rounded-2xl p-6 flex items-center gap-5 fade-up" style="animation-delay:{{ loop.index * 0.1 }}s">
+                <div class="relative flex-shrink-0">
+                    <svg width="80" height="80" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+                        <circle class="score-ring score-fill" cx="40" cy="40" r="34" fill="none"
+                            stroke="{% if color == 'emerald' %}#34d399{% elseif color == 'blue' %}#60a5fa{% elseif color == 'amber' %}#fbbf24{% else %}#f87171{% endif %}"
+                            stroke-width="8"
+                            stroke-dasharray="{{ 2 * 3.14159 * 34 }}"
+                            stroke-dashoffset="{{ (2 * 3.14159 * 34) * (1 - s.value / 100) }}"
+                            style="transform-origin:center"/>
+                    </svg>
+                    <span class="absolute inset-0 flex items-center justify-center font-bold text-lg">{{ s.value }}</span>
+                </div>
+                <div>
+                    <p class="font-semibold text-foreground">{{ s.label }}</p>
+                    <p class="text-xs text-muted-foreground">{{ s.desc }}</p>
+                    <div class="mt-2 w-24 h-1.5 rounded-full bg-white/10">
+                        <div class="h-full rounded-full progress-bar"
+                             style="width:{{ s.value }}%; background:{% if color == 'emerald' %}#34d399{% elseif color == 'blue' %}#60a5fa{% elseif color == 'amber' %}#fbbf24{% else %}#f87171{% endif %}"></div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# Info niveau + domaine + résumé IA #}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+            <div class="glass-card2 rounded-2xl p-6 fade-up" style="animation-delay:.4s">
+                <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1">Niveau estimé</p>
+                <p class="text-2xl font-bold text-primary">{{ cvProfile.levelLabel }}</p>
+            </div>
+            <div class="glass-card2 rounded-2xl p-6 fade-up" style="animation-delay:.45s">
+                <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1">Domaine principal</p>
+                <p class="text-2xl font-bold">{{ cvProfile.mainDomain }}</p>
+            </div>
+            <div class="glass-card2 rounded-2xl p-6 fade-up" style="animation-delay:.5s">
+                <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1">CV analysé</p>
+                <p class="text-sm font-medium truncate">{{ cvProfile.cvFileName }}</p>
+                <p class="text-xs text-muted-foreground">{{ cvProfile.analyzedAt ? cvProfile.analyzedAt|date('d/m/Y à H:i') : '' }}</p>
+            </div>
+        </div>
+
+        {# Résumé IA #}
+        {% if cvProfile.aiSummary %}
+        <div class="glass-card2 rounded-2xl p-6 mb-8 border-l-4 border-primary fade-up" style="animation-delay:.55s">
+            <div class="flex items-center gap-2 mb-3">
+                <i data-lucide="sparkles" class="w-5 h-5 text-primary"></i>
+                <p class="font-semibold text-sm">Résumé IA</p>
+            </div>
+            <p class="text-muted-foreground text-sm leading-relaxed">{{ cvProfile.aiSummary }}</p>
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {# Compétences techniques #}
+            <div class="glass-card2 rounded-2xl p-6 fade-up" style="animation-delay:.6s">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i data-lucide="code-2" class="w-5 h-5 text-blue-400"></i> Compétences techniques
+                    <span class="ml-auto text-xs text-muted-foreground">{{ cvProfile.technicalSkills|length }} identifiées</span>
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for skill in cvProfile.technicalSkills %}
+                    <span class="skill-chip bg-blue-500/10 text-blue-300 border-blue-500/20">
+                        <i data-lucide="check" class="w-3 h-3"></i>{{ skill }}
+                    </span>
+                    {% else %}
+                    <p class="text-muted-foreground text-sm">Aucune compétence détectée</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# Soft skills #}
+            <div class="glass-card2 rounded-2xl p-6 fade-up" style="animation-delay:.65s">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i data-lucide="heart" class="w-5 h-5 text-rose-400"></i> Soft Skills
+                    <span class="ml-auto text-xs text-muted-foreground">{{ cvProfile.softSkills|length }} identifiés</span>
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for skill in cvProfile.softSkills %}
+                    <span class="skill-chip bg-rose-500/10 text-rose-300 border-rose-500/20">
+                        <i data-lucide="star" class="w-3 h-3"></i>{{ skill }}
+                    </span>
+                    {% else %}
+                    <p class="text-muted-foreground text-sm">Aucun soft skill détecté</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {# Points faibles #}
+            <div class="glass-card2 rounded-2xl p-6 fade-up" style="animation-delay:.7s">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400"></i> Points d'amélioration
+                </h3>
+                <ul class="space-y-2">
+                    {% for point in cvProfile.weakPoints %}
+                    <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                        <span class="text-amber-400 mt-0.5">⚠</span>
+                        {{ point }}
+                    </li>
+                    {% else %}
+                    <p class="text-muted-foreground text-sm">Aucun point faible critique</p>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            {# Recommandations #}
+            <div class="glass-card2 rounded-2xl p-6 fade-up" style="animation-delay:.75s">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i data-lucide="lightbulb" class="w-5 h-5 text-yellow-400"></i> Recommandations personnalisées
+                </h3>
+                <ul class="space-y-3">
+                    {% for rec in cvProfile.recommendations %}
+                    {% set pColor = rec.priority == 'haute' ? 'rose' : (rec.priority == 'moyenne' ? 'amber' : 'green') %}
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 mt-0.5 px-2 py-0.5 rounded text-xs font-medium
+                            {% if pColor == 'rose' %}bg-rose-500/20 text-rose-300{% elseif pColor == 'amber' %}bg-amber-500/20 text-amber-300{% else %}bg-emerald-500/20 text-emerald-300{% endif %}">
+                            {{ rec.priority|capitalize }}
+                        </span>
+                        <div>
+                            <p class="text-sm text-foreground">{{ rec.action }}</p>
+                            {% if rec.impact is defined %}
+                            <p class="text-xs text-muted-foreground">{{ rec.impact }}</p>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% else %}
+                    <p class="text-muted-foreground text-sm">Aucune recommandation</p>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        {# Simulation d'évolution #}
+        {% if cvProfile.evolutionSimulation %}
+        <div class="glass-card2 rounded-2xl p-6 fade-up" style="animation-delay:.8s">
+            <h3 class="font-semibold mb-6 flex items-center gap-2">
+                <i data-lucide="trending-up" class="w-5 h-5 text-emerald-400"></i>
+                Simulation d'évolution du score
+                <span class="ml-2 text-xs text-muted-foreground font-normal">Si vous acquérez ces compétences…</span>
+            </h3>
+            <div class="space-y-4">
+                {% for sim in cvProfile.evolutionSimulation %}
+                {% set gain = sim.predicted_score - sim.current_score %}
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <p class="text-sm font-medium">{{ sim.scenario }}</p>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-muted-foreground">{{ sim.timeline }}</span>
+                            <span class="font-bold text-emerald-400">+{{ gain }} pts → {{ sim.predicted_score }}/100</span>
+                        </div>
+                    </div>
+                    <div class="h-3 rounded-full bg-white/5 relative overflow-hidden">
+                        {# barre actuelle #}
+                        <div class="absolute inset-y-0 left-0 rounded-full bg-white/20"
+                             style="width:{{ sim.current_score }}%"></div>
+                        {# barre projetée #}
+                        <div class="absolute inset-y-0 left-0 rounded-full bg-emerald-400/70 progress-bar"
+                             style="width:{{ sim.predicted_score }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% endif %}
+    </div>
+</section>
+
+{# ─── MODAL UPLOAD ─── #}
+<div id="upload-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="document.getElementById('upload-modal').classList.add('hidden')"></div>
+    <div class="relative glass-card rounded-3xl p-8 w-full max-w-md shadow-2xl">
+        <button onclick="document.getElementById('upload-modal').classList.add('hidden')"
+                class="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+            <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+        <div class="text-center mb-6">
+            <div class="inline-flex w-14 h-14 rounded-2xl adn-gradient items-center justify-center text-white mb-3">
+                <i data-lucide="file-up" class="w-7 h-7"></i>
+            </div>
+            <h2 class="font-serif text-xl font-semibold">Analyser mon CV</h2>
+            <p class="text-muted-foreground text-sm mt-1">PDF, DOCX ou TXT — 5 Mo max</p>
+        </div>
+
+        <div id="upload-error" class="hidden mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm"></div>
+
+        <form id="cv-upload-form">
+            {# Zone drag & drop #}
+            <label id="drop-zone"
+                   class="block border-2 border-dashed border-white/20 rounded-2xl p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group mb-5"
+                   for="cv-file-input">
+                <i data-lucide="upload-cloud" class="w-12 h-12 text-muted-foreground group-hover:text-primary mx-auto mb-3 transition-colors"></i>
+                <p class="text-sm font-medium group-hover:text-primary transition-colors">Glissez votre CV ici</p>
+                <p class="text-xs text-muted-foreground mt-1">ou cliquez pour sélectionner</p>
+                <input type="file" id="cv-file-input" accept=".pdf,.docx,.txt" class="hidden">
+            </label>
+
+            <div id="file-preview" class="hidden mb-5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3">
+                <i data-lucide="file-check" class="w-5 h-5 text-emerald-400 flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                    <p id="file-name" class="text-sm font-medium truncate text-emerald-300"></p>
+                    <p id="file-size" class="text-xs text-muted-foreground"></p>
+                </div>
+            </div>
+
+            <button type="submit" id="analyze-btn"
+                    class="w-full h-13 py-3.5 adn-gradient text-white rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                <span id="analyze-btn-text">Analyser avec l'IA</span>
+            </button>
+        </form>
+
+        {# Loader #}
+        <div id="upload-loader" class="hidden text-center py-4">
+            <div class="inline-flex items-center gap-3 text-sm text-muted-foreground">
+                <svg class="animate-spin w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                Analyse IA en cours — cela peut prendre quelques secondes…
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+if (typeof lucide !== 'undefined') lucide.createIcons();
+
+(function() {
+    var csrfToken = {{ csrf_token('cv_upload')|json_encode|raw }};
+    var uploadUrl = {{ path('app_cv_upload')|json_encode|raw }};
+    var fileInput = document.getElementById('cv-file-input');
+    var dropZone  = document.getElementById('drop-zone');
+    var analyzeBtn   = document.getElementById('analyze-btn');
+    var analyzeBtnText = document.getElementById('analyze-btn-text');
+    var filePreview  = document.getElementById('file-preview');
+    var fileName  = document.getElementById('file-name');
+    var fileSize  = document.getElementById('file-size');
+    var loader    = document.getElementById('upload-loader');
+    var errorBox  = document.getElementById('upload-error');
+    var selectedFile = null;
+
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' o';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' Ko';
+        return (bytes / 1024 / 1024).toFixed(1) + ' Mo';
+    }
+
+    function setFile(file) {
+        selectedFile = file;
+        fileName.textContent  = file.name;
+        fileSize.textContent  = formatSize(file.size);
+        filePreview.classList.remove('hidden');
+        analyzeBtn.disabled = false;
+    }
+
+    fileInput.addEventListener('change', function() {
+        if (this.files[0]) setFile(this.files[0]);
+    });
+
+    // Drag & drop
+    dropZone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('border-primary/50'); });
+    dropZone.addEventListener('dragleave', function() { this.classList.remove('border-primary/50'); });
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-primary/50');
+        if (e.dataTransfer.files[0]) { fileInput.files = e.dataTransfer.files; setFile(e.dataTransfer.files[0]); }
+    });
+
+    // Soumission
+    document.getElementById('cv-upload-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!selectedFile) return;
+
+        errorBox.classList.add('hidden');
+        analyzeBtn.disabled = true;
+        analyzeBtnText.textContent = 'Analyse en cours…';
+        loader.classList.remove('hidden');
+
+        var formData = new FormData();
+        formData.append('cv_file', selectedFile);
+        formData.append('_csrf_token', csrfToken);
+
+        fetch(uploadUrl, { method: 'POST', body: formData })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success && data.redirect) {
+                window.location.href = data.redirect;
+            } else {
+                errorBox.textContent = data.error || 'Erreur inconnue.';
+                errorBox.classList.remove('hidden');
+                analyzeBtn.disabled = false;
+                analyzeBtnText.textContent = 'Analyser avec l\'IA';
+                loader.classList.add('hidden');
+            }
+        })
+        .catch(function() {
+            errorBox.textContent = 'Erreur réseau. Réessayez.';
+            errorBox.classList.remove('hidden');
+            analyzeBtn.disabled = false;
+            analyzeBtnText.textContent = 'Analyser avec l\'IA';
+            loader.classList.add('hidden');
+        });
+    });
+})();
+</script>
+{% endblock %}

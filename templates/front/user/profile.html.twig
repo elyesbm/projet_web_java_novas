@@ -141,6 +141,16 @@
                     <i data-lucide="edit" class="w-4 h-4"></i>
                     Modifier mon profil
                 </a>
+                <a href="{{ path('app_cv_dashboard') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white hover:opacity-90 transition-colors text-sm font-medium shadow-lg"
+                   style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">
+                    <i data-lucide="dna" class="w-4 h-4"></i>
+                    Mon ADN Professionnel
+                    {% if user.cvProfile and user.cvProfile.hasBeenAnalyzed %}
+                        <span class="px-1.5 py-0.5 rounded text-xs bg-white/20">{{ user.cvProfile.cvScore }}/100</span>
+                    {% else %}
+                        <span class="px-1.5 py-0.5 rounded text-xs bg-white/20">Nouveau</span>
+                    {% endif %}
+                </a>
             </div>
         </div>
     </div>

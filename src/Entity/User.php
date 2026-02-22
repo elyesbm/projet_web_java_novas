@@ -92,6 +92,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'createur', targetEntity: Skill::class)]
     private Collection $skills;
 
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: CvProfile::class, cascade: ['persist', 'remove'])]
+    private ?CvProfile $cvProfile = null;
+
     public function __construct()
     {
         $this->articles = new ArrayCollection();
@@ -102,6 +105,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->reservations = new ArrayCollection();
         $this->skills = new ArrayCollection();
     }
+
+    public function getCvProfile(): ?CvProfile { return $this->cvProfile; }
+    public function setCvProfile(?CvProfile $cvProfile): static { $this->cvProfile = $cvProfile; return $this; }
 
     // Getters et setters basiques...
     public function getId(): ?int { return $this->id; }
