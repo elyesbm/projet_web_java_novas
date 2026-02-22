@@ -3,11 +3,11 @@
 namespace App\Form;
 
 use App\Entity\Publication;
+use FOS\CKEditorBundle\Form\Type\CKEditorType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -33,11 +33,10 @@ class PublicationType extends AbstractType
                 'empty_data' => '',
                 'trim' => true,
             ])
-            ->add('contenu', TextareaType::class, [
+            ->add('contenu', CKEditorType::class, [
+                'config_name' => 'publication',
                 'required' => false,
                 'empty_data' => '',
-                'trim' => true,
-                'attr' => ['rows' => 8],
             ]);
 
         if ($options['with_anonyme']) {
