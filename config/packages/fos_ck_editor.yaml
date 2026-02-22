@@ -1,0 +1,17 @@
+fos_ck_editor:
+    # CDN pour éviter ckeditor:install (requiert ext-zip)
+    base_path: 'https://cdn.ckeditor.com/4.22.1/full'
+    js_path: 'https://cdn.ckeditor.com/4.22.1/full/ckeditor.js'
+    default_config: publication
+    configs:
+        publication:
+            toolbar:
+                - ['Bold', 'Italic', 'Underline', 'Strike']
+                - ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent']
+                - ['Link', 'Unlink']
+                - ['Format', 'Styles']
+                - ['Source']
+            uiColor: '#1a1917'
+            language: 'fr'
+            height: 300
+            contentsCss: ['/css/ckeditor-dark.css']

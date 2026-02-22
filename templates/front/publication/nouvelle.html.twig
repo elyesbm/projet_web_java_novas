@@ -2,6 +2,45 @@
 
 {% block title %}Nouvelle Publication - NoVas{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* CKEditor : thème sombre pour la barre d'outils et le cadre */
+.cke_chrome {
+    border-color: rgba(255,255,255,0.1) !important;
+    background: #1a1917 !important;
+}
+.cke_top {
+    background: #1a1917 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+}
+.cke_bottom {
+    background: #2a2825 !important;
+    border-top: 1px solid rgba(255,255,255,0.1) !important;
+    color: #a8a29e !important;
+}
+.cke_toolbar,
+.cke_toolgroup {
+    background: transparent !important;
+    border: none !important;
+}
+.cke_button_label,
+.cke_combo_label {
+    color: #faf7f2 !important;
+}
+.cke_combo_text {
+    color: #faf7f2 !important;
+}
+.cke_panel {
+    background: #1a1917 !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+.cke_resizer {
+    border-color: #a8a29e transparent transparent #a8a29e !important;
+}
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="min-h-screen bg-background relative overflow-hidden">
     <div class="absolute inset-0 gradient-orb"></div>
@@ -94,7 +133,7 @@
                     }) }}
                     <div class="flex justify-between mt-2">
                         <p class="text-xs text-muted-foreground">Soyez respectueux et constructif</p>
-                        <p class="text-xs text-muted-foreground">0 / 2000 caracteres</p>
+                        <p class="text-xs text-muted-foreground">0 / 5000 caractères</p>
                     </div>
                     <div class="mt-2 text-xs text-red-400">{{ form_errors(form.contenu) }}</div>
                 </div>

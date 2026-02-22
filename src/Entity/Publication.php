@@ -1,14 +1,16 @@
 <?php
 
 namespace App\Entity;
-use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\PublicationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PublicationRepository::class)]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 class Publication
 {
     #[ORM\Id]
@@ -91,6 +93,9 @@ public function decrementLikes(): static
 #[ORM\Column(type: 'datetime', nullable: true)]
 private ?\DateTimeInterface $date_modification = null;
 
+    #[ORM\Column(name: 'deleted_at', type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $deletedAt = null;
+
 public function getDateModification(): ?\DateTimeInterface
 {
     return $this->date_modification;
@@ -102,7 +107,16 @@ public function setDateModification(?\DateTimeInterface $date): self
     return $this;
 }
 
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
 
+    public function setDeletedAt(?\DateTimeInterface $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
+        return $this;
+    }
 
     public function getId(): ?int { return $this->id; }
     public function getTitre(): ?string { return $this->titre; }

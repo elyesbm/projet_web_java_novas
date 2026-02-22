@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Repository\CommentaireRepository;
+use App\Repository\PublicationReactionRepository;
 use App\Repository\PublicationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,7 +18,8 @@ class PublicationAdminController extends AbstractController
     public function list(
         Request $request,
         PublicationRepository $publicationRepo,
-        CommentaireRepository $commentRepo
+        CommentaireRepository $commentRepo,
+        PublicationReactionRepository $reactionRepo
     ): Response {
         // ✅ recherche + tri
         $q = trim((string) $request->query->get('q', ''));
@@ -62,10 +64,16 @@ class PublicationAdminController extends AbstractController
 
         // ✅ commentaires (inchangé, si tu l’utilises encore dans le twig)
         $commentaires = $commentRepo->findBy([], ['date_creation' => 'DESC']);
+        $publicationIds = array_values(array_filter(
+            array_map(static fn($pub) => $pub->getId(), $publications),
+            static fn($id) => $id !== null
+        ));
+        $likersByPublication = $reactionRepo->findLikersByPublicationIds($publicationIds);
 
         return $this->render('admin/publication/list.html.twig', [
             'publications' => $publications,
             'commentaires' => $commentaires,
+            'likersByPublication' => $likersByPublication,
             'totalPublications' => $totalPublications,
             'totalCommentaires' => $totalCommentaires,
             'totalLikes' => $totalLikes,
@@ -77,15 +85,22 @@ class PublicationAdminController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET'])]
-    public function edit(int $id, PublicationRepository $publicationRepo): Response
+    public function edit(
+        int $id,
+        PublicationRepository $publicationRepo,
+        PublicationReactionRepository $reactionRepo
+    ): Response
     {
         $publication = $publicationRepo->find($id);
         if (!$publication) {
             throw $this->createNotFoundException('Publication introuvable');
         }
 
+        $likers = $reactionRepo->findLikersByPublicationId($id);
+
         return $this->render('admin/publication/form.html.twig', [
             'publication' => $publication,
+            'likers' => $likers,
         ]);
     }
 

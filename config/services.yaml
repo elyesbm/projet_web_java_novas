@@ -4,6 +4,9 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.toxicity.rapidapi_key: '%env(default::RAPIDAPI_KEY)%'
+    app.translation.api_url: '%env(string:TRANSLATION_API_URL)%'
+    app.translation.api_key: '%env(string:TRANSLATION_API_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -32,6 +35,12 @@ services:
     App\EventListener\RequireTwoFactorListener:
         tags:
             - { name: kernel.event_subscriber, priority: 190 }
+
+    App\Service\PublicationTranslationService:
+        arguments:
+    App\Service\ToxicityAnalysisService:
+        arguments:
+            $rapidApiKey: '%app.toxicity.rapidapi_key%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
