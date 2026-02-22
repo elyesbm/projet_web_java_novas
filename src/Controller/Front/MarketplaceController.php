@@ -14,8 +14,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[Route('/marketplace')]
 class MarketplaceController extends AbstractController
@@ -23,7 +25,7 @@ class MarketplaceController extends AbstractController
     #[Route('/', name: 'app_marketplace_index')]
     public function index(Request $request, ArticleRepository $articleRepository, CategorieRepository $categorieRepository): Response
     {
-        // Catégories depuis la base
+        // CatÃ©gories depuis la base
         $categoriesEntities = $categorieRepository->findAll();
         $categories = array_map(static function (Categorie $categorie): array {
             $nom = $categorie->getNomCategorie() ?? '';
@@ -76,7 +78,7 @@ class MarketplaceController extends AbstractController
             };
         }
 
-        // Articles depuis la base selon critères ou recherche libre
+        // Articles depuis la base selon critÃ¨res ou recherche libre
         $q = trim((string) $request->query->get('q', ''));
         if ($q !== '') {
             $articlesEntities = $articleRepository->search($q, $criteria, $order);
@@ -123,7 +125,7 @@ class MarketplaceController extends AbstractController
     }
 
     #[Route('/article/{id}', name: 'app_marketplace_detail', requirements: ['id' => '\d+'])]
-    public function detail(int $id, ArticleRepository $articleRepository): Response
+    public function detail(int $id, Request $request, ArticleRepository $articleRepository): Response
     {
         $articleEntity = $articleRepository->find($id);
         if (!$articleEntity instanceof Article) {
@@ -169,18 +171,287 @@ class MarketplaceController extends AbstractController
             ];
         }, array_values(array_filter($autres, static fn (Article $a) => $a->getId() !== $id)));
         $articles_similaires = array_slice($articles_similaires, 0, 3);
+        $session = $request->getSession();
+        $cartQty = (array) $session->get('marketplace_cart_qty', []);
+        if (empty($cartQty)) {
+            $legacyCartIds = array_values(array_unique(array_map('intval', (array) $session->get('marketplace_cart', []))));
+            foreach ($legacyCartIds as $legacyId) {
+                $cartQty[(string) $legacyId] = 1;
+            }
+        }
+        $inCart = ((int) ($cartQty[(string) $articleEntity->getId()] ?? 0)) > 0;
 
         return $this->render('front/marketplace/detail.html.twig', [
             'article' => $article,
             'articles_similaires' => $articles_similaires,
+            'in_cart' => $inCart,
         ]);
+    }
+
+    #[Route('/panier', name: 'app_marketplace_panier', methods: ['GET'])]
+    public function panier(Request $request, ArticleRepository $articleRepository): Response
+    {
+        $session = $request->getSession();
+        $cartQty = (array) $session->get('marketplace_cart_qty', []);
+        if (empty($cartQty)) {
+            $legacyCartIds = array_values(array_unique(array_map('intval', (array) $session->get('marketplace_cart', []))));
+            foreach ($legacyCartIds as $legacyId) {
+                $cartQty[(string) $legacyId] = 1;
+            }
+        }
+
+        $cartIds = [];
+        foreach ($cartQty as $id => $qty) {
+            $articleId = (int) $id;
+            $quantity = (int) $qty;
+            if ($articleId > 0 && $quantity > 0) {
+                $cartIds[] = $articleId;
+            }
+        }
+
+        $articlesEntities = [];
+        if (!empty($cartIds)) {
+            $articlesEntities = $articleRepository->findBy(['id' => $cartIds]);
+        }
+
+        $articlesById = [];
+        foreach ($articlesEntities as $articleEntity) {
+            if (!$articleEntity instanceof Article) {
+                continue;
+            }
+            $articlesById[$articleEntity->getId()] = $articleEntity;
+        }
+
+        $articles = [];
+        foreach ($cartIds as $articleId) {
+            if (!isset($articlesById[$articleId])) {
+                continue;
+            }
+            $articleEntity = $articlesById[$articleId];
+            $image = $articleEntity->getImageArticle() ?: 'skills-learning.jpg';
+            $imagesDir = $this->getParameter('kernel.project_dir') . '/public/images';
+            if (!is_file($imagesDir . '/' . $image)) {
+                $image = 'skills-learning.jpg';
+            }
+
+            $articles[] = [
+                'id' => $articleEntity->getId(),
+                'titre' => $articleEntity->getTitreArticle(),
+                'prix' => $articleEntity->getPrixArticle() ?? 0,
+                'image' => $image,
+                'quantite' => (int) ($cartQty[(string) $articleEntity->getId()] ?? 1),
+            ];
+        }
+
+        return $this->render('front/marketplace/panier.html.twig', [
+            'articles' => $articles,
+        ]);
+    }
+
+    #[Route('/paiement/checkout', name: 'app_marketplace_checkout', methods: ['POST'])]
+    public function checkout(Request $request, ArticleRepository $articleRepository, HttpClientInterface $httpClient): Response
+    {
+        if (!$this->isCsrfTokenValid('marketplace_checkout', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_marketplace_panier');
+        }
+
+        $secretKey = (string) ($_ENV['STRIPE_SECRET_KEY'] ?? $_SERVER['STRIPE_SECRET_KEY'] ?? '');
+        if ($secretKey === '') {
+            $this->addFlash('error', 'Stripe non configuré. Ajoutez STRIPE_SECRET_KEY dans .env.local');
+            return $this->redirectToRoute('app_marketplace_panier');
+        }
+
+        $session = $request->getSession();
+        $cartQty = (array) $session->get('marketplace_cart_qty', []);
+        if (empty($cartQty)) {
+            $legacyCartIds = array_values(array_unique(array_map('intval', (array) $session->get('marketplace_cart', []))));
+            foreach ($legacyCartIds as $legacyId) {
+                $cartQty[(string) $legacyId] = 1;
+            }
+        }
+
+        $cartIds = [];
+        foreach ($cartQty as $id => $qty) {
+            if ((int) $id > 0 && (int) $qty > 0) {
+                $cartIds[] = (int) $id;
+            }
+        }
+        if (empty($cartIds)) {
+            $this->addFlash('error', 'Votre panier est vide.');
+            return $this->redirectToRoute('app_marketplace_panier');
+        }
+
+        $articles = $articleRepository->findBy(['id' => $cartIds]);
+        $articlesById = [];
+        foreach ($articles as $article) {
+            if ($article instanceof Article) {
+                $articlesById[$article->getId()] = $article;
+            }
+        }
+
+        $payload = [
+            'mode' => 'payment',
+            'success_url' => $this->generateUrl('app_marketplace_checkout_success', [], UrlGeneratorInterface::ABSOLUTE_URL) . '?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => $this->generateUrl('app_marketplace_panier', [], UrlGeneratorInterface::ABSOLUTE_URL),
+        ];
+
+        $lineIndex = 0;
+        foreach ($cartIds as $articleId) {
+            if (!isset($articlesById[$articleId])) {
+                continue;
+            }
+            $article = $articlesById[$articleId];
+            $qty = max(1, (int) ($cartQty[(string) $articleId] ?? 1));
+            $unitAmount = (int) round(((float) ($article->getPrixArticle() ?? 0)) * 100);
+            if ($unitAmount < 1) {
+                $unitAmount = 100;
+            }
+
+            $payload[sprintf('line_items[%d][price_data][currency]', $lineIndex)] = 'eur';
+            $payload[sprintf('line_items[%d][price_data][product_data][name]', $lineIndex)] = (string) ($article->getTitreArticle() ?? ('Article #' . $articleId));
+            $payload[sprintf('line_items[%d][price_data][unit_amount]', $lineIndex)] = $unitAmount;
+            $payload[sprintf('line_items[%d][quantity]', $lineIndex)] = $qty;
+            $lineIndex++;
+        }
+
+        if ($lineIndex === 0) {
+            $this->addFlash('error', 'Aucun article valide dans le panier.');
+            return $this->redirectToRoute('app_marketplace_panier');
+        }
+
+        try {
+            $response = $httpClient->request('POST', 'https://api.stripe.com/v1/checkout/sessions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $secretKey,
+                ],
+                'body' => $payload,
+            ]);
+            $statusCode = $response->getStatusCode();
+            $data = $response->toArray(false);
+            if ($statusCode >= 300 || empty($data['url'])) {
+                $this->addFlash('error', 'Impossible de créer la session de paiement Stripe.');
+                return $this->redirectToRoute('app_marketplace_panier');
+            }
+
+            return $this->redirect($data['url']);
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Erreur Stripe: ' . $e->getMessage());
+            return $this->redirectToRoute('app_marketplace_panier');
+        }
+    }
+
+    #[Route('/paiement/success', name: 'app_marketplace_checkout_success', methods: ['GET'])]
+    public function checkoutSuccess(Request $request): Response
+    {
+        $session = $request->getSession();
+        $session->remove('marketplace_cart_qty');
+        $session->remove('marketplace_cart');
+
+        return $this->render('front/marketplace/paiement_success.html.twig', [
+            'session_id' => (string) $request->query->get('session_id', ''),
+        ]);
+    }
+
+    #[Route('/panier/ajouter/{id}', name: 'app_marketplace_panier_ajouter', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function ajouterAuPanier(int $id, Request $request, ArticleRepository $articleRepository): Response
+    {
+        if (!$this->isCsrfTokenValid('panier_ajouter_' . $id, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_marketplace_index');
+        }
+
+        $article = $articleRepository->find($id);
+        if (!$article instanceof Article) {
+            $this->addFlash('error', 'Article introuvable.');
+            return $this->redirectToRoute('app_marketplace_index');
+        }
+
+        $session = $request->getSession();
+        $cartQty = (array) $session->get('marketplace_cart_qty', []);
+        if (empty($cartQty)) {
+            $legacyCartIds = array_values(array_unique(array_map('intval', (array) $session->get('marketplace_cart', []))));
+            foreach ($legacyCartIds as $legacyId) {
+                $cartQty[(string) $legacyId] = 1;
+            }
+        }
+
+        $key = (string) $id;
+        $cartQty[$key] = ((int) ($cartQty[$key] ?? 0)) + 1;
+        $session->set('marketplace_cart_qty', $cartQty);
+        $session->remove('marketplace_cart');
+        if ((int) $cartQty[$key] === 1) {
+            $this->addFlash('success', 'Article ajouté au panier.');
+        }
+
+        $redirectTo = (string) $request->request->get('redirect_to', 'detail');
+        if ($redirectTo === 'panier') {
+            return $this->redirectToRoute('app_marketplace_panier');
+        }
+
+        return $this->redirectToRoute('app_marketplace_detail', ['id' => $id]);
+    }
+
+    #[Route('/panier/diminuer/{id}', name: 'app_marketplace_panier_diminuer', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function diminuerQuantitePanier(int $id, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('panier_diminuer_' . $id, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_marketplace_panier');
+        }
+
+        $session = $request->getSession();
+        $cartQty = (array) $session->get('marketplace_cart_qty', []);
+        if (empty($cartQty)) {
+            $legacyCartIds = array_values(array_unique(array_map('intval', (array) $session->get('marketplace_cart', []))));
+            foreach ($legacyCartIds as $legacyId) {
+                $cartQty[(string) $legacyId] = 1;
+            }
+        }
+
+        $key = (string) $id;
+        $currentQty = (int) ($cartQty[$key] ?? 0);
+        if ($currentQty > 1) {
+            $cartQty[$key] = $currentQty - 1;
+        } else {
+            unset($cartQty[$key]);
+        }
+
+        $session->set('marketplace_cart_qty', $cartQty);
+        $session->remove('marketplace_cart');
+        return $this->redirectToRoute('app_marketplace_panier');
+    }
+
+    #[Route('/panier/supprimer/{id}', name: 'app_marketplace_panier_supprimer', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function supprimerDuPanier(int $id, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('panier_supprimer_' . $id, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_marketplace_panier');
+        }
+
+        $session = $request->getSession();
+        $cartQty = (array) $session->get('marketplace_cart_qty', []);
+        if (empty($cartQty)) {
+            $legacyCartIds = array_values(array_unique(array_map('intval', (array) $session->get('marketplace_cart', []))));
+            foreach ($legacyCartIds as $legacyId) {
+                $cartQty[(string) $legacyId] = 1;
+            }
+        }
+
+        unset($cartQty[(string) $id]);
+        $session->set('marketplace_cart_qty', $cartQty);
+        $session->remove('marketplace_cart');
+
+        $this->addFlash('success', 'Article retiré du panier.');
+        return $this->redirectToRoute('app_marketplace_panier');
     }
 
     #[Route('/mes-articles', name: 'app_marketplace_mes')]
     public function mesArticles(ArticleRepository $articleRepository): Response
     {
-        // À terme, filtrer par utilisateur connecté
-        // Afficher les articles du plus récent au plus ancien
+        // Ã€ terme, filtrer par utilisateur connectÃ©
+        // Afficher les articles du plus rÃ©cent au plus ancien
         $articlesEntities = $articleRepository->findBy([], ['id' => 'DESC']);
         $mesArticles = array_map(function (Article $article): array {
             $categorie = $article->getCategorie();
@@ -238,18 +509,18 @@ class MarketplaceController extends AbstractController
 
             $constraints = new Assert\Collection([
                 'fields' => [
-                    'titre' => [new Assert\NotBlank(['message' => 'Le titre est obligatoire.']), new Assert\Length(['min' => 2, 'max' => 255, 'minMessage' => 'Le titre doit contenir au moins {{ limit }} caractères.', 'maxMessage' => 'Le titre ne doit pas dépasser {{ limit }} caractères.'])],
-                    'contenu' => [new Assert\NotBlank(['message' => 'Le contenu est obligatoire.']), new Assert\Length(['min' => 10, 'max' => 5000, 'minMessage' => 'Le contenu doit contenir au moins {{ limit }} caractères.', 'maxMessage' => 'Le contenu est trop long (max {{ limit }} caractères).'])],
+                    'titre' => [new Assert\NotBlank(['message' => 'Le titre est obligatoire.']), new Assert\Length(['min' => 2, 'max' => 255, 'minMessage' => 'Le titre doit contenir au moins {{ limit }} caractÃ¨res.', 'maxMessage' => 'Le titre ne doit pas dÃ©passer {{ limit }} caractÃ¨res.'])],
+                    'contenu' => [new Assert\NotBlank(['message' => 'Le contenu est obligatoire.']), new Assert\Length(['min' => 10, 'max' => 5000, 'minMessage' => 'Le contenu doit contenir au moins {{ limit }} caractÃ¨res.', 'maxMessage' => 'Le contenu est trop long (max {{ limit }} caractÃ¨res).'])],
                     'prix' => [
                         new Assert\NotBlank(['message' => 'Le prix est obligatoire.']),
-                        new Assert\Regex(['pattern' => '/^\d+(?:[\.,]\d+)?$/', 'message' => 'Le prix doit être un nombre.']),
+                        new Assert\Regex(['pattern' => '/^\d+(?:[\.,]\d+)?$/', 'message' => 'Le prix doit Ãªtre un nombre.']),
                         new Assert\Range([
                             'min' => 0,
                             'max' => 1000000,
-                            'notInRangeMessage' => 'Le prix doit être compris entre {{ min }} et {{ max }}.',
+                            'notInRangeMessage' => 'Le prix doit Ãªtre compris entre {{ min }} et {{ max }}.',
                         ]),
                     ],
-                    'categorie' => [new Assert\NotBlank(['message' => 'La catégorie est obligatoire.']), new Assert\Regex(['pattern' => '/^\d+$/', 'message' => 'La catégorie sélectionnée est invalide.'])],
+                    'categorie' => [new Assert\NotBlank(['message' => 'La catÃ©gorie est obligatoire.']), new Assert\Regex(['pattern' => '/^\d+$/', 'message' => 'La catÃ©gorie sÃ©lectionnÃ©e est invalide.'])],
                     'type' => new Assert\Choice(['choices' => ['academic', 'commercial', 'service', 'other'], 'message' => 'Type invalide.']),
                     'statut' => new Assert\Choice(['choices' => ['disponible', 'vendu', 'reserve'], 'message' => 'Statut invalide.']),
                     'image_article' => new Assert\Optional(),
@@ -301,20 +572,20 @@ class MarketplaceController extends AbstractController
                 $categorie = $categorieRepository->find($categorieId);
 
                 if (!$categorie instanceof Categorie) {
-                    $this->addFlash('error', 'La catégorie sélectionnée est invalide.');
+                    $this->addFlash('error', 'La catÃ©gorie sÃ©lectionnÃ©e est invalide.');
                 } else {
                     $article = new Article();
                     $article
                         ->setTitreArticle($titre)
                         ->setContenueArticle($contenu)
-                        // TODO: gérer l’upload réel d’image. Placeholder pour l’instant.
+                        // TODO: gÃ©rer lâ€™upload rÃ©el dâ€™image. Placeholder pour lâ€™instant.
                         ->setImageArticle($imageArticle)
                         ->setTypeArticle($type)
                         ->setPrixArticle((float) $prix)
                         ->setStatutArticle($statut)
                         ->setCategorie($categorie);
 
-                    // Associer un auteur existant même si l'utilisateur n'est pas connecté
+                    // Associer un auteur existant mÃªme si l'utilisateur n'est pas connectÃ©
                     $author = $this->getUser();
                     if ($author instanceof User) {
                         $article->setAuteur($author);
@@ -323,7 +594,7 @@ class MarketplaceController extends AbstractController
                         if ($fallbackAuthor instanceof User) {
                             $article->setAuteur($fallbackAuthor);
                         } else {
-                            $this->addFlash('error', 'Aucun utilisateur trouvé pour associer l\'article. Créez au moins un utilisateur.');
+                            $this->addFlash('error', 'Aucun utilisateur trouvÃ© pour associer l\'article. CrÃ©ez au moins un utilisateur.');
                             return $this->redirectToRoute('app_marketplace_index');
                         }
                     }
@@ -338,11 +609,11 @@ class MarketplaceController extends AbstractController
                             'prix' => $prix,
                         ]));
                         @file_put_contents(sys_get_temp_dir().'/novas_db_error.log', $msg.PHP_EOL, FILE_APPEND);
-                        $this->addFlash('error', 'Erreur lors de la création de l\'article. Voir le log.');
+                        $this->addFlash('error', 'Erreur lors de la crÃ©ation de l\'article. Voir le log.');
                         return $this->redirectToRoute('app_marketplace_index');
                     }
 
-                    $this->addFlash('success', 'Votre article a été publié avec succès ! (ID: ' . $article->getId() . ')');
+                    $this->addFlash('success', 'Votre article a Ã©tÃ© publiÃ© avec succÃ¨s ! (ID: ' . $article->getId() . ')');
                     return $this->redirectToRoute('app_marketplace_detail', ['id' => $article->getId()]);
                 }
             }
@@ -362,7 +633,7 @@ class MarketplaceController extends AbstractController
         ValidatorInterface $validator
     ): Response
     {
-        // Formulaire public : ne nécessite pas d'utilisateur connecté
+        // Formulaire public : ne nÃ©cessite pas d'utilisateur connectÃ©
         $categoriesEntities = $categorieRepository->findAll();
         $categories = array_map(static function (Categorie $categorie): array {
             return [
@@ -387,8 +658,8 @@ class MarketplaceController extends AbstractController
                 'fields' => [
                     'titre' => [new Assert\NotBlank(['message' => 'Le titre est obligatoire.']), new Assert\Length(['min' => 2, 'max' => 255])],
                     'contenu' => [new Assert\NotBlank(['message' => 'Le contenu est obligatoire.']), new Assert\Length(['min' => 10, 'max' => 5000])],
-                    'prix' => [new Assert\NotBlank(['message' => 'Le prix est obligatoire.']), new Assert\Regex(['pattern' => '/^\d+(?:[\.,]\d+)?$/', 'message' => 'Le prix doit être un nombre.']), new Assert\Range(['min' => 0, 'max' => 1000000])],
-                    'categorie' => [new Assert\NotBlank(['message' => 'La catégorie est obligatoire.']), new Assert\Regex(['pattern' => '/^\d+$/', 'message' => 'La catégorie sélectionnée est invalide.'])],
+                    'prix' => [new Assert\NotBlank(['message' => 'Le prix est obligatoire.']), new Assert\Regex(['pattern' => '/^\d+(?:[\.,]\d+)?$/', 'message' => 'Le prix doit Ãªtre un nombre.']), new Assert\Range(['min' => 0, 'max' => 1000000])],
+                    'categorie' => [new Assert\NotBlank(['message' => 'La catÃ©gorie est obligatoire.']), new Assert\Regex(['pattern' => '/^\d+$/', 'message' => 'La catÃ©gorie sÃ©lectionnÃ©e est invalide.'])],
                     'type' => new Assert\Choice(['choices' => ['academic', 'commercial', 'service', 'other']]),
                     'statut' => new Assert\Choice(['choices' => ['disponible', 'vendu', 'reserve']]),
                     'image_article' => new Assert\Optional(),
@@ -440,7 +711,7 @@ class MarketplaceController extends AbstractController
                 $categorie = $categorieRepository->find($categorieId);
 
                 if (!$categorie instanceof Categorie) {
-                    $this->addFlash('error', 'La catégorie sélectionnée est invalide.');
+                    $this->addFlash('error', 'La catÃ©gorie sÃ©lectionnÃ©e est invalide.');
                 } else {
                     $article = new Article();
                     $article
@@ -457,7 +728,7 @@ class MarketplaceController extends AbstractController
                     if ($author) {
                         $article->setAuteur($author);
                     } else {
-                        $this->addFlash('error', 'Aucun utilisateur trouvé pour associer l\'article public. Veuillez vous connecter.');
+                        $this->addFlash('error', 'Aucun utilisateur trouvÃ© pour associer l\'article public. Veuillez vous connecter.');
                         return $this->redirectToRoute('app_login');
                     }
 
@@ -471,11 +742,11 @@ class MarketplaceController extends AbstractController
                             'prix' => $prix,
                         ]));
                         @file_put_contents(sys_get_temp_dir().'/novas_db_error.log', $msg.PHP_EOL, FILE_APPEND);
-                        $this->addFlash('error', 'Erreur lors de la création de l\'article public. Voir le log.');
+                        $this->addFlash('error', 'Erreur lors de la crÃ©ation de l\'article public. Voir le log.');
                         return $this->redirectToRoute('app_marketplace_index');
                     }
 
-                    $this->addFlash('success', 'Votre article a été publié avec succès (anonyme). (ID: ' . $article->getId() . ')');
+                    $this->addFlash('success', 'Votre article a Ã©tÃ© publiÃ© avec succÃ¨s (anonyme). (ID: ' . $article->getId() . ')');
                     return $this->redirectToRoute('app_marketplace_detail', ['id' => $article->getId()]);
                 }
             }
@@ -540,7 +811,7 @@ class MarketplaceController extends AbstractController
                 $categorie = $categorieRepository->find($categorieId);
 
                 if (!$categorie instanceof Categorie) {
-                    $this->addFlash('error', 'La catégorie sélectionnée est invalide.');
+                    $this->addFlash('error', 'La catÃ©gorie sÃ©lectionnÃ©e est invalide.');
                 } else {
                     $article
                         ->setTitreArticle($titre)
@@ -553,7 +824,7 @@ class MarketplaceController extends AbstractController
 
                     $entityManager->flush();
 
-                    $this->addFlash('success', 'Votre article a été modifié avec succès !');
+                    $this->addFlash('success', 'Votre article a Ã©tÃ© modifiÃ© avec succÃ¨s !');
                     return $this->redirectToRoute('app_marketplace_index');
                 }
             }
@@ -583,7 +854,7 @@ class MarketplaceController extends AbstractController
         if ($article instanceof Article) {
             $entityManager->remove($article);
             $entityManager->flush();
-            $this->addFlash('success', 'Le produit a été supprimé.');
+            $this->addFlash('success', 'Le produit a Ã©tÃ© supprimÃ©.');
         }
 
         return $this->redirectToRoute('app_marketplace_index');
@@ -637,28 +908,43 @@ class MarketplaceController extends AbstractController
     }
 
     #[Route('/categorie/ajouter', name: 'app_marketplace_categorie_ajouter', methods: ['GET', 'POST'])]
-    public function ajouterCategorie(Request $request, EntityManagerInterface $entityManager): Response
+    public function ajouterCategorie(Request $request, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
     {
         // public category creation: no authentication required
 
         if ($request->isMethod('POST')) {
-            $nom = trim((string) $request->request->get('nom', ''));
-            $description = trim((string) $request->request->get('description', ''));
+            $data = [
+                'nom' => trim((string) $request->request->get('nom', '')),
+                'description' => trim((string) $request->request->get('description', '')),
+            ];
 
+            $constraints = new Assert\Collection([
+                'fields' => [
+                    'nom' => [
+                        new Assert\NotBlank(['message' => 'Le nom de la catÃ©gorie est obligatoire.']),
+                        new Assert\Length([
+                            'min' => 2,
+                            'max' => 255,
+                            'minMessage' => 'Le nom doit contenir au moins {{ limit }} caractÃ¨res.',
+                            'maxMessage' => 'Le nom ne doit pas dÃ©passer {{ limit }} caractÃ¨res.',
+                        ]),
+                    ],
+                    'description' => new Assert\Optional([
+                        new Assert\Length([
+                            'max' => 255,
+                            'maxMessage' => 'La description ne doit pas dÃ©passer {{ limit }} caractÃ¨res.',
+                        ]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]);
+
+            $violations = $validator->validate($data, $constraints);
             $errors = [];
-            if ($nom === '') {
-                $errors[] = 'Le nom de la catégorie est obligatoire.';
-            } else {
-                $len = mb_strlen($nom);
-                if ($len < 2) {
-                    $errors[] = 'Le nom doit contenir au moins 2 caractères.';
+            if (count($violations) > 0) {
+                foreach ($violations as $violation) {
+                    $errors[] = $violation->getMessage();
                 }
-                if ($len > 255) {
-                    $errors[] = 'Le nom ne doit pas dépasser 255 caractères.';
-                }
-            }
-            if (mb_strlen($description) > 1000) {
-                $errors[] = 'La description est trop longue (max 1000 caractères).';
             }
 
             if (!empty($errors)) {
@@ -666,17 +952,19 @@ class MarketplaceController extends AbstractController
                     $this->addFlash('error', $err);
                 }
                 return $this->render('front/marketplace/categories/ajouter.html.twig', [
-                    'data' => ['nom' => $nom, 'description' => $description],
+                    'data' => $data,
                 ]);
             }
 
             $categorie = new Categorie();
-            $categorie->setNomCategorie($nom)->setDescriptionCategorie($description);
+            $categorie
+                ->setNomCategorie($data['nom'])
+                ->setDescriptionCategorie($data['description']);
 
             $entityManager->persist($categorie);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Catégorie créée avec succès.');
+            $this->addFlash('success', 'CatÃ©gorie crÃ©Ã©e avec succÃ¨s.');
             return $this->redirectToRoute('app_marketplace_categories');
         }
 
@@ -690,7 +978,7 @@ class MarketplaceController extends AbstractController
 
         $categorie = $categorieRepository->find($id);
         if (!$categorie instanceof Categorie) {
-            throw $this->createNotFoundException('Catégorie introuvable.');
+            throw $this->createNotFoundException('CatÃ©gorie introuvable.');
         }
 
         if ($request->isMethod('POST')) {
@@ -698,12 +986,12 @@ class MarketplaceController extends AbstractController
             $description = trim((string) $request->request->get('description', ''));
 
             if (!$nom) {
-                $this->addFlash('error', 'Le nom de la catégorie est obligatoire.');
+                $this->addFlash('error', 'Le nom de la catÃ©gorie est obligatoire.');
             } else {
                 $categorie->setNomCategorie($nom)->setDescriptionCategorie($description);
                 $entityManager->flush();
 
-                $this->addFlash('success', 'Catégorie modifiée avec succès.');
+                $this->addFlash('success', 'CatÃ©gorie modifiÃ©e avec succÃ¨s.');
                 return $this->redirectToRoute('app_marketplace_categories');
             }
         }
@@ -727,7 +1015,7 @@ class MarketplaceController extends AbstractController
         if ($categorie instanceof Categorie) {
             $entityManager->remove($categorie);
             $entityManager->flush();
-            $this->addFlash('success', 'La catégorie a été supprimée.');
+            $this->addFlash('success', 'La catÃ©gorie a Ã©tÃ© supprimÃ©e.');
         }
 
         return $this->redirectToRoute('app_marketplace_categories');
@@ -735,3 +1023,5 @@ class MarketplaceController extends AbstractController
 
     
 }
+
+

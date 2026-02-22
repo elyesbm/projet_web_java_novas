@@ -4,28 +4,7 @@
 
 {% block body %}
 <div class="min-h-screen bg-background">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="{{ path('app_home') }}" class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center glow-primary">
-                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
-                </div>
-                <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
-            </a>
-            
-            <div class="flex items-center gap-4">
-                <a href="{{ path('app_marketplace_index') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
-                    Produits
-                </a>
-                <a href="{{ path('app_marketplace_categories') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <i data-lucide="tags" class="w-4 h-4"></i>
-                    Categories
-                </a>
-            </div>
-        </div>
-    </nav>
+    {% include 'front/partials/_auth_nav.html.twig' %}
 
     <!-- Hero + Ajouter produit -->
     <section class="pt-32 pb-8 px-6 relative overflow-hidden">
@@ -35,10 +14,20 @@
                 <h1 class="font-serif text-3xl md:text-4xl font-medium mb-2">Produits</h1>
                 <p class="text-muted-foreground">Gérez les articles de la marketplace.</p>
             </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ path('app_marketplace_index') }}" class="flex items-center gap-2 px-4 py-2 text-sm bg-secondary border border-white/10 rounded-xl hover:bg-white/5 transition-colors">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                    Produits
+                </a>
+                <a href="{{ path('app_marketplace_categories') }}" class="flex items-center gap-2 px-4 py-2 text-sm bg-secondary border border-white/10 rounded-xl hover:bg-white/5 transition-colors">
+                    <i data-lucide="tags" class="w-4 h-4"></i>
+                    Categories
+                </a>
                 <a href="{{ path('app_marketplace_ajouter_public') }}" class="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 w-fit">
-                <i data-lucide="plus" class="w-5 h-5"></i>
-                Ajouter un produit (article)
-            </a>
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    Ajouter un produit (article)
+                </a>
+            </div>
         </div>
     </section>
 
@@ -144,7 +133,7 @@
                                 <div class="text-right text-sm text-muted-foreground">{{ article.date }}</div>
                             </div>
                             <h3 class="font-medium mb-2 line-clamp-2">{{ article.titre }}</h3>
-                            <p class="font-serif text-xl font-bold text-primary mb-4">{{ article.prix }} €</p>
+                            <p class="font-serif text-xl font-bold text-primary mb-4">{{ article.prix }} DT</p>
                             <div class="flex items-center gap-2 pt-3 border-t border-white/5">
                                 <a href="{{ path('app_marketplace_detail', {id: article.id}) }}" class="flex-1 h-10 rounded-xl bg-secondary border border-white/10 flex items-center justify-center gap-2 text-sm hover:bg-white/5 transition-colors" title="Voir">
                                     <i data-lucide="eye" class="w-4 h-4"></i>

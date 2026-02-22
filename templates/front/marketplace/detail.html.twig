@@ -4,25 +4,25 @@
 
 {% block body %}
 <div class="min-h-screen bg-background">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="{{ path('app_marketplace_index') }}" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                <span class="text-sm">Retour au catalogue</span>
-            </a>
-            
-            <div class="flex items-center gap-2">
-                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
-                </div>
-            </div>
-        </div>
-    </nav>
+    {% include 'front/partials/_auth_nav.html.twig' %}
 
     <!-- Content -->
     <div class="pt-32 pb-24 px-6">
         <div class="max-w-7xl mx-auto">
+            <div class="mb-6">
+                <a href="{{ path('app_marketplace_index') }}" class="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    <span class="text-sm">Retour au catalogue</span>
+                </a>
+            </div>
+
+            {% for flash in app.flashes('success') %}
+                <div class="mb-4 p-4 rounded-xl bg-green-500/20 text-green-400 text-sm">{{ flash }}</div>
+            {% endfor %}
+            {% for flash in app.flashes('error') %}
+                <div class="mb-4 p-4 rounded-xl bg-red-500/20 text-red-400 text-sm">{{ flash }}</div>
+            {% endfor %}
+
             <div class="grid lg:grid-cols-2 gap-12">
                 <!-- Left - Images -->
                 <div class="space-y-4">
@@ -77,7 +77,7 @@
                             </div>
                         </div>
                         
-                        <p class="font-serif text-4xl font-bold text-primary mb-2">{{ article.prix }} €</p>
+                        <p class="font-serif text-4xl font-bold text-primary mb-2">{{ article.prix }} DT</p>
                         <p class="text-sm text-muted-foreground">Prix negociable</p>
                     </div>
 
@@ -87,53 +87,18 @@
                         <p class="text-muted-foreground leading-relaxed whitespace-pre-line">{{ article.contenu }}</p>
                     </div>
 
-                    <!-- Purchase Form -->
+                    <!-- Add To Cart -->
                     <div class="glass-card rounded-3xl p-6 border border-primary/30">
                         <h3 class="font-serif text-xl font-medium mb-4 flex items-center gap-2">
                             <i data-lucide="shopping-cart" class="w-5 h-5 text-primary"></i>
-                            Formulaire d'achat
+                            Panier
                         </h3>
-                        
-                        <form method="post" class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Prenom</label>
-                                    <input type="text" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="Jean">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Nom</label>
-                                    <input type="text" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="Dupont">
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium mb-2 text-muted-foreground">Email universitaire</label>
-                                <input type="email" required class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="jean.dupont@univ.fr">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium mb-2 text-muted-foreground">Telephone</label>
-                                <input type="tel" class="w-full h-12 bg-secondary border border-white/10 rounded-xl px-4 focus:outline-none focus:border-primary transition-all" placeholder="06 12 34 56 78">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium mb-2 text-muted-foreground">Message au vendeur (optionnel)</label>
-                                <textarea rows="3" class="w-full bg-secondary border border-white/10 rounded-xl p-4 focus:outline-none focus:border-primary transition-all resize-none" placeholder="Bonjour, je suis interesse par votre article..."></textarea>
-                            </div>
-                            
-                            <div class="flex items-center gap-3 p-4 bg-secondary/50 rounded-xl">
-                                <input type="checkbox" required class="w-5 h-5 rounded border-white/10 bg-secondary text-primary focus:ring-primary">
-                                <span class="text-sm text-muted-foreground">Je confirme etre etudiant et avoir lu les <a href="#" class="text-primary hover:underline">conditions de vente</a></span>
-                            </div>
-                            
-                            <button type="submit" class="w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
-                                <i data-lucide="credit-card" class="w-5 h-5"></i>
-                                Contacter le vendeur
+                        <form method="post" action="{{ path('app_marketplace_panier_ajouter', {id: article.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('panier_ajouter_' ~ article.id) }}">
+                            <button type="submit" class="w-full h-14 {{ in_cart ? 'bg-secondary border border-white/10 text-muted-foreground cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/25' }} rounded-xl font-medium transition-all flex items-center justify-center gap-2" {{ in_cart ? 'disabled' : '' }}>
+                                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                                {{ in_cart ? 'Déjà dans le panier' : 'Ajouter au panier' }}
                             </button>
-                            
-                            <p class="text-center text-xs text-muted-foreground">
-                                Le paiement se fait en main propre sur le campus
-                            </p>
                         </form>
                     </div>
 
@@ -166,7 +131,7 @@
                         </div>
                         <div class="p-4">
                             <h3 class="font-medium mb-2 group-hover:text-primary transition-colors">{{ sim.titre }}</h3>
-                            <p class="font-serif text-xl font-bold text-primary">{{ sim.prix }} €</p>
+                            <p class="font-serif text-xl font-bold text-primary">{{ sim.prix }} DT</p>
                         </div>
                     </a>
                     {% endfor %}
