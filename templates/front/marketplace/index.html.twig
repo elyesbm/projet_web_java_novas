@@ -23,6 +23,10 @@
                     <i data-lucide="tags" class="w-4 h-4"></i>
                     Categories
                 </a>
+                <button type="button" data-ai-analyze-open class="flex items-center gap-2 px-4 py-2 text-sm bg-secondary border border-white/10 rounded-xl hover:bg-white/5 transition-colors">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    Analyser avec IA
+                </button>
                 <a href="{{ path('app_marketplace_ajouter_public') }}" class="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 w-fit">
                     <i data-lucide="plus" class="w-5 h-5"></i>
                     Ajouter un produit (article)
@@ -158,4 +162,116 @@
         </div>
     </section>
 </div>
+
+<div id="ai-analyze-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-black/60 p-4">
+    <div class="w-full max-w-xl glass-card rounded-2xl border border-white/10 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-serif text-2xl">Analyser avec IA</h2>
+            <button type="button" data-ai-analyze-close class="w-9 h-9 rounded-lg bg-secondary border border-white/10">X</button>
+        </div>
+
+        <form id="ai-analyze-form" class="space-y-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('marketplace_ai_analyze') }}">
+            <div>
+                <label for="ai-product-name" class="block text-sm mb-2">Nom du produit</label>
+                <input id="ai-product-name" name="product_name" required class="h-12 w-full bg-secondary border border-white/10 rounded-xl px-3 focus:outline-none" />
+            </div>
+            <div>
+                <label for="ai-product-url" class="block text-sm mb-2">Lien du produit</label>
+                <input id="ai-product-url" name="product_url" type="url" required placeholder="https://..." class="h-12 w-full bg-secondary border border-white/10 rounded-xl px-3 focus:outline-none" />
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="submit" id="ai-analyze-submit" class="px-4 py-2 bg-primary text-white rounded-xl">Analyser</button>
+                <button type="button" data-ai-analyze-close class="px-4 py-2 bg-secondary border border-white/10 rounded-xl">Fermer</button>
+            </div>
+        </form>
+
+        <div id="ai-analyze-error" class="hidden mt-4 p-3 rounded-xl bg-red-500/20 text-red-400 text-sm"></div>
+
+        <div id="ai-analyze-result" class="hidden mt-5 space-y-3">
+            <div class="p-3 rounded-xl bg-secondary border border-white/10"><strong>Prix recommande:</strong> <span id="ai-price"></span></div>
+            <div class="p-3 rounded-xl bg-secondary border border-white/10"><strong>Qualite des avis:</strong> <span id="ai-reviews"></span></div>
+            <div class="p-3 rounded-xl bg-secondary border border-white/10"><strong>Note de demande:</strong> <span id="ai-demand"></span>/10</div>
+            <div class="p-3 rounded-xl bg-secondary border border-white/10"><strong>Justification:</strong> <span id="ai-why"></span></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const modal = document.getElementById('ai-analyze-modal');
+            const form = document.getElementById('ai-analyze-form');
+            if (!modal || !form) return;
+
+            const errorBox = document.getElementById('ai-analyze-error');
+            const resultBox = document.getElementById('ai-analyze-result');
+            const submitBtn = document.getElementById('ai-analyze-submit');
+            const price = document.getElementById('ai-price');
+            const reviews = document.getElementById('ai-reviews');
+            const demand = document.getElementById('ai-demand');
+            const why = document.getElementById('ai-why');
+
+            function openModal() {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+            function closeModal() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+            function setError(message) {
+                errorBox.textContent = message;
+                errorBox.classList.remove('hidden');
+            }
+            function clearMessages() {
+                errorBox.classList.add('hidden');
+                errorBox.textContent = '';
+                resultBox.classList.add('hidden');
+            }
+
+            document.querySelectorAll('[data-ai-analyze-open]').forEach((el) => el.addEventListener('click', openModal));
+            document.querySelectorAll('[data-ai-analyze-close]').forEach((el) => el.addEventListener('click', closeModal));
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                clearMessages();
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Analyse...';
+
+                const formData = new FormData(form);
+                const payload = {
+                    _token: formData.get('_token'),
+                    product_name: formData.get('product_name'),
+                    product_url: formData.get('product_url')
+                };
+
+                try {
+                    const response = await fetch('{{ path('app_marketplace_ai_analyze') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Analyse impossible');
+                    }
+
+                    price.textContent = data.recommended_price || 'N/A';
+                    reviews.textContent = data.reviews_quality || 'Moyenne';
+                    demand.textContent = data.demand_score ?? '0';
+                    why.textContent = data.justification || '';
+                    resultBox.classList.remove('hidden');
+                } catch (err) {
+                    setError(err.message || 'Erreur inattendue.');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Analyser';
+                }
+            });
+        })();
+    </script>
 {% endblock %}

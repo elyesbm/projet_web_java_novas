@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -348,6 +349,147 @@ class MarketplaceController extends AbstractController
         }
     }
 
+    #[Route('/ai/analyse', name: 'app_marketplace_ai_analyze', methods: ['POST'])]
+    public function analyzeWithAi(Request $request, HttpClientInterface $httpClient): JsonResponse
+    {
+        try {
+            $payload = $request->toArray();
+        } catch (\Throwable) {
+            return $this->json(['error' => 'Payload JSON invalide.'], 400);
+        }
+
+        $csrfToken = (string) ($payload['_token'] ?? '');
+        if (!$this->isCsrfTokenValid('marketplace_ai_analyze', $csrfToken)) {
+            return $this->json(['error' => 'Token CSRF invalide.'], 403);
+        }
+
+        $productName = trim((string) ($payload['product_name'] ?? ''));
+        $productUrl = trim((string) ($payload['product_url'] ?? ''));
+
+        if ($productName === '' || $productUrl === '') {
+            return $this->json(['error' => 'Nom du produit et lien du produit sont obligatoires.'], 400);
+        }
+
+        $apiKey = (string) (
+            $_ENV['MARKETPLACE_GEMINI_API_KEY']
+            ?? $_SERVER['MARKETPLACE_GEMINI_API_KEY']
+            ?? $_ENV['GEMINI_API_KEY']
+            ?? $_SERVER['GEMINI_API_KEY']
+            ?? ''
+        );
+        if ($apiKey === '') {
+            return $this->json(['error' => 'Cle Gemini manquante. Configurez MARKETPLACE_GEMINI_API_KEY dans .env.local.'], 500);
+        }
+
+        $configuredModel = (string) (
+            $_ENV['MARKETPLACE_GEMINI_MODEL']
+            ?? $_SERVER['MARKETPLACE_GEMINI_MODEL']
+            ?? 'gemini-2.0-flash'
+        );
+        $fallbackModels = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash-latest'];
+        $modelsToTry = array_values(array_unique(array_filter(array_merge([$configuredModel], $fallbackModels), static fn ($m) => is_string($m) && trim($m) !== '')));
+
+        try {
+            $modelsResponse = $httpClient->request('GET', sprintf('https://generativelanguage.googleapis.com/v1beta/models?key=%s', rawurlencode($apiKey)));
+            $modelsData = $modelsResponse->toArray(false);
+            $availableModels = [];
+
+            foreach ((array) ($modelsData['models'] ?? []) as $modelInfo) {
+                if (!is_array($modelInfo)) {
+                    continue;
+                }
+                $methods = (array) ($modelInfo['supportedGenerationMethods'] ?? []);
+                if (!in_array('generateContent', $methods, true)) {
+                    continue;
+                }
+
+                $name = (string) ($modelInfo['name'] ?? '');
+                if (str_starts_with($name, 'models/')) {
+                    $name = substr($name, 7);
+                }
+                $name = trim($name);
+                if ($name !== '') {
+                    $availableModels[] = $name;
+                }
+            }
+
+            if (!empty($availableModels)) {
+                // Preserve user preference first, then append actually available models.
+                $modelsToTry = array_values(array_unique(array_merge($modelsToTry, $availableModels)));
+            }
+        } catch (\Throwable) {
+            // Keep static fallback list if listModels is unavailable.
+        }
+
+        try {
+            $data = null;
+            $lastError = 'Erreur Gemini';
+            foreach ($modelsToTry as $model) {
+                $response = $httpClient->request('POST', sprintf('https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s', rawurlencode($model), rawurlencode($apiKey)), [
+                    'json' => [
+                        'contents' => [
+                            [
+                                'parts' => [
+                                    [
+                                        'text' => sprintf(
+                                            "Tu es un analyste e-commerce.\nAnalyse ce produit en te basant sur le nom et le lien.\nNom: %s\nLien: %s\nReponds uniquement en JSON valide sans markdown avec les cles exactes: recommended_price (string), reviews_quality (Bonne|Moyenne|Mauvaise), demand_score (number sur 10), justification (string).",
+                                            $productName,
+                                            $productUrl
+                                        ),
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'generationConfig' => [
+                            'responseMimeType' => 'application/json',
+                        ],
+                    ],
+                ]);
+
+                $statusCode = $response->getStatusCode();
+                $attemptData = $response->toArray(false);
+                if ($statusCode < 300 && isset($attemptData['candidates'][0]['content']['parts'][0]['text'])) {
+                    $data = $attemptData;
+                    break;
+                }
+
+                $lastError = (string) ($attemptData['error']['message'] ?? $lastError);
+            }
+
+            if (!is_array($data)) {
+                return $this->json(['error' => $lastError], 502);
+            }
+
+            $rawText = (string) ($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
+            $rawText = trim($rawText);
+            if (str_starts_with($rawText, '```')) {
+                $rawText = preg_replace('/^```(?:json)?\s*/', '', $rawText) ?? $rawText;
+                $rawText = preg_replace('/\s*```$/', '', $rawText) ?? $rawText;
+                $rawText = trim($rawText);
+            }
+
+            $analysis = json_decode($rawText, true);
+            if (!is_array($analysis)) {
+                return $this->json(['error' => 'Reponse Gemini non exploitable.'], 502);
+            }
+
+            $reviewsQuality = (string) ($analysis['reviews_quality'] ?? 'Moyenne');
+            if (!in_array($reviewsQuality, ['Bonne', 'Moyenne', 'Mauvaise'], true)) {
+                $reviewsQuality = 'Moyenne';
+            }
+            $demandScore = (float) ($analysis['demand_score'] ?? 5);
+            $demandScore = max(0, min(10, $demandScore));
+
+            return $this->json([
+                'recommended_price' => (string) ($analysis['recommended_price'] ?? 'N/A'),
+                'reviews_quality' => $reviewsQuality,
+                'demand_score' => round($demandScore, 1),
+                'justification' => (string) ($analysis['justification'] ?? ''),
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json(['error' => 'Erreur Gemini: ' . $e->getMessage()], 502);
+        }
+    }
     #[Route('/paiement/success', name: 'app_marketplace_checkout_success', methods: ['GET'])]
     public function checkoutSuccess(Request $request): Response
     {
@@ -1084,7 +1226,3 @@ class MarketplaceController extends AbstractController
 
     
 }
-
-
-
-
