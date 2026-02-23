@@ -1,0 +1,535 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Analytics — Évolution des Scores · NOVAS{% endblock %}
+{% block page_title %}Analytics Scores{% endblock %}
+{% block page_subtitle %}Évolution des performances utilisateurs sur {{ days }} jours{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ── Tokens ── */
+    :root {
+        --clr-cv:      54, 162, 235;
+        --clr-mat:    255, 159,  64;
+        --clr-comp:   153, 102, 255;
+        --clr-events: 75,  192, 192;
+    }
+
+    /* ── KPI Glow Cards ── */
+    .kpi-card {
+        position: relative;
+        overflow: hidden;
+        background: rgba(255,255,255,.85);
+        backdrop-filter: blur(12px);
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        border: 1px solid rgba(0,0,0,.07);
+        transition: transform .25s, box-shadow .25s;
+    }
+    .dark .kpi-card { background: rgba(30,41,59,.85); border-color: rgba(255,255,255,.08); }
+    .kpi-card:hover  { transform: translateY(-4px); box-shadow: 0 20px 40px -12px rgba(0,0,0,.18); }
+    .kpi-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        opacity: 0;
+        transition: opacity .25s;
+        pointer-events: none;
+    }
+    .kpi-card:hover::after { opacity: 1; }
+
+    /* ── Chart wrapper ── */
+    .chart-card {
+        background: rgba(255,255,255,.9);
+        backdrop-filter: blur(16px);
+        border-radius: 1.25rem;
+        border: 1px solid rgba(0,0,0,.07);
+        padding: 1.75rem;
+    }
+    .dark .chart-card { background: rgba(15,23,42,.9); border-color: rgba(255,255,255,.08); }
+
+    /* ── Trend badge ── */
+    .trend-up   { background: rgba(16,185,129,.15); color: #059669; }
+    .trend-down { background: rgba(239,68,68,.15);  color: #dc2626; }
+    .dark .trend-up   { background: rgba(16,185,129,.25); color: #34d399; }
+    .dark .trend-down { background: rgba(239,68,68,.25);  color: #f87171; }
+
+    /* ── Activity table rows ── */
+    .event-row { transition: background .2s; }
+    .event-row:hover { background: rgba(14,165,233,.06); }
+
+    /* ── Dot pulse loader ── */
+    .dot-pulse { width: 6px; height: 6px; border-radius: 50%; background: #0ea5e9; animation: dp 1.2s infinite ease-in-out; }
+    .dot-pulse:nth-child(2) { animation-delay: .2s; }
+    .dot-pulse:nth-child(3) { animation-delay: .4s; }
+    @keyframes dp { 0%,80%,100%{transform:scale(0);opacity:.3} 40%{transform:scale(1);opacity:1} }
+
+    /* ── Period selector pills ── */
+    .period-pill { cursor: pointer; padding: .35rem .9rem; border-radius: 9999px; font-size: .8rem; font-weight: 600;
+                   border: 1px solid transparent; transition: all .2s; }
+    .period-pill.active { background: #0ea5e9; color: #fff; }
+    .period-pill:not(.active) { color: #64748b; border-color: #e2e8f0; }
+    .period-pill:not(.active):hover { background: #f1f5f9; }
+    .dark .period-pill:not(.active) { color:#94a3b8; border-color:#334155; }
+    .dark .period-pill:not(.active):hover { background:#1e293b; }
+
+    /* ── action chips ── */
+    .chip { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .65rem; border-radius: 99px; font-size: .7rem; font-weight: 600; }
+
+    @keyframes fadeSlideIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .animate-in { animation: fadeSlideIn .5s ease both; }
+
+    canvas { max-height: 320px; }
+</style>
+{% endblock %}
+
+{% block body %}
+{# ─── Period pills ─────────────────────────────────── #}
+<div class="flex items-center justify-between mb-6 animate-in" style="animation-delay:.05s">
+    <div class="flex items-center gap-2">
+        <span class="text-sm font-medium text-slate-500 dark:text-slate-400 mr-1">Période :</span>
+        {% for d, label in {'7': '7 jours', '14': '14 jours', '30': '30 jours'} %}
+            <button class="period-pill {{ days == d ? 'active' : '' }}"
+                    data-days="{{ d }}"
+                    id="pill-{{ d }}">
+                {{ label }}
+            </button>
+        {% endfor %}
+    </div>
+    <div class="flex items-center gap-2 text-xs text-slate-400">
+        <div class="flex gap-1">
+            <div class="dot-pulse"></div><div class="dot-pulse"></div><div class="dot-pulse"></div>
+        </div>
+        <span id="last-updated">Mis à jour maintenant</span>
+    </div>
+</div>
+
+{# ─── KPI Cards ────────────────────────────────────── #}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-7">
+
+    {# Total événements #}
+    <div class="kpi-card animate-in" style="animation-delay:.1s">
+        <div class="flex items-start justify-between mb-3">
+            <div class="p-2.5 rounded-xl" style="background:rgba(var(--clr-events),.15)">
+                <i data-lucide="activity" class="w-5 h-5" style="color:rgba(var(--clr-events),1)"></i>
+            </div>
+            <span class="text-xs font-bold px-2 py-1 rounded-full {{ chart.stats.trend_up ? 'trend-up' : 'trend-down' }}">
+                {{ chart.stats.trend_up ? '▲' : '▼' }} {{ chart.stats.trend_label }}
+            </span>
+        </div>
+        <p class="text-3xl font-bold text-slate-900 dark:text-white" id="kpi-events">{{ chart.stats.total_events }}</p>
+        <p class="text-xs text-slate-500 mt-1">Événements sur {{ days }}j</p>
+    </div>
+
+    {# Progression moyenne #}
+    <div class="kpi-card animate-in" style="animation-delay:.15s">
+        <div class="flex items-start justify-between mb-3">
+            <div class="p-2.5 rounded-xl" style="background:rgba(var(--clr-cv),.15)">
+                <i data-lucide="trending-up" class="w-5 h-5" style="color:rgba(var(--clr-cv),1)"></i>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-slate-900 dark:text-white" id="kpi-delta">
+            {{ chart.stats.avg_delta > 0 ? '+' : '' }}{{ chart.stats.avg_delta }}
+        </p>
+        <p class="text-xs text-slate-500 mt-1">Δ moyen score CV / event</p>
+    </div>
+
+    {# Top acteur #}
+    <div class="kpi-card animate-in col-span-2" style="animation-delay:.2s">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="p-2.5 rounded-xl" style="background:rgba(var(--clr-comp),.15)">
+                <i data-lucide="trophy" class="w-5 h-5" style="color:rgba(var(--clr-comp),1)"></i>
+            </div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Top progression {{ days }}j</p>
+        </div>
+        {% if chart.stats.top_user %}
+            <p class="text-2xl font-bold text-slate-900 dark:text-white">
+                {{ chart.stats.top_user.PRENOM }} {{ chart.stats.top_user.NOM }}
+            </p>
+            <p class="text-sm text-emerald-600 font-semibold mt-0.5">
+                +{{ chart.stats.top_user.total_gain|round }} pts de score CV
+            </p>
+        {% else %}
+            <p class="text-slate-400 text-sm">Aucune donnée encore</p>
+        {% endif %}
+
+        {# Répartition par action ─ mini-pills #}
+        {% if chart.stats.by_action %}
+        <div class="flex flex-wrap gap-2 mt-3">
+            {% set actionColors = {
+                'cv_upload':       'rgba(54,162,235',
+                'skill_added':     'rgba(75,192,192',
+                'atelier_completed': 'rgba(255,159,64',
+                'profile_updated': 'rgba(153,102,255',
+                'manual':          'rgba(200,200,200'
+            } %}
+            {% for item in chart.stats.by_action %}
+            <span class="chip"
+                  style="background:{{ actionColors[item.actionType] ?? 'rgba(150,150,150' }},.15);
+                         color:{{ actionColors[item.actionType] ?? 'rgba(150,150,150' }},1)">
+                {{ actionTypes[item.actionType] ?? item.actionType }}
+                <strong>{{ item.cnt }}</strong>
+            </span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# ─── Main Chart ───────────────────────────────────── #}
+<div class="chart-card mb-7 animate-in" style="animation-delay:.25s">
+    <div class="flex items-center justify-between mb-5">
+        <div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Évolution des scores — moyenne globale</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Score CV · Maturité · Compétitivité · Événements</p>
+        </div>
+        <div class="flex items-center gap-4 text-xs text-slate-500">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 rounded inline-block" style="background:rgb(var(--clr-cv))"></span>Score CV</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 rounded inline-block" style="background:rgb(var(--clr-mat))"></span>Maturité</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 rounded inline-block" style="background:rgb(var(--clr-comp))"></span>Compétitivité</span>
+        </div>
+    </div>
+    <canvas id="mainChart"></canvas>
+</div>
+
+{# ─── Sub-charts row ───────────────────────────────── #}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-7">
+
+    {# Bar chart — événements par jour #}
+    <div class="chart-card animate-in" style="animation-delay:.3s">
+        <h3 class="text-base font-bold text-slate-800 dark:text-white mb-4">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 inline mr-1.5 text-teal-500"></i>
+            Événements par jour
+        </h3>
+        <canvas id="eventsChart"></canvas>
+    </div>
+
+    {# Radar / spider — profil moyen actuel #}
+    <div class="chart-card animate-in" style="animation-delay:.35s">
+        <h3 class="text-base font-bold text-slate-800 dark:text-white mb-4">
+            <i data-lucide="target" class="w-4 h-4 inline mr-1.5 text-purple-500"></i>
+            Profil moyen (dernière mesure)
+        </h3>
+        <canvas id="radarChart"></canvas>
+    </div>
+</div>
+
+{# ─── Recent Activity Feed ─────────────────────────── #}
+<div class="chart-card animate-in" style="animation-delay:.4s">
+    <div class="flex items-center justify-between mb-5">
+        <h3 class="text-base font-bold text-slate-800 dark:text-white">
+            <i data-lucide="clock" class="w-4 h-4 inline mr-1.5 text-sky-500"></i>
+            Dernières actions enregistrées
+        </h3>
+        <span class="text-xs text-slate-400">{{ recent|length }} entrées</span>
+    </div>
+
+    {% if recent is empty %}
+        <div class="flex flex-col items-center justify-center py-12 text-slate-400">
+            <i data-lucide="inbox" class="w-10 h-10 mb-3 opacity-40"></i>
+            <p class="text-sm">Aucune activité enregistrée pour l'instant.</p>
+            <p class="text-xs mt-1 opacity-70">Les événements apparaîtront ici dès qu'un utilisateur ajoutera un skill, terminera un atelier ou mettra à jour son CV.</p>
+        </div>
+    {% else %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                <tr class="text-left text-xs font-semibold text-slate-400 uppercase tracking-wide border-b border-slate-100 dark:border-slate-700">
+                    <th class="pb-3 pr-4">Utilisateur</th>
+                    <th class="pb-3 pr-4">Action</th>
+                    <th class="pb-3 pr-4">Score CV</th>
+                    <th class="pb-3 pr-4">Maturité</th>
+                    <th class="pb-3">Date</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for entry in recent %}
+                    {% set delta = entry.cvScoreDelta %}
+                    <tr class="event-row">
+                        <td class="py-3 pr-4">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                                    {{ entry.user.PRENOM|slice(0,1) }}{{ entry.user.NOM|slice(0,1) }}
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-slate-800 dark:text-white leading-tight">{{ entry.user.PRENOM }} {{ entry.user.NOM }}</p>
+                                    <p class="text-xs text-slate-400">{{ entry.actionDetail ?? '—' }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 pr-4">
+                            {% set aColors = {
+                                'cv_upload':           'bg-blue-100 text-blue-700',
+                                'skill_added':         'bg-teal-100 text-teal-700',
+                                'atelier_completed':   'bg-orange-100 text-orange-700',
+                                'profile_updated':     'bg-purple-100 text-purple-700',
+                                'manual':              'bg-slate-100 text-slate-600'
+                            } %}
+                            <span class="chip {{ aColors[entry.actionType] ?? 'bg-slate-100 text-slate-600' }}">
+                                {{ entry.actionLabel }}
+                            </span>
+                        </td>
+                        <td class="py-3 pr-4">
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-mono font-semibold text-slate-700 dark:text-slate-200">
+                                    {{ entry.oldCvScore ?? '—' }} → {{ entry.newCvScore ?? '—' }}
+                                </span>
+                                {% if delta != 0 %}
+                                    <span class="text-xs font-bold {{ delta > 0 ? 'text-emerald-600' : 'text-rose-500' }}">
+                                        {{ delta > 0 ? '+' : '' }}{{ delta }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="py-3 pr-4">
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-mono text-slate-600 dark:text-slate-300">{{ entry.oldMaturityScore ?? '—' }} → {{ entry.newMaturityScore ?? '—' }}</span>
+                                {% set md = entry.maturityDelta %}
+                                {% if md != 0 %}
+                                    <span class="text-xs font-bold {{ md > 0 ? 'text-emerald-600' : 'text-rose-500' }}">
+                                        {{ md > 0 ? '+' : '' }}{{ md }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="py-3 text-slate-500 text-xs whitespace-nowrap">
+                            {{ entry.recordedAt|date('d/m H:i') }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{# Chart.js via CDN #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    // ── Raw data injected from PHP ──────────────────────────────────────────
+    const chartData = {{ chart|json_encode|raw }};
+    const isDark    = document.documentElement.classList.contains('dark');
+
+    const textColor  = isDark ? 'rgba(148,163,184,1)' : 'rgba(100,116,139,1)';
+    const gridColor  = isDark ? 'rgba(51,65,85,0.6)'  : 'rgba(226,232,240,0.8)';
+
+    const CV_COLOR    = `rgba(${getComputedStyle(document.documentElement).getPropertyValue('--clr-cv')},`;
+    const MAT_COLOR   = `rgba(${getComputedStyle(document.documentElement).getPropertyValue('--clr-mat')},`;
+    const COMP_COLOR  = `rgba(${getComputedStyle(document.documentElement).getPropertyValue('--clr-comp')},`;
+    const EV_COLOR    = `rgba(${getComputedStyle(document.documentElement).getPropertyValue('--clr-events')},`;
+
+    const defaultPoint = { pointRadius: 5, pointHoverRadius: 8, pointBorderWidth: 2, pointBorderColor: '#fff' };
+
+    // ── Shared Chart.js defaults ─────────────────────────────────────────────
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color       = textColor;
+
+    // ── Helper: gradient fill ────────────────────────────────────────────────
+    function gradient(ctx, colorFn) {
+        const g = ctx.createLinearGradient(0, 0, 0, 300);
+        g.addColorStop(0, colorFn('0.35'));
+        g.addColorStop(1, colorFn('0'));
+        return g;
+    }
+
+    // ── 1. Main Line Chart ───────────────────────────────────────────────────
+    (function buildMain() {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'Score CV moyen',
+                        data: chartData.datasets.cv_score,
+                        borderColor: CV_COLOR + '1)',
+                        backgroundColor: gradient(ctx, c => CV_COLOR + c + ')'),
+                        fill: true,
+                        tension: 0.45,
+                        ...defaultPoint,
+                        pointBackgroundColor: CV_COLOR + '1)',
+                        spanGaps: true,
+                    },
+                    {
+                        label: 'Maturité moyenne',
+                        data: chartData.datasets.maturity_score,
+                        borderColor: MAT_COLOR + '1)',
+                        backgroundColor: gradient(ctx, c => MAT_COLOR + c + ')'),
+                        fill: true,
+                        tension: 0.45,
+                        ...defaultPoint,
+                        pointBackgroundColor: MAT_COLOR + '1)',
+                        spanGaps: true,
+                    },
+                    {
+                        label: 'Compétitivité moyenne',
+                        data: chartData.datasets.competitiveness_index,
+                        borderColor: COMP_COLOR + '1)',
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0.45,
+                        borderDash: [5, 4],
+                        ...defaultPoint,
+                        pointBackgroundColor: COMP_COLOR + '1)',
+                        spanGaps: true,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top', labels: { usePointStyle: true, padding: 20, font: { size: 12 } } },
+                    tooltip: {
+                        backgroundColor: isDark ? '#1e293b' : '#fff',
+                        titleColor: isDark ? '#f8fafc' : '#0f172a',
+                        bodyColor: textColor,
+                        borderColor: isDark ? '#334155' : '#e2e8f0',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 12,
+                        callbacks: {
+                            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1) : 'N/A'} pts`,
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+                    y: {
+                        min: 0, max: 100,
+                        grid: { color: gridColor },
+                        ticks: { color: textColor, stepSize: 20, callback: v => v + ' pts' }
+                    }
+                },
+                animation: { duration: 900, easing: 'easeInOutCubic' },
+            }
+        });
+    })();
+
+    // ── 2. Events Bar Chart ──────────────────────────────────────────────────
+    (function buildEvents() {
+        const ctx = document.getElementById('eventsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Événements',
+                    data: chartData.datasets.events,
+                    backgroundColor: EV_COLOR + '0.75)',
+                    borderColor: EV_COLOR + '1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: isDark ? '#1e293b' : '#fff',
+                        borderColor: isDark ? '#334155' : '#e2e8f0',
+                        borderWidth: 1,
+                        titleColor: isDark ? '#f8fafc' : '#0f172a',
+                        bodyColor: textColor,
+                        cornerRadius: 10,
+                        callbacks: { label: ctx => ` ${ctx.parsed.y} action${ctx.parsed.y > 1 ? 's' : ''}` }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: textColor } },
+                    y: { grid: { color: gridColor }, ticks: { color: textColor, precision: 0 }, beginAtZero: true }
+                },
+                animation: { duration: 700 },
+            }
+        });
+    })();
+
+    // ── 3. Radar Chart — profil moyen ────────────────────────────────────────
+    (function buildRadar() {
+        const ctx = document.getElementById('radarChart').getContext('2d');
+
+        // Extraire la dernière valeur non-null de chaque série
+        function lastNonNull(arr) {
+            for (let i = arr.length - 1; i >= 0; i--) {
+                if (arr[i] !== null && arr[i] !== undefined) return arr[i];
+            }
+            return 0;
+        }
+
+        const cvLast   = lastNonNull(chartData.datasets.cv_score);
+        const matLast  = lastNonNull(chartData.datasets.maturity_score);
+        const compLast = lastNonNull(chartData.datasets.competitiveness_index);
+
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Score CV', 'Maturité', 'Compétitivité'],
+                datasets: [{
+                    label: 'Profil moyen actuel',
+                    data: [cvLast, matLast, compLast],
+                    backgroundColor: CV_COLOR + '0.2)',
+                    borderColor: CV_COLOR + '0.9)',
+                    borderWidth: 2,
+                    pointBackgroundColor: CV_COLOR + '1)',
+                    pointRadius: 5,
+                }],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: isDark ? '#1e293b' : '#fff',
+                        borderColor: isDark ? '#334155' : '#e2e8f0',
+                        borderWidth: 1,
+                        cornerRadius: 10,
+                    }
+                },
+                scales: {
+                    r: {
+                        min: 0, max: 100,
+                        grid: { color: gridColor },
+                        angleLines: { color: gridColor },
+                        ticks: { color: textColor, stepSize: 25, backdropColor: 'transparent' },
+                        pointLabels: { color: textColor, font: { size: 12, weight: '600' } },
+                    }
+                },
+                animation: { duration: 800 },
+            }
+        });
+    })();
+
+    // ── Period switcher ──────────────────────────────────────────────────────
+    const apiBase = '{{ path('app_admin_analytics_api_chart') }}';
+
+    document.querySelectorAll('.period-pill').forEach(pill => {
+        pill.addEventListener('click', async () => {
+            document.querySelectorAll('.period-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+
+            const days = pill.dataset.days;
+            const res  = await fetch(`${apiBase}?days=${days}`);
+            const data = await res.json();
+
+            // Mettre à jour les KPIs
+            document.getElementById('kpi-events').textContent  = data.stats.total_events;
+            document.getElementById('kpi-delta').textContent   = (data.stats.avg_delta >= 0 ? '+' : '') + data.stats.avg_delta;
+            document.getElementById('last-updated').textContent = 'Mis à jour ' + new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+
+            // Rafraîchir l'URL sans reload pour historique navigateur
+            window.history.replaceState({}, '', `?days=${days}`);
+
+            // Forcer reload complet pour mettre à jour table + KPI top_user (simple et fiable)
+            window.location.href = `${window.location.pathname}?days=${days}`;
+        });
+    });
+
+})();
+</script>
+{% endblock %}

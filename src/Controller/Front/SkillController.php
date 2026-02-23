@@ -6,6 +6,7 @@ use App\Entity\Skill;
 use App\Form\SkillType;
 use App\Repository\SkillRepository;
 use App\Repository\UserRepository;
+use App\Service\ScoreHistoryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,9 +17,10 @@ use Symfony\Component\Routing\Attribute\Route;
 class SkillController extends AbstractController
 {
     public function __construct(
-        private SkillRepository $skillRepository,
-        private UserRepository $userRepository,
+        private SkillRepository        $skillRepository,
+        private UserRepository         $userRepository,
         private EntityManagerInterface $entityManager,
+        private ScoreHistoryService    $scoreHistoryService,
     ) {
     }
 
@@ -74,6 +76,12 @@ class SkillController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->entityManager->persist($skill);
             $this->entityManager->flush();
+
+            // 📊 Enregistrement historique des scores
+            try {
+                $this->scoreHistoryService->recordSkillAdded($user, $skill->getNomSkill());
+            } catch (\Throwable) { /* non-bloquant */ }
+
             $this->addFlash('success', 'Skill ajouté avec succès !');
             return $this->redirectToRoute('app_skills_mes');
         }

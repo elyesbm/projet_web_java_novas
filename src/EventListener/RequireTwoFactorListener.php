@@ -14,11 +14,15 @@ class RequireTwoFactorListener implements EventSubscriberInterface
 {
     private array $whitelist = [
         'app_login',
+        'app_login_face',
         'app_logout',
         'app_register',
         'app_home',
+        'app_forgot_password',
+        'app_reset_password',
         'app_2fa_setup',
         'app_2fa_setup_confirm',
+        'app_2fa_verify',
         '_profiler',
         '_wdt',
     ];
@@ -31,7 +35,7 @@ class RequireTwoFactorListener implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::REQUEST => ['onKernelRequest', 10],
+            KernelEvents::REQUEST => ['onKernelRequest', 5],
         ];
     }
 

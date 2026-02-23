@@ -82,6 +82,27 @@ class AuthController extends AbstractController
             return $this->json(['error' => 'Visage non reconnu. Réessayez ou utilisez email/mot de passe.'], 401);
         }
 
+        // Vérification 2FA pour reconnaissance faciale
+        if ($user->isTwoFactorEnabled()) {
+            $session = $request->getSession();
+            $session->set('2fa_user_pending', [
+                'id' => $user->getId(),
+                'email' => $user->getEMAIL(),
+            ]);
+            
+            // Invalider l'éventuelle session existante et recréer pour le pending
+            $session->invalidate();
+            $request->getSession()->set('2fa_user_pending', [
+                'id' => $user->getId(),
+                'email' => $user->getEMAIL(),
+            ]);
+
+            return $this->json([
+                'success' => true, 
+                'redirect' => $this->generateUrl('app_2fa_verify')
+            ]);
+        }
+
         // Authentification manuelle - inscription dans la session Symfony
         $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
         $tokenStorage->setToken($token);

@@ -106,6 +106,11 @@
                     <div class="w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center text-cyan-600"><i data-lucide="zap" class="w-5 h-5"></i></div>
                     <span class="font-semibold">Compétences</span>
                 </a>
+
+                <a href="{{ path('app_admin_analytics_dashboard') }}" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl {{ current_route starts with 'app_admin_analytics' ? 'active' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                    <div class="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600"><i data-lucide="bar-chart-3" class="w-5 h-5"></i></div>
+                    <span class="font-semibold">Analytics Scores</span>
+                </a>
                 
                 <div class="pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
                     <a href="{{ path('app_admin_settings') }}" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl {{ current_route == 'app_admin_settings' ? 'active' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">

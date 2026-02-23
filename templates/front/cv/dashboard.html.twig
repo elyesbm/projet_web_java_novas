@@ -359,7 +359,7 @@ if (typeof lucide !== 'undefined') lucide.createIcons();
         formData.append('cv_file', selectedFile);
         formData.append('_csrf_token', csrfToken);
 
-        fetch(uploadUrl, { method: 'POST', body: formData })
+        fetch(uploadUrl, { method: 'POST', body: formData, credentials: 'same-origin' })
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.success && data.redirect) {

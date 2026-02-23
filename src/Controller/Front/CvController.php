@@ -3,6 +3,7 @@
 namespace App\Controller\Front;
 
 use App\Service\CvAnalysisService;
+use App\Service\ScoreHistoryService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,7 +33,7 @@ class CvController extends AbstractController
      * Upload + analyse du CV
      */
     #[Route('/upload', name: 'app_cv_upload', methods: ['POST'])]
-    public function upload(Request $request, CvAnalysisService $cvAnalysisService): Response
+    public function upload(Request $request, CvAnalysisService $cvAnalysisService, ScoreHistoryService $scoreHistoryService): Response
     {
         $user = $this->getUser();
         if (!$user) {
@@ -73,7 +74,15 @@ class CvController extends AbstractController
 
         // Analyse IA
         try {
+            // Snapshot de l’ancien profil avant analyse
+            $oldProfile = clone ($user->getCvProfile() ?? new \App\Entity\CvProfile());
             $profile = $cvAnalysisService->analyzeAndStore($user, $filePath, $file->getClientOriginalName());
+
+            // 📊 Historique des scores
+            try {
+                $scoreHistoryService->recordCvAnalysis($user, $oldProfile, $profile);
+            } catch (\Throwable) { /* non-bloquant */ }
+
             return $this->json([
                 'success'  => true,
                 'redirect' => $this->generateUrl('app_cv_dashboard'),

@@ -18,7 +18,7 @@ class CvAnalysisService
     public function __construct(
         private EntityManagerInterface $em,
         private HttpClientInterface    $httpClient,
-        private string                 $openaiApiKey
+        private string                 $geminiApiKey
     ) {}
 
     /**
@@ -29,8 +29,8 @@ class CvAnalysisService
         // 1. Extraire le texte du PDF/DOCX
         $text = $this->extractText($filePath, $fileName);
 
-        // 2. Interroger l'IA
-        $analysis = $this->analyzeWithAI($text);
+        // 2. Interroger Gemini (avec le fichier natif si PDF/Image)
+        $analysis = $this->analyzeWithAI($filePath, $fileName, $text);
 
         // 3. Mettre à jour ou créer le CvProfile
         $profile = $user->getCvProfile() ?? new CvProfile();
@@ -113,112 +113,129 @@ class CvAnalysisService
     }
 
     /**
-     * Interroge OpenAI GPT via l'API REST (Symfony HttpClient) pour analyser le CV.
+     * Interroge l'IA Gemini (Google AI Studio) pour analyser le CV.
      */
-    private function analyzeWithAI(string $cvText): array
+    private function analyzeWithAI(string $filePath, string $fileName, string $cvText): array
     {
-        // Vérification basique de la clé
-        if (empty($this->openaiApiKey) || str_starts_with($this->openaiApiKey, 'sk-replace')) {
-            return $this->getFallbackAnalysis($cvText);
+        if (empty($this->geminiApiKey) || $this->geminiApiKey === 'votre_cle_gemini_ici') {
+            return $this->getFallbackAnalysis($cvText, "Clé API manquante ou non configurée dans .env.local");
         }
 
-        // Limiter le texte pour ne pas dépasser les tokens
-        $cvText = mb_substr($cvText, 0, 6000);
-
         $prompt = <<<PROMPT
-Tu es un expert en recrutement et en analyse de CV. Analyse le CV suivant et retourne UNIQUEMENT un objet JSON valide (pas de markdown, pas de texte avant ou après).
+Tu es un expert RH Senior et spécialiste du recrutement technique. Analyse le document joint qui est un CV.
+RETOURNE EXCLUSIVEMENT UN OBJET JSON VALIDE. NE PAS AJOUTER DE TEXTE AVANT OU APRÈS.
+LE JSON DOIT ÊTRE EN FRANÇAIS.
 
-CV À ANALYSER :
-{$cvText}
-
-Retourne ce JSON exactement (remplace les valeurs) :
+STRUCTURE JSON ATTENDUE :
 {
-  "summary": "Résumé professionnel en 2-3 phrases",
+  "summary": "Résumé en 3 phrases maximum",
   "estimated_level": "junior|mid|senior|expert",
-  "main_domain": "ex: Développement Web, Data Science, DevOps, Design, etc.",
-  "technical_skills": ["PHP", "Symfony", "JavaScript", ...],
-  "soft_skills": ["Communication", "Travail d'équipe", ...],
-  "weak_points": ["Manque d'expérience en CI/CD", ...],
-  "cv_score": 72,
-  "maturity_score": 65,
-  "competitiveness_index": 58,
+  "main_domain": "Le domaine d'expertise principal",
+  "technical_skills": ["liste des hard skills"],
+  "soft_skills": ["liste des soft skills"],
+  "weak_points": ["points d'amélioration identifiés"],
+  "cv_score": 0-100,
+  "maturity_score": 0-100,
+  "competitiveness_index": 0-100,
   "recommendations": [
-    {"priority": "haute", "action": "Ajouter des projets GitHub concrets avec liens", "impact": "+8 points CV"},
-    {"priority": "moyenne", "action": "Obtenir une certification AWS ou Azure", "impact": "+12 points compétitivité"},
-    {"priority": "moyenne", "action": "Mettre en avant les métriques de résultats (ex: +30% performance)", "impact": "+5 points"},
-    {"priority": "faible", "action": "Améliorer la mise en forme avec un template ATS-friendly", "impact": "+3 points"}
+    {"priority": "haute|moyenne|faible", "action": "action concrète", "impact": "description de l'impact sur le score"}
   ],
   "evolution_simulation": [
-    {"scenario": "Obtenir une certification cloud", "current_score": 72, "predicted_score": 84, "timeline": "3 mois"},
-    {"scenario": "Ajouter 2 projets open source", "current_score": 72, "predicted_score": 80, "timeline": "2 mois"},
-    {"scenario": "Compléter une formation DevOps", "current_score": 72, "predicted_score": 78, "timeline": "1 mois"},
-    {"scenario": "Profil complet (toutes recommandations)", "current_score": 72, "predicted_score": 95, "timeline": "6 mois"}
+    {"scenario": "nom du scénario", "current_score": 0, "predicted_score": 0, "timeline": "durée"}
   ]
 }
-
-Règles :
-- cv_score : qualité globale du CV (présentation, clarté, impact, 0-100)
-- maturity_score : maturité professionnelle basée sur expérience et parcours (0-100)
-- competitiveness_index : comparaison aux standards actuels du marché (0-100)
-- Toutes les valeurs doivent être en français
-- Le JSON doit être valide et parseable
 PROMPT;
 
+        $parts = [['text' => $prompt]];
+        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+        // Gemini Vision OCR supporte PDF et Images nativement
+        $supportedMimeTypes = [
+            'pdf'  => 'application/pdf',
+            'png'  => 'image/png',
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+            'heic' => 'image/heic',
+            'heif' => 'image/heif',
+        ];
+
+        if (file_exists($filePath) && isset($supportedMimeTypes[$ext])) {
+            $mimeType = $supportedMimeTypes[$ext];
+            $base64Data = base64_encode(file_get_contents($filePath));
+            $parts[] = [
+                'inlineData' => [
+                    'mimeType' => $mimeType,
+                    'data'     => $base64Data
+                ]
+            ];
+        } else {
+            // Pour les DOCX ou fichiers texte, on utilise l'extracteur PHP
+            $cvText = trim($cvText);
+            if (empty($cvText)) {
+                return $this->getFallbackAnalysis($cvText, "Le contenu du CV n'a pas pu être lu. Veuillez fournir un PDF.");
+            }
+            $cvText = mb_substr($cvText, 0, 30000);
+            $parts[] = ['text' => "TXT DU CV :\n" . $cvText];
+        }
+
         try {
-            $response = $this->httpClient->request('POST', 'https://api.openai.com/v1/chat/completions', [
+            $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . $this->geminiApiKey;
+
+            $response = $this->httpClient->request('POST', $url, [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $this->openaiApiKey,
-                    'Content-Type'  => 'application/json',
+                    'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'model'           => 'gpt-4o-mini',
-                    'messages'        => [
+                    'contents' => [
                         [
-                            'role'    => 'system',
-                            'content' => 'Tu es un expert RH et recruteur senior. Tu réponds toujours avec du JSON valide uniquement.',
-                        ],
-                        [
-                            'role'    => 'user',
-                            'content' => $prompt,
-                        ],
+                            'parts' => $parts
+                        ]
                     ],
-                    'temperature'     => 0.3,
-                    'max_tokens'      => 2000,
-                    'response_format' => ['type' => 'json_object'],
+                    'generationConfig' => [
+                        'temperature' => 0.2,
+                        'topP' => 0.8,
+                        'topK' => 40,
+                        'responseMimeType' => 'application/json',
+                    ]
                 ],
-                'timeout' => 60,
+                'timeout' => 45,
             ]);
 
-            $statusCode = $response->getStatusCode();
-            $body       = $response->toArray(false); // false = don't throw on 4xx/5xx
 
-            if ($statusCode !== 200 || empty($body['choices'][0]['message']['content'])) {
-                // Log l'erreur pour faciliter le débogage
-                error_log('[CvAnalysis] OpenAI HTTP ' . $statusCode . ': ' . json_encode($body));
-                return $this->getFallbackAnalysis($cvText);
+            $statusCode = $response->getStatusCode();
+            $body = $response->toArray(false);
+
+            if ($statusCode !== 200) {
+                $errorMsg = $body['error']['message'] ?? json_encode($body);
+                return $this->getFallbackAnalysis($cvText, "Erreur API Gemini ($statusCode) : $errorMsg");
             }
 
-            $content = $body['choices'][0]['message']['content'];
-            $data    = json_decode($content, true);
+            $content = $body['candidates'][0]['content']['parts'][0]['text'] ?? null;
+            
+            if (!$content) {
+                return $this->getFallbackAnalysis($cvText, "Réponse vide de Gemini");
+            }
+
+            $content = preg_replace('/^```json\s*|\s*```$/i', '', trim($content));
+            $data = json_decode($content, true);
 
             if (!is_array($data)) {
-                return $this->getFallbackAnalysis($cvText);
+                return $this->getFallbackAnalysis($cvText, "JSON invalide reçu de l'IA");
             }
 
-            // Marquer l'analyse comme IA réelle
-            $data['_source'] = 'openai';
+            $data['_source'] = 'gemini';
             return $data;
 
         } catch (\Throwable $e) {
-            error_log('[CvAnalysis] Exception OpenAI: ' . $e->getMessage());
-            return $this->getFallbackAnalysis($cvText);
+            return $this->getFallbackAnalysis($cvText, "Exception : " . $e->getMessage());
         }
     }
 
     /**
      * Analyse de secours basée sur des mots-clés si l'IA n'est pas disponible.
      */
-    private function getFallbackAnalysis(string $cvText): array
+    private function getFallbackAnalysis(string $cvText, ?string $errorReason = null): array
     {
         $text = strtolower($cvText);
 
@@ -262,13 +279,13 @@ PROMPT;
 
         return [
             '_source'               => 'fallback',
-            'summary'               => 'Profil analysé par détection de mots-clés (analyse IA non disponible — vérifiez votre clé OpenAI et votre quota).',
+            'summary'               => $errorReason ? "ÉCHEC IA : $errorReason" : 'Profil analysé par détection de mots-clés (analyse IA non disponible — vérifiez votre clé Gemini dans .env.local).',
             'estimated_level'       => $level,
             'main_domain'           => 'Développement',
             'technical_skills'      => array_slice($foundTech, 0, 10),
             'soft_skills'           => array_slice($foundSoft, 0, 5) ?: ['Travail en équipe', 'Communication'],
             'weak_points'           => [
-                'Analyse IA non disponible (vérifiez votre clé OpenAI et votre quota)',
+                $errorReason ?: 'Analyse IA non disponible (vérifiez votre clé Gemini dans .env.local)',
                 'Résultats basés uniquement sur la détection de mots-clés',
             ],
             'cv_score'              => (int) $cvScore,
