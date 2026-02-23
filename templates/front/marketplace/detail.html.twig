@@ -78,6 +78,40 @@
                         <p class="text-muted-foreground leading-relaxed whitespace-pre-line">{{ article.contenu }}</p>
                     </div>
 
+                    <!-- Urgence / Activite -->
+                    <div id="live-urgency-widget" data-article-id="{{ article.id }}" class="glass-card rounded-2xl p-6 border border-primary/20">
+                        <p class="text-center font-serif text-2xl font-semibold mb-4 text-foreground">
+                            Plus que <span id="live-stock-count" class="text-primary">7</span> articles disponibles !
+                        </p>
+                        <p class="text-center text-lg mb-4">
+                            <span id="live-viewers-count" class="inline-flex items-center justify-center min-w-10 h-10 px-3 rounded-lg bg-primary/90 text-white font-bold mr-2">6</span>
+                            <span class="text-muted-foreground">personnes consultent ce produit en ce moment.</span>
+                        </p>
+
+                        <div class="w-full h-4 rounded-full bg-white/10 overflow-hidden mb-6">
+                            <div id="live-stock-bar" class="h-full rounded-full" style="width: 62%; background: repeating-linear-gradient(135deg, rgba(199,91,57,0.95) 0 9px, rgba(255,255,255,0.18) 9px 16px);"></div>
+                        </div>
+
+                        <div class="grid grid-cols-4 gap-3 text-center border-t border-white/10 pt-5">
+                            <div>
+                                <div id="countdown-days" class="font-serif text-4xl font-bold leading-none">00</div>
+                                <div class="text-xs text-muted-foreground mt-1">jours</div>
+                            </div>
+                            <div>
+                                <div id="countdown-hours" class="font-serif text-4xl font-bold leading-none">00</div>
+                                <div class="text-xs text-muted-foreground mt-1">heures</div>
+                            </div>
+                            <div>
+                                <div id="countdown-minutes" class="font-serif text-4xl font-bold leading-none">00</div>
+                                <div class="text-xs text-muted-foreground mt-1">minutes</div>
+                            </div>
+                            <div>
+                                <div id="countdown-seconds" class="font-serif text-4xl font-bold leading-none">00</div>
+                                <div class="text-xs text-muted-foreground mt-1">secondes</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Add To Cart -->
                     <div class="glass-card rounded-3xl p-6 border border-primary/30">
                         <h3 class="font-serif text-xl font-medium mb-4 flex items-center gap-2">
@@ -131,4 +165,70 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const widget = document.getElementById('live-urgency-widget');
+            if (!widget) return;
+
+            const articleId = parseInt(widget.dataset.articleId || '0', 10) || 0;
+            const stockEl = document.getElementById('live-stock-count');
+            const viewersEl = document.getElementById('live-viewers-count');
+            const stockBarEl = document.getElementById('live-stock-bar');
+
+            const daysEl = document.getElementById('countdown-days');
+            const hoursEl = document.getElementById('countdown-hours');
+            const minutesEl = document.getElementById('countdown-minutes');
+            const secondsEl = document.getElementById('countdown-seconds');
+
+            const baseStock = Math.max(3, 11 - (articleId % 7));
+            let currentStock = baseStock;
+            let viewers = 4 + (articleId % 8);
+
+            const now = Date.now();
+            const extraHours = 8 + (articleId % 10);
+            const endAt = now + (2 * 24 * 60 * 60 * 1000) + (extraHours * 60 * 60 * 1000);
+
+            function pad(n) {
+                return String(Math.max(0, n)).padStart(2, '0');
+            }
+
+            function renderStock() {
+                stockEl.textContent = String(currentStock);
+                viewersEl.textContent = String(viewers);
+                const pct = Math.max(8, Math.min(100, Math.round((currentStock / Math.max(baseStock, 1)) * 100)));
+                stockBarEl.style.width = pct + '%';
+            }
+
+            function tickCountdown() {
+                const diff = Math.max(0, endAt - Date.now());
+                const totalSeconds = Math.floor(diff / 1000);
+                const days = Math.floor(totalSeconds / 86400);
+                const hours = Math.floor((totalSeconds % 86400) / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                daysEl.textContent = pad(days);
+                hoursEl.textContent = pad(hours);
+                minutesEl.textContent = pad(minutes);
+                secondsEl.textContent = pad(seconds);
+            }
+
+            renderStock();
+            tickCountdown();
+
+            setInterval(tickCountdown, 1000);
+
+            setInterval(function () {
+                viewers = Math.max(2, viewers + (Math.random() > 0.5 ? 1 : -1));
+                if (Math.random() > 0.72 && currentStock > 1) {
+                    currentStock -= 1;
+                }
+                renderStock();
+            }, 7000);
+        })();
+    </script>
 {% endblock %}

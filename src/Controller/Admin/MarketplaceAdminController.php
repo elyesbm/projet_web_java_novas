@@ -84,6 +84,49 @@ class MarketplaceAdminController extends AbstractController
         // Catégories pour le filtre dans la vue (liste complète)
         $categoriesEntities = $categorieRepository->findAll();
 
+        // Stats: nombre d'articles par categorie
+        $categoryStatsRows = $categorieRepository->createQueryBuilder('c')
+            ->leftJoin('c.articles', 'a')
+            ->select('c.id AS id', 'c.nom_categorie AS nom', 'COUNT(a.id) AS article_count')
+            ->groupBy('c.id')
+            ->orderBy('article_count', 'DESC')
+            ->addOrderBy('c.nom_categorie', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $categoryArticleStats = array_map(static function (array $row): array {
+            return [
+                'id' => (int) ($row['id'] ?? 0),
+                'nom' => (string) ($row['nom'] ?? 'Sans nom'),
+                'article_count' => (int) ($row['article_count'] ?? 0),
+            ];
+        }, $categoryStatsRows);
+
+        $categoryMostFilled = $categoryArticleStats[0] ?? null;
+        $categoryEmptyCount = count(array_filter(
+            $categoryArticleStats,
+            static fn (array $item): bool => ((int) ($item['article_count'] ?? 0)) === 0
+        ));
+
+        $popularArticlesRows = $articleRepository->createQueryBuilder('a')
+            ->leftJoin('a.categorie', 'c')
+            ->addSelect('c')
+            ->orderBy('a.vues_article', 'DESC')
+            ->addOrderBy('a.id', 'DESC')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+
+        $popularArticles = array_map(static function (Article $article): array {
+            return [
+                'id' => (int) ($article->getId() ?? 0),
+                'titre' => (string) ($article->getTitreArticle() ?? 'Sans titre'),
+                'vues' => (int) ($article->getVuesArticle() ?? 0),
+                'categorie' => $article->getCategorie() instanceof Categorie ? (string) ($article->getCategorie()->getNomCategorie() ?? 'Autre') : 'Autre',
+            ];
+        }, $popularArticlesRows);
+
+        $mostPopularArticle = $popularArticles[0] ?? null;
         // RECHERCHE / TRI CATEGORIES pour l'onglet catégories
         $qCat = trim((string) $request->query->get('q_cat', ''));
         $sortCat = $request->query->get('sort_cat', 'date_desc');
@@ -154,6 +197,11 @@ class MarketplaceAdminController extends AbstractController
             'categories_total' => $categoriesTotal,
             'current_page_cat' => $currentPageCat,
             'total_pages_cat' => $totalPagesCat,
+            'category_article_stats' => $categoryArticleStats,
+            'category_most_filled' => $categoryMostFilled,
+            'category_empty_count' => $categoryEmptyCount,
+            'popular_articles' => $popularArticles,
+            'most_popular_article' => $mostPopularArticle,
         ]);
     }
 
@@ -269,6 +317,7 @@ class MarketplaceAdminController extends AbstractController
         UserRepository $userRepository
     ): Response {
         $categoriesEntities = $categorieRepository->findAll();
+
         $categories = array_map(static function (Categorie $categorie): array {
             return [
                 'id' => $categorie->getId(),
@@ -431,6 +480,7 @@ class MarketplaceAdminController extends AbstractController
         }
 
         $categoriesEntities = $categorieRepository->findAll();
+
         $categories = array_map(static function (Categorie $categorie): array {
             return [
                 'id' => $categorie->getId(),

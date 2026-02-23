@@ -189,12 +189,14 @@ class MarketplaceController extends AbstractController
     }
 
     #[Route('/article/{id}', name: 'app_marketplace_detail', requirements: ['id' => '\d+'])]
-    public function detail(int $id, Request $request, ArticleRepository $articleRepository): Response
+    public function detail(int $id, Request $request, ArticleRepository $articleRepository, EntityManagerInterface $entityManager): Response
     {
         $articleEntity = $articleRepository->find($id);
         if (!$articleEntity instanceof Article) {
             throw $this->createNotFoundException('Article introuvable.');
         }
+        $articleEntity->setVuesArticle(((int) ($articleEntity->getVuesArticle() ?? 0)) + 1);
+        $entityManager->flush();
         $categorie = $articleEntity->getCategorie();
         $auteur = $articleEntity->getAuteur();
         // Detail image handling: prefer stored image if file exists
@@ -223,7 +225,7 @@ class MarketplaceController extends AbstractController
             ],
             'categorie' => $categorie instanceof Categorie ? ['id' => $categorie->getId(), 'nom' => $categorie->getNomCategorie()] : ['id' => null, 'nom' => 'Autre'],
             'date' => (new \DateTimeImmutable())->format('Y-m-d'),
-            'vues' => 0,
+            'vues' => (int) ($articleEntity->getVuesArticle() ?? 0),
         ];
         $autres = $articleRepository->findBy([], ['id' => 'DESC'], 4);
         $articles_similaires = array_map(static function (Article $a) {

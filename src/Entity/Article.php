@@ -31,6 +31,9 @@ class Article
     #[ORM\Column(length: 50)]
     private ?string $statut_article = null;
 
+    #[ORM\Column(options: ['default' => 0])]
+    private ?int $vues_article = 0;
+
     // 🔗 CLÉS ÉTRANGÈRES
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'articles')]
     #[ORM\JoinColumn(name: 'id_etudiant', referencedColumnName: 'ID', nullable: false, onDelete: 'CASCADE')]
@@ -53,6 +56,8 @@ class Article
     public function setPrixArticle(float $prix_article): static { $this->prix_article = $prix_article; return $this; }
     public function getStatutArticle(): ?string { return $this->statut_article; }
     public function setStatutArticle(string $statut_article): static { $this->statut_article = $statut_article; return $this; }
+    public function getVuesArticle(): ?int { return $this->vues_article; }
+    public function setVuesArticle(int $vues_article): static { $this->vues_article = max(0, $vues_article); return $this; }
     public function getAuteur(): ?User { return $this->auteur; }
     public function setAuteur(?User $auteur): static { $this->auteur = $auteur; return $this; }
     public function getCategorie(): ?Categorie { return $this->categorie; }
