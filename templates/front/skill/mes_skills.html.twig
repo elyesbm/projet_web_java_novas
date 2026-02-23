@@ -62,7 +62,7 @@
                 {% for skill in mesSkills %}
                 {% set typeSkill = skill.contexteSkill == 'hard' ? 'hard' : 'soft' %}
                 {% set iconSkill = skill.contexteSkill == 'hard' ? 'code' : 'heart' %}
-                <div class="glass-card rounded-3xl p-6 hover:border-primary/30 transition-all group">
+                <div class="glass-card rounded-3xl p-6 hover:border-primary/30 transition-all group" data-skill-card data-skill-id="{{ skill.id }}" data-skill-name="{{ skill.nomSkill }}" data-skill-category="{{ skill.categorie }}">
                     <div class="flex items-start gap-4">
                         <div class="w-16 h-16 rounded-2xl {{ typeSkill == 'hard' ? 'bg-academic/20' : 'bg-personal/20' }} flex items-center justify-center flex-shrink-0">
                             <i data-lucide="{{ iconSkill }}" class="w-8 h-8 {{ typeSkill == 'hard' ? 'text-academic' : 'text-personal' }}"></i>
@@ -82,6 +82,31 @@
                             <p class="text-sm text-muted-foreground mb-2 line-clamp-2">{{ skill.descriptionSkill }}</p>
                             {% endif %}
                             {% include 'partials/_skill_market_stats.html.twig' with { skill: skill } %}
+
+                            <!-- Maîtrise & Historique -->
+                            <div class="mt-4 p-4 bg-secondary/40 rounded-2xl">
+                                <div class="flex items-center justify-between gap-3">
+                                    <p class="text-sm font-medium">Badge de maîtrise</p>
+                                    <span id="skill-badge-{{ skill.id }}" class="px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary">
+                                        Débutant
+                                    </span>
+                                </div>
+                                <div class="mt-3">
+                                    <p class="text-xs text-muted-foreground mb-2">Historique d'évolution</p>
+                                    <ul id="skill-history-{{ skill.id }}" class="text-xs text-muted-foreground space-y-1"></ul>
+                                </div>
+                                <div class="mt-3 flex items-center gap-2">
+                                    <button type="button" class="h-9 px-3 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90 transition-colors" data-skill-advance>
+                                        Améliorer
+                                    </button>
+                                    <button type="button" class="h-9 px-3 rounded-lg bg-secondary border border-white/10 text-xs text-muted-foreground hover:text-foreground transition-colors" data-skill-reset>
+                                        Réinitialiser
+                                    </button>
+                                    <button type="button" class="h-9 px-3 rounded-lg bg-accent/20 text-accent text-xs font-medium hover:bg-accent/30 transition-colors" data-skill-quiz>
+                                        Quiz rapide
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -106,6 +131,435 @@
         </div>
     </section>
 </div>
+<div id="skill-quiz-modal" class="fixed inset-0 z-[60] hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <div class="relative w-full max-w-xl mx-6 glass-card rounded-3xl p-8">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="font-serif text-2xl font-medium">Quiz d'évaluation</h3>
+                <p id="skill-quiz-title" class="text-sm text-muted-foreground"></p>
+            </div>
+            <button type="button" id="skill-quiz-close" class="h-10 w-10 rounded-xl bg-secondary border border-white/10 flex items-center justify-center hover:bg-white/5 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <div id="skill-quiz-body" class="space-y-4"></div>
+        <div class="mt-6 flex items-center justify-between">
+            <p id="skill-quiz-score" class="text-sm text-muted-foreground">Points: 0</p>
+            <button type="button" id="skill-quiz-submit" class="h-11 px-5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-all">
+                Valider
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const levels = [
+            { label: 'Débutant', className: 'bg-primary/20 text-primary' },
+            { label: 'Intermédiaire', className: 'bg-accent/20 text-accent' },
+            { label: 'Avancé', className: 'bg-emerald-500/20 text-emerald-400' },
+            { label: 'Maître', className: 'bg-amber-500/20 text-amber-400' }
+        ];
+
+        function storageKey(id) {
+            return 'novas_skill_mastery_' + id;
+        }
+
+        function loadState(id) {
+            const raw = localStorage.getItem(storageKey(id));
+            if (!raw) return { level: 0, history: [] };
+            try {
+                const parsed = JSON.parse(raw);
+                const level = Number.isInteger(parsed.level) ? parsed.level : 0;
+                const history = Array.isArray(parsed.history) ? parsed.history : [];
+                return { level, history };
+            } catch {
+                return { level: 0, history: [] };
+            }
+        }
+
+        function saveState(id, state) {
+            localStorage.setItem(storageKey(id), JSON.stringify(state));
+        }
+
+        function formatDate(d) {
+            const date = new Date(d);
+            return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function render(card) {
+            const id = card.dataset.skillId;
+            const name = card.dataset.skillName || 'Skill';
+            const badge = document.getElementById('skill-badge-' + id);
+            const historyList = document.getElementById('skill-history-' + id);
+            if (!badge || !historyList) return;
+
+            const state = loadState(id);
+            const levelIndex = Math.max(0, Math.min(levels.length - 1, state.level));
+            const level = levels[levelIndex];
+
+            badge.textContent = level.label;
+            badge.className = 'px-3 py-1 rounded-full text-xs font-semibold ' + level.className;
+
+            historyList.innerHTML = '';
+            if (state.history.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'Aucune évolution enregistrée.';
+                historyList.appendChild(li);
+                return;
+            }
+
+            state.history.slice(-4).reverse().forEach(function (item) {
+                const li = document.createElement('li');
+                const label = levels[Math.max(0, Math.min(levels.length - 1, item.level))].label;
+                li.textContent = formatDate(item.date) + ' — ' + name + ' → ' + label;
+                historyList.appendChild(li);
+            });
+        }
+
+        const quizModal = document.getElementById('skill-quiz-modal');
+        const quizClose = document.getElementById('skill-quiz-close');
+        const quizTitle = document.getElementById('skill-quiz-title');
+        const quizBody = document.getElementById('skill-quiz-body');
+        const quizScore = document.getElementById('skill-quiz-score');
+        const quizSubmit = document.getElementById('skill-quiz-submit');
+        let quizActiveSkillId = null;
+        const quizPointsPerCorrect = 10;
+        const quizPointsMax = 100;
+        const quizPointsKey = 'novas_skill_quiz_points_';
+
+        const quizBank = {
+            default: [
+                {
+                    q: "Quel est l'objectif principal de ce skill ?",
+                    options: ["Comprendre", "Appliquer", "Créer", "Optimiser"],
+                    answer: 0
+                },
+                {
+                    q: "Quelle pratique améliore le plus votre progression ?",
+                    options: ["Lire uniquement", "Pratiquer régulièrement", "Regarder sans pause", "Éviter les retours"],
+                    answer: 1
+                },
+                {
+                    q: "Quand considérer ce skill comme maîtrisé ?",
+                    options: ["Après 1 essai", "Après feedback et mise en pratique", "Après un seul cours", "Après zéro erreur"],
+                    answer: 1
+                }
+            ],
+            Communication: [
+                {
+                    q: "Quel est le meilleur moyen de vérifier la compréhension ?",
+                    options: ["Parler plus vite", "Poser une question de reformulation", "Couper l'interlocuteur", "Changer de sujet"],
+                    answer: 1
+                },
+                {
+                    q: "Une bonne écoute active inclut :",
+                    options: ["Interrompre souvent", "Reformuler et clarifier", "Éviter le regard", "Répondre sans réfléchir"],
+                    answer: 1
+                },
+                {
+                    q: "Face à un désaccord, tu privilégies :",
+                    options: ["Le jugement", "La clarification des besoins", "Le silence total", "La fuite"],
+                    answer: 1
+                }
+            ],
+            Programmation: [
+                {
+                    q: "Quel est l'objectif des tests unitaires ?",
+                    options: ["Écrire plus de code", "Vérifier le comportement d'une petite unité", "Remplacer la documentation", "Accélérer le CPU"],
+                    answer: 1
+                },
+                {
+                    q: "Un bug reproductible doit être :",
+                    options: ["Ignoré", "Documenté avec étapes claires", "Masqué", "Mis en prod"],
+                    answer: 1
+                },
+                {
+                    q: "Le refactoring sert à :",
+                    options: ["Ajouter des fonctionnalités", "Améliorer la structure sans changer le comportement", "Supprimer les tests", "Rendre le code plus lent"],
+                    answer: 1
+                }
+            ],
+            "Développement Web": [
+                {
+                    q: "Quel est le rôle principal du CSS ?",
+                    options: ["Gérer la logique", "Styliser la présentation", "Stocker des données", "Compiler le JS"],
+                    answer: 1
+                },
+                {
+                    q: "Un site responsive doit :",
+                    options: ["Ignorer mobile", "S'adapter aux tailles d'écran", "Bloquer le zoom", "Avoir une seule résolution"],
+                    answer: 1
+                },
+                {
+                    q: "Pour une bonne performance web, il faut :",
+                    options: ["Images non compressées", "Minifier et optimiser les assets", "Plus de scripts", "Tout charger en même temps"],
+                    answer: 1
+                }
+            ],
+            "Data Science": [
+                {
+                    q: "Quel est l'objectif du nettoyage de données ?",
+                    options: ["Ajouter du bruit", "Corriger et uniformiser", "Supprimer toutes les colonnes", "Éviter l'analyse"],
+                    answer: 1
+                },
+                {
+                    q: "Le surapprentissage (overfitting) signifie :",
+                    options: ["Modèle trop simple", "Modèle trop adapté aux données d'entraînement", "Pas de données", "Modèle parfait"],
+                    answer: 1
+                },
+                {
+                    q: "Une validation croisée sert à :",
+                    options: ["Cacher les erreurs", "Évaluer la performance généralisée", "Augmenter les features", "Éviter les tests"],
+                    answer: 1
+                }
+            ],
+            Design: [
+                {
+                    q: "Le contraste sert à :",
+                    options: ["Masquer le contenu", "Améliorer la lisibilité", "Réduire l'accessibilité", "Surcharger la page"],
+                    answer: 1
+                },
+                {
+                    q: "Un bon design UX vise :",
+                    options: ["Confusion", "Clarté et fluidité", "Complexité maximale", "Multiplication d'étapes"],
+                    answer: 1
+                },
+                {
+                    q: "Le wireframe est :",
+                    options: ["Un logo final", "Une structure fonctionnelle", "Une animation", "Une base de données"],
+                    answer: 1
+                }
+            ],
+            Marketing: [
+                {
+                    q: "Un persona marketing sert à :",
+                    options: ["Inventer des chiffres", "Représenter le client cible", "Éviter le ciblage", "Remplacer les données"],
+                    answer: 1
+                },
+                {
+                    q: "Le CTA efficace est :",
+                    options: ["Vague", "Clair et orienté action", "Caché", "Sans verbe"],
+                    answer: 1
+                },
+                {
+                    q: "Un bon canal d'acquisition se mesure par :",
+                    options: ["Le hasard", "Le coût et la conversion", "Le nombre de couleurs", "Le logo"],
+                    answer: 1
+                }
+            ],
+            Management: [
+                {
+                    q: "Un feedback utile est :",
+                    options: ["Général", "Spécifique et actionnable", "Vague", "Rare"],
+                    answer: 1
+                },
+                {
+                    q: "La délégation efficace implique :",
+                    options: ["Absence totale", "Clarté des objectifs", "Micro‑management", "Silence"],
+                    answer: 1
+                },
+                {
+                    q: "Un bon manager doit :",
+                    options: ["Décider seul", "Aligner l'équipe sur une vision", "Éviter les échanges", "Changer sans communiquer"],
+                    answer: 1
+                }
+            ],
+            "Bien-être": [
+                {
+                    q: "Une bonne routine de bien‑être inclut :",
+                    options: ["Pas de repos", "Sommeil et récupération", "Stress constant", "Aucune pause"],
+                    answer: 1
+                },
+                {
+                    q: "Le stress chronique peut :",
+                    options: ["Améliorer la santé", "Nuire à la concentration", "Rendre invincible", "Augmenter le sommeil"],
+                    answer: 1
+                },
+                {
+                    q: "Pour préserver l'équilibre :",
+                    options: ["Tout accepter", "Savoir dire non", "Éviter les limites", "Travailler sans arrêt"],
+                    answer: 1
+                }
+            ]
+        };
+
+        function getQuizFor(card) {
+            const category = card.dataset.skillCategory || '';
+            const skillName = (card.dataset.skillName || '').toLowerCase();
+            if (quizBank[category]) return quizBank[category];
+            if (skillName.includes('java') || skillName.includes('python') || skillName.includes('php')) {
+                return quizBank.Programmation;
+            }
+            if (skillName.includes('ux') || skillName.includes('ui')) {
+                return quizBank.Design;
+            }
+            return quizBank.default;
+        }
+
+        function openQuiz(card) {
+            if (!quizModal || !quizBody || !quizTitle || !quizScore) return;
+            const quizQuestions = getQuizFor(card);
+            quizActiveSkillId = card.dataset.skillId;
+            quizTitle.textContent = card.dataset.skillName || 'Skill';
+            quizBody.innerHTML = '';
+            quizQuestions.forEach(function (item, index) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'p-4 rounded-2xl bg-secondary/40';
+                wrapper.dataset.quizQuestion = String(index);
+                const title = document.createElement('p');
+                title.className = 'text-sm font-medium mb-3';
+                title.textContent = (index + 1) + '. ' + item.q;
+                wrapper.appendChild(title);
+
+                item.options.forEach(function (opt, idx) {
+                    const label = document.createElement('label');
+                    label.className = 'flex items-center gap-2 text-sm text-muted-foreground cursor-pointer mb-2';
+                    label.dataset.optionIndex = String(idx);
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = 'quiz-q-' + index;
+                    input.value = String(idx);
+                    input.className = 'accent-primary';
+                    const span = document.createElement('span');
+                    span.textContent = opt;
+                    label.appendChild(input);
+                    label.appendChild(span);
+                    wrapper.appendChild(label);
+                });
+
+                quizBody.appendChild(wrapper);
+            });
+            quizScore.textContent = 'Points: 0';
+            quizModal.classList.remove('hidden');
+            quizModal.classList.add('flex');
+        }
+
+        function closeQuiz() {
+            if (!quizModal) return;
+            quizModal.classList.add('hidden');
+            quizModal.classList.remove('flex');
+        }
+
+        if (quizClose) {
+            quizClose.addEventListener('click', closeQuiz);
+        }
+
+        if (quizModal) {
+            quizModal.addEventListener('click', function (event) {
+                if (event.target === quizModal) {
+                    closeQuiz();
+                }
+            });
+        }
+
+        if (quizSubmit) {
+            quizSubmit.addEventListener('click', function () {
+                if (!quizBody) return;
+                const card = quizActiveSkillId
+                    ? document.querySelector('[data-skill-id="' + quizActiveSkillId + '"]')
+                    : null;
+                if (!card) return;
+                const quizQuestions = getQuizFor(card);
+                let score = 0;
+                quizQuestions.forEach(function (item, index) {
+                    const selected = quizBody.querySelector('input[name=\"quiz-q-' + index + '\"]:checked');
+                    if (selected && Number(selected.value) === item.answer) {
+                        score += 1;
+                    }
+                });
+                const gainedPoints = score * quizPointsPerCorrect;
+                if (quizScore) {
+                    quizScore.textContent = 'Points: ' + gainedPoints;
+                }
+                quizQuestions.forEach(function (item, index) {
+                    const question = quizBody.querySelector('[data-quiz-question=\"' + index + '\"]');
+                    if (!question) return;
+                    const labels = question.querySelectorAll('label');
+                    labels.forEach(function (label) {
+                        label.classList.remove('text-emerald-400', 'text-rose-400', 'font-medium');
+                    });
+
+                    const selected = question.querySelector('input[name=\"quiz-q-' + index + '\"]:checked');
+                    const correctLabel = question.querySelector('label[data-option-index=\"' + item.answer + '\"]');
+
+                    if (selected) {
+                        const selectedLabel = selected.parentElement;
+                        if (Number(selected.value) === item.answer) {
+                            if (selectedLabel) {
+                                selectedLabel.classList.add('text-emerald-400', 'font-medium');
+                            }
+                        } else {
+                            if (selectedLabel) {
+                                selectedLabel.classList.add('text-rose-400', 'font-medium');
+                            }
+                            if (correctLabel) {
+                                correctLabel.classList.add('text-emerald-400', 'font-medium');
+                            }
+                        }
+                    } else if (correctLabel) {
+                        correctLabel.classList.add('text-emerald-400', 'font-medium');
+                    }
+                });
+                if (quizActiveSkillId) {
+                    const pointsKey = quizPointsKey + quizActiveSkillId;
+                    const currentPoints = parseInt(localStorage.getItem(pointsKey) || '0', 10);
+                    const nextPoints = Math.min(quizPointsMax, currentPoints + gainedPoints);
+                    localStorage.setItem(pointsKey, String(nextPoints));
+                    const levelFromPoints = Math.min(levels.length - 1, Math.floor(nextPoints / 25));
+                    const historyEntry = {
+                        date: new Date().toISOString(),
+                        level: levelFromPoints
+                    };
+                    const state = loadState(quizActiveSkillId);
+                    const nextState = {
+                        level: levelFromPoints,
+                        history: [...state.history, historyEntry]
+                    };
+                    saveState(quizActiveSkillId, nextState);
+                    const card = document.querySelector('[data-skill-id=\"' + quizActiveSkillId + '\"]');
+                    if (card) render(card);
+                }
+            });
+        }
+
+        document.querySelectorAll('[data-skill-card]').forEach(function (card) {
+            const id = card.dataset.skillId;
+            const advanceBtn = card.querySelector('[data-skill-advance]');
+            const resetBtn = card.querySelector('[data-skill-reset]');
+            const quizBtn = card.querySelector('[data-skill-quiz]');
+
+            render(card);
+
+            if (advanceBtn) {
+                advanceBtn.addEventListener('click', function () {
+                    const state = loadState(id);
+                    const nextLevel = Math.min(levels.length - 1, state.level + 1);
+                    const nextState = {
+                        level: nextLevel,
+                        history: [...state.history, { date: new Date().toISOString(), level: nextLevel }]
+                    };
+                    saveState(id, nextState);
+                    render(card);
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function () {
+                    const nextState = { level: 0, history: [] };
+                    saveState(id, nextState);
+                    render(card);
+                });
+            }
+
+            if (quizBtn) {
+                quizBtn.addEventListener('click', function () {
+                    openQuiz(card);
+                });
+            }
+        });
+    });
+</script>
 {% endblock %}
 
 
