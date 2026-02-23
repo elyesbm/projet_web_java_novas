@@ -4,22 +4,7 @@
 
 {% block body %}
 <div class="min-h-screen bg-background">
-    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="{{ path('app_home') }}" class="flex items-center gap-3 group">
-                <img src="{{ asset('images/logo.png') }}" alt="NoVas" class="h-10 w-auto">
-            </a>
-            <div class="flex items-center gap-4">
-                <a href="{{ path('app_skills_index') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <i data-lucide="sparkles" class="w-4 h-4"></i>
-                    Tous les skills
-                </a>
-                <a href="{{ path('app_skills_mes') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Mes Skills
-                </a>
-            </div>
-        </div>
-    </nav>
+    {% include 'front/partials/_auth_nav.html.twig' %}
 
     <section class="pt-28 pb-8 px-6">
         <div class="max-w-4xl mx-auto">
@@ -128,3 +113,4 @@
 })();
 </script>
 {% endblock %}
+

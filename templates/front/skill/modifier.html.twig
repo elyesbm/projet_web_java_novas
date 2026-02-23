@@ -6,22 +6,7 @@
 <div class="min-h-screen bg-background relative overflow-hidden">
     <div class="absolute inset-0 gradient-orb"></div>
     <div class="absolute top-1/4 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]"></div>
-    
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="{{ path('app_skills_mes') }}" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                <span class="text-sm">Retour à mes skills</span>
-            </a>
-            
-            <div class="flex items-center gap-2">
-                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                    <i data-lucide="pencil" class="w-6 h-6 text-white"></i>
-                </div>
-            </div>
-        </div>
-    </nav>
+    {% include 'front/partials/_auth_nav.html.twig' %}
 
     <!-- Content -->
     <div class="pt-32 pb-24 px-6">
@@ -54,3 +39,5 @@
     </div>
 </div>
 {% endblock %}
+
+

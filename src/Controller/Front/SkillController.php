@@ -8,6 +8,7 @@ use App\Repository\SkillRepository;
 use App\Repository\UserRepository;
 use App\Service\SkillAITutorService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,6 +22,7 @@ class SkillController extends AbstractController
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
         private SkillAITutorService $aiTutorService,
+        private PaginatorInterface $paginator,
     ) {
     }
 
@@ -72,7 +74,9 @@ class SkillController extends AbstractController
         $type = $request->query->get('type');
         $categorie = $request->query->get('categorie');
 
-        $skills = $this->skillRepository->searchAndFilter($q, $type, $categorie);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $queryBuilder = $this->skillRepository->searchAndFilterQueryBuilder($q, $type, $categorie);
+        $skills = $this->paginator->paginate($queryBuilder, $page, 6);
         $categories = ['Communication', 'Programmation', 'Management', 'Data Science', 'Bien-être', 'Développement Web', 'Design', 'Marketing'];
 
         return $this->render('front/skill/index.html.twig', [

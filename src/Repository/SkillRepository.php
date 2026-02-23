@@ -36,9 +36,8 @@ class SkillRepository extends ServiceEntityRepository
      * @param string|null $q        Recherche dans nom et description (LIKE)
      * @param string|null $type     'hard' ou 'soft' (contexte_skill)
      * @param string|null $categorie Nom de catégorie exact
-     * @return Skill[]
      */
-    public function searchAndFilter(?string $q, ?string $type, ?string $categorie): array
+    public function searchAndFilterQueryBuilder(?string $q, ?string $type, ?string $categorie)
     {
         $qb = $this->createQueryBuilder('s')
             ->orderBy('s.nom_skill', 'ASC');
@@ -58,7 +57,22 @@ class SkillRepository extends ServiceEntityRepository
                 ->setParameter('categorie', $categorie);
         }
 
-        return $qb->getQuery()->getResult();
+        return $qb;
+    }
+
+    /**
+     * Recherche et filtre pour le catalogue front.
+     *
+     * @param string|null $q        Recherche dans nom et description (LIKE)
+     * @param string|null $type     'hard' ou 'soft' (contexte_skill)
+     * @param string|null $categorie Nom de catégorie exact
+     * @return Skill[]
+     */
+    public function searchAndFilter(?string $q, ?string $type, ?string $categorie): array
+    {
+        return $this->searchAndFilterQueryBuilder($q, $type, $categorie)
+            ->getQuery()
+            ->getResult();
     }
 
     /**
