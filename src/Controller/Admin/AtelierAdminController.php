@@ -6,8 +6,10 @@ use App\Entity\Atelier;
 use App\Form\AtelierType;
 use App\Repository\AtelierRepository;
 use App\Repository\ReservationRepository;
+use App\Service\AiAtelierDescriptionGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -96,6 +98,33 @@ class AtelierAdminController extends AbstractController
             'form' => $form,
             'atelier' => $atelier,
         ]);
+    }
+
+    #[Route('/ai/description', name: 'ai_description', methods: ['POST'])]
+    public function generateAiDescription(Request $request, AiAtelierDescriptionGenerator $generator): JsonResponse
+    {
+        $token = (string) ($request->headers->get('X-CSRF-TOKEN') ?? '');
+        if (!$this->isCsrfTokenValid('ai_generate_atelier_description', $token)) {
+            return $this->json(['error' => 'Token CSRF invalide.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $payload = json_decode($request->getContent(), true);
+        if (!is_array($payload)) {
+            return $this->json(['error' => 'Requete invalide.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $title = trim((string) ($payload['title'] ?? ''));
+        if ($title === '') {
+            return $this->json(['error' => 'Le titre est obligatoire.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $description = $generator->generate($title);
+        } catch (\Throwable $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->json(['description' => $description]);
     }
 
     #[Route('/{id}/delete', name: 'delete', requirements: ['id' => '\\d+'], methods: ['POST'])]

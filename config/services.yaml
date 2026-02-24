@@ -6,6 +6,9 @@
 parameters:
     openai_api_key: '%env(OPENAI_API_KEY)%'
     gemini_api_key: '%env(GEMINI_API_KEY)%'
+    ai_provider: 'huggingface'
+    ai_hf_model: 'katanemo/Arch-Router-1.5B'
+    ai_gemini_model: 'gemini-1.5-flash-latest'
 
 services:
     # default configuration for services in *this* file
