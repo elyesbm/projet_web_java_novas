@@ -8,6 +8,9 @@ parameters:
     ai_hf_model: 'katanemo/Arch-Router-1.5B'
     ai_gemini_model: 'gemini-1.5-flash-latest'
     translate_provider: 'mymemory'
+    tts_provider: 'voicerss'
+    voicerss_verify_ssl: '1'
+    voicerss_cafile: ''
 
 services:
     # default configuration for services in *this* file
