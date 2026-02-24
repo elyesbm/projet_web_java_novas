@@ -4,9 +4,14 @@ namespace App\Controller\Front;
 
 use App\Entity\Article;
 use App\Entity\Categorie;
+use App\Entity\Commande;
+use App\Entity\HistoriqueVue;
 use App\Entity\User;
 use App\Repository\ArticleRepository;
 use App\Repository\CategorieRepository;
+use App\Repository\CommandeRepository;
+use App\Repository\HistoriqueVueRepository;
+use App\Repository\UserRepository;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,7 +32,14 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 class MarketplaceController extends AbstractController
 {
     #[Route('/', name: 'app_marketplace_index')]
-    public function index(Request $request, ArticleRepository $articleRepository, CategorieRepository $categorieRepository, HttpClientInterface $httpClient): Response
+    public function index(
+        Request $request,
+        ArticleRepository $articleRepository,
+        CategorieRepository $categorieRepository,
+        HttpClientInterface $httpClient,
+        CommandeRepository $commandeRepository,
+        HistoriqueVueRepository $historiqueVueRepository
+    ): Response
     {
         $sendSmsOnReturn = (string) $request->query->get('send_sms', '') === '1';
         $stripeSessionId = (string) $request->query->get('session_id', '');
@@ -135,11 +147,65 @@ class MarketplaceController extends AbstractController
             ];
         }, $articlesEntities);
 
+        $recommendedArticles = [];
+        $currentUser = $this->getUser();
+        if ($currentUser instanceof User && $currentUser->getId() !== null) {
+            try {
+                $userId = (int) $currentUser->getId();
+                $purchasedArticleIds = $commandeRepository->findPurchasedArticleIdsForUser($userId);
+                $lastViewedArticleId = $historiqueVueRepository->findLastViewedArticleIdForUser($userId);
+                $lastViewedCategoryId = $historiqueVueRepository->findLastViewedCategoryIdForUser($userId);
+                $favoriteCategoryIds = $lastViewedCategoryId !== null ? [$lastViewedCategoryId] : [];
+                if (empty($favoriteCategoryIds)) {
+                    $favoriteCategoryIds = $commandeRepository->findTopCategoryIdsForUser($userId, 1);
+                }
+                if (empty($favoriteCategoryIds)) {
+                    $favoriteCategoryIds = $historiqueVueRepository->findTopCategoryIdsForUser($userId, 1);
+                }
+
+                if (!empty($favoriteCategoryIds)) {
+                    $excludedArticleIds = $purchasedArticleIds;
+                    if ($lastViewedArticleId !== null) {
+                        $excludedArticleIds[] = $lastViewedArticleId;
+                    }
+                    $excludedArticleIds = array_values(array_unique(array_map('intval', $excludedArticleIds)));
+                    $recommendedEntities = $articleRepository->findRecommendedByCategoryIds($favoriteCategoryIds, $excludedArticleIds, 3);
+                    $recommendedArticles = array_map(function (Article $article): array {
+                        $categorie = $article->getCategorie();
+                        $auteur = $article->getAuteur();
+                        $image = $article->getImageArticle() ?: 'skills-learning.jpg';
+                        $imagesDir = $this->getParameter('kernel.project_dir') . '/public/images';
+                        if (!is_file($imagesDir . '/' . $image)) {
+                            $image = 'skills-learning.jpg';
+                        }
+
+                        return [
+                            'id' => $article->getId(),
+                            'titre' => $article->getTitreArticle(),
+                            'image' => $image,
+                            'type' => $article->getTypeArticle() ?: 'academic',
+                            'prix' => $article->getPrixArticle() ?? 0,
+                            'categorie' => $categorie instanceof Categorie ? ['id' => $categorie->getId(), 'nom' => $categorie->getNomCategorie()] : ['id' => null, 'nom' => 'Autre'],
+                            'vendeur' => [
+                                'nom' => $auteur instanceof User ? trim(($auteur->getPrenom() ?? '') . ' ' . ($auteur->getNom() ?? '')) : 'Etudiant',
+                                'avatar' => 'student-avatar.jpg',
+                                'niveau' => $auteur instanceof User ? ($auteur->getROLE() ?? 'Etudiant') : 'Etudiant',
+                            ],
+                            'date' => (new \DateTimeImmutable())->format('Y-m-d'),
+                        ];
+                    }, $recommendedEntities);
+                }
+            } catch (\Throwable) {
+                $recommendedArticles = [];
+            }
+        }
+
         return $this->render('front/marketplace/index.html.twig', [
             'categories' => $categories,
             'articles' => $articles,
             'current_page' => $currentPage,
             'total_pages' => $totalPages,
+            'recommended_articles' => $recommendedArticles,
         ]);
     }
 
@@ -197,6 +263,21 @@ class MarketplaceController extends AbstractController
         }
         $articleEntity->setVuesArticle(((int) ($articleEntity->getVuesArticle() ?? 0)) + 1);
         $entityManager->flush();
+
+        $currentUser = $this->getUser();
+        if ($currentUser instanceof User) {
+            try {
+                $historiqueVue = new HistoriqueVue();
+                $historiqueVue
+                    ->setUser($currentUser)
+                    ->setArticle($articleEntity)
+                    ->setDateVue(new \DateTimeImmutable());
+                $entityManager->persist($historiqueVue);
+                $entityManager->flush();
+            } catch (\Throwable) {
+                // Ignore if historique table is not migrated yet.
+            }
+        }
         $categorie = $articleEntity->getCategorie();
         $auteur = $articleEntity->getAuteur();
         // Detail image handling: prefer stored image if file exists
@@ -356,10 +437,19 @@ class MarketplaceController extends AbstractController
             }
         }
 
+        $currentUser = $this->getUser();
+        $cartMap = [];
+        foreach ($cartIds as $articleId) {
+            $qty = max(1, (int) ($cartQty[(string) $articleId] ?? 1));
+            $cartMap[] = $articleId . ':' . $qty;
+        }
+
         $payload = [
             'mode' => 'payment',
             'success_url' => $this->generateUrl('app_marketplace_checkout_success', [], UrlGeneratorInterface::ABSOLUTE_URL) . '?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => $this->generateUrl('app_marketplace_panier', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'metadata[user_id]' => $currentUser instanceof User && $currentUser->getId() !== null ? (string) $currentUser->getId() : '',
+            'metadata[cart_map]' => implode(',', $cartMap),
         ];
 
         $lineIndex = 0;
@@ -405,6 +495,99 @@ class MarketplaceController extends AbstractController
             $this->addFlash('error', 'Erreur Stripe: ' . $e->getMessage());
             return $this->redirectToRoute('app_marketplace_panier');
         }
+    }
+
+    #[Route('/paiement/webhook', name: 'app_marketplace_stripe_webhook', methods: ['POST'])]
+    public function stripeWebhook(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ArticleRepository $articleRepository,
+        UserRepository $userRepository,
+        CommandeRepository $commandeRepository
+    ): Response {
+        $payload = (string) $request->getContent();
+        if ($payload === '') {
+            return new Response('Payload vide', Response::HTTP_BAD_REQUEST);
+        }
+
+        $signature = (string) $request->headers->get('Stripe-Signature', '');
+        $webhookSecret = (string) ($_ENV['STRIPE_WEBHOOK_SECRET'] ?? $_SERVER['STRIPE_WEBHOOK_SECRET'] ?? '');
+        if ($webhookSecret === '') {
+            return new Response('STRIPE_WEBHOOK_SECRET manquant', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        if (!$this->isValidStripeSignature($payload, $signature, $webhookSecret)) {
+            return new Response('Signature Stripe invalide', Response::HTTP_BAD_REQUEST);
+        }
+
+        $event = json_decode($payload, true);
+        if (!is_array($event) || !isset($event['type'])) {
+            return new Response('Evenement Stripe invalide', Response::HTTP_BAD_REQUEST);
+        }
+
+        if ((string) $event['type'] !== 'checkout.session.completed') {
+            return new Response('Event ignore', Response::HTTP_OK);
+        }
+
+        $session = (array) ($event['data']['object'] ?? []);
+        $sessionId = (string) ($session['id'] ?? '');
+        $paymentStatus = (string) ($session['payment_status'] ?? '');
+        if ($sessionId === '' || $paymentStatus !== 'paid') {
+            return new Response('Session non payable', Response::HTTP_OK);
+        }
+
+        $metadata = (array) ($session['metadata'] ?? []);
+        $userId = (int) ($metadata['user_id'] ?? 0);
+        $cartMap = (string) ($metadata['cart_map'] ?? '');
+        if ($cartMap === '') {
+            return new Response('Aucun article en metadata', Response::HTTP_OK);
+        }
+
+        $user = null;
+        if ($userId > 0) {
+            $user = $userRepository->find($userId);
+        }
+
+        $entries = array_filter(array_map('trim', explode(',', $cartMap)));
+        $hasChanges = false;
+        foreach ($entries as $entry) {
+            $parts = explode(':', $entry);
+            $articleId = isset($parts[0]) ? (int) trim((string) $parts[0]) : 0;
+            $qty = isset($parts[1]) ? max(1, (int) trim((string) $parts[1])) : 1;
+            if ($articleId <= 0) {
+                continue;
+            }
+
+            $article = $articleRepository->find($articleId);
+            if (!$article instanceof Article) {
+                continue;
+            }
+
+            $existing = $commandeRepository->findOneBy([
+                'stripeSessionId' => $sessionId,
+                'article' => $article,
+            ]);
+            if ($existing instanceof Commande) {
+                continue;
+            }
+
+            $lineAmount = (float) (($article->getPrixArticle() ?? 0) * $qty);
+            $commande = new Commande();
+            $commande
+                ->setUser($user instanceof User ? $user : null)
+                ->setArticle($article)
+                ->setMontant($lineAmount)
+                ->setDateCommande(new \DateTimeImmutable())
+                ->setStripeSessionId($sessionId);
+
+            $entityManager->persist($commande);
+            $hasChanges = true;
+        }
+
+        if ($hasChanges) {
+            $entityManager->flush();
+        }
+
+        return new Response('OK', Response::HTTP_OK);
     }
 
     #[Route('/ai/analyse', name: 'app_marketplace_ai_analyze', methods: ['POST'])]
@@ -1371,5 +1554,42 @@ class MarketplaceController extends AbstractController
         return $this->redirectToRoute('app_marketplace_categories');
     }
 
-    
+    private function isValidStripeSignature(string $payload, string $signatureHeader, string $secret, int $tolerance = 300): bool
+    {
+        if ($signatureHeader === '' || $secret === '') {
+            return false;
+        }
+
+        $timestamp = null;
+        $signatures = [];
+        foreach (explode(',', $signatureHeader) as $part) {
+            $pair = explode('=', trim($part), 2);
+            if (count($pair) !== 2) {
+                continue;
+            }
+            if ($pair[0] === 't') {
+                $timestamp = (int) $pair[1];
+            }
+            if ($pair[0] === 'v1') {
+                $signatures[] = $pair[1];
+            }
+        }
+
+        if ($timestamp === null || empty($signatures)) {
+            return false;
+        }
+
+        if (abs(time() - $timestamp) > $tolerance) {
+            return false;
+        }
+
+        $expected = hash_hmac('sha256', $timestamp . '.' . $payload, $secret);
+        foreach ($signatures as $signature) {
+            if (hash_equals($expected, $signature)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

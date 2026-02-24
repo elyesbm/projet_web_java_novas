@@ -100,6 +100,38 @@
                 <div class="mb-4 p-4 rounded-xl bg-red-500/20 text-red-400 text-sm">{{ flash }}</div>
             {% endfor %}
 
+            {% if recommended_articles is defined and recommended_articles is not empty %}
+                <div class="mb-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-serif text-2xl md:text-3xl font-medium">Produits recommandés pour vous</h2>
+                        <span class="text-xs px-3 py-1 rounded-full bg-primary/20 text-primary">Personnalisé</span>
+                    </div>
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for article in recommended_articles %}
+                            <div class="group glass-card rounded-2xl overflow-hidden border border-primary/20 hover:border-primary/40 transition-all duration-300">
+                                <div class="relative h-44 overflow-hidden">
+                                    <img src="{{ asset('images/' ~ article.image) }}" alt="{{ article.titre }}" onerror="this.onerror=null;this.src='{{ asset('images/skills-learning.jpg') }}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                    <div class="absolute top-3 left-3">
+                                        <span class="px-2 py-1 rounded-lg text-xs font-medium {{ article.type == 'academic' ? 'bg-academic/90 text-white' : 'bg-personal/90 text-white' }}">
+                                            {{ article.type == 'academic' ? 'Academic' : 'Personal' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <div class="text-xs text-muted-foreground mb-2">{{ article.categorie.nom }}</div>
+                                    <h3 class="font-medium mb-2 line-clamp-2">{{ article.titre }}</h3>
+                                    <p class="font-serif text-xl font-bold text-primary mb-4">{{ article.prix }} DT</p>
+                                    <a href="{{ path('app_marketplace_detail', {id: article.id}) }}" class="w-full h-10 rounded-xl bg-primary/90 text-white flex items-center justify-center gap-2 text-sm hover:bg-primary transition-colors">
+                                        <i data-lucide="eye" class="w-4 h-4"></i>
+                                        Voir
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
             {% if articles is empty %}
                 <div class="glass-card rounded-2xl p-12 text-center">
                     <i data-lucide="package" class="w-16 h-16 text-muted-foreground mx-auto mb-4"></i>

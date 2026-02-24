@@ -117,6 +117,32 @@ class ArticleRepository extends ServiceEntityRepository
         return $qb;
     }
 
+    /**
+     * @param int[] $categoryIds
+     * @param int[] $excludedArticleIds
+     * @return Article[]
+     */
+    public function findRecommendedByCategoryIds(array $categoryIds, array $excludedArticleIds = [], int $limit = 6): array
+    {
+        if (empty($categoryIds)) {
+            return [];
+        }
+
+        $qb = $this->createQueryBuilder('a')
+            ->andWhere('IDENTITY(a.categorie) IN (:categoryIds)')
+            ->setParameter('categoryIds', array_values(array_unique(array_map('intval', $categoryIds))))
+            ->orderBy('a.id', 'DESC')
+            ->setMaxResults(max(1, $limit));
+
+        if (!empty($excludedArticleIds)) {
+            $qb
+                ->andWhere('a.id NOT IN (:excludedIds)')
+                ->setParameter('excludedIds', array_values(array_unique(array_map('intval', $excludedArticleIds))));
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
 //    /**
 //     * @return Article[] Returns an array of Article objects
 //     */
