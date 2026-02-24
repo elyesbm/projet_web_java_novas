@@ -39,9 +39,20 @@ class AtelierRepository extends ServiceEntityRepository
      * @param int|null $contexte Filtre par contexte : 0 = Soft Skill, 1 = Hard Skill, null = tous
      * @param string|null $sort Tri : 'date_asc', 'date_desc', 'titre_asc', 'titre_desc', null = date_asc par défaut
      */
-    public function searchAndFilterQueryBuilder(?string $search = null, ?int $contexte = null, ?string $sort = null): QueryBuilder
+    public function searchAndFilterQueryBuilder(
+        ?string $search = null,
+        ?int $contexte = null,
+        ?string $sort = null,
+        ?int $pinAtelierId = null
+    ): QueryBuilder
     {
         $qb = $this->createQueryBuilder('a');
+
+        if ($pinAtelierId !== null) {
+            $qb->addSelect('CASE WHEN a.id = :pinAtelierId THEN 0 ELSE 1 END AS HIDDEN pin_order')
+               ->setParameter('pinAtelierId', $pinAtelierId)
+               ->orderBy('pin_order', 'ASC');
+        }
 
         // Recherche par nom d'atelier (insensible à la casse)
         if ($search !== null && $search !== '') {
@@ -58,17 +69,17 @@ class AtelierRepository extends ServiceEntityRepository
         // Tri selon le paramètre
         switch ($sort) {
             case 'date_desc':
-                $qb->orderBy('a.date_atelier', 'DESC');
+                $qb->addOrderBy('a.date_atelier', 'DESC');
                 break;
             case 'titre_asc':
-                $qb->orderBy('a.titre_atelier', 'ASC');
+                $qb->addOrderBy('a.titre_atelier', 'ASC');
                 break;
             case 'titre_desc':
-                $qb->orderBy('a.titre_atelier', 'DESC');
+                $qb->addOrderBy('a.titre_atelier', 'DESC');
                 break;
             case 'date_asc':
             default:
-                $qb->orderBy('a.date_atelier', 'ASC');
+                $qb->addOrderBy('a.date_atelier', 'ASC');
                 break;
         }
 

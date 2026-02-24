@@ -22,9 +22,11 @@ class AtelierController extends AbstractController
         PaginatorInterface $paginator
     ): Response
     {
-        $search = $request->query->get('search', '');
+        $searchParam = $request->query->get('search');
+        $search = $searchParam ?? '';
         $contexte = $request->query->get('contexte');
-        $sort = $request->query->get('sort', 'date_asc');
+        $sortParam = $request->query->get('sort');
+        $sort = $sortParam ?? 'date_asc';
 
         $contexteInt = null;
         if ($contexte !== null && $contexte !== '') {
@@ -39,10 +41,16 @@ class AtelierController extends AbstractController
             $sort = 'date_asc';
         }
 
-        $queryBuilder = $atelierRepository->searchAndFilterQueryBuilder($search, $contexteInt, $sort);
+        $topAtelierRow = $reservationRepository->findTopAtelierByReservations();
+        $hasFilter = $search !== '' || $contexteInt !== null;
+        $shouldPinTop = $sortParam === null && ! $hasFilter;
+        $pinAtelierId = $shouldPinTop && isset($topAtelierRow['atelier'])
+            ? $topAtelierRow['atelier']->getId()
+            : null;
+
+        $queryBuilder = $atelierRepository->searchAndFilterQueryBuilder($search, $contexteInt, $sort, $pinAtelierId);
         $page = max(1, (int) $request->query->get('page', 1));
         $ateliers = $paginator->paginate($queryBuilder, $page, 3);
-        $topAtelierRow = $reservationRepository->findTopAtelierByReservations();
 
         return $this->render('front/reservation/ateliers.html.twig', [
             'ateliers' => $ateliers,
