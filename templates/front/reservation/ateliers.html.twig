@@ -13,20 +13,34 @@
                 <div>
                     <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm mb-4">
                         <i data-lucide="calendar" class="w-4 h-4"></i>
-                        Ateliers disponibles
+                        <span data-ext-translate>Ateliers disponibles</span>
                     </div>
                     <h1 class="font-serif text-4xl md:text-5xl font-medium mb-4">
-                        Decouvrez nos <span class="italic text-primary">ateliers</span>
+                        <span data-ext-translate-fr-only>Decouvrez nos <span class="italic text-primary">ateliers</span></span>
+                        <span class="hidden" data-ext-translate data-ext-translate-nonfr-only>Decouvrez nos ateliers</span>
                     </h1>
                     <p class="text-muted-foreground max-w-xl">
-                        Reservez votre place dans nos ateliers exclusifs et developpez vos competences.
+                        <span data-ext-translate>Reservez votre place dans nos ateliers exclusifs et developpez vos competences.</span>
                     </p>
                 </div>
 
-                <div class="flex gap-6">
-                <div class="glass-card rounded-2xl px-6 py-4 text-center">
+                <div class="flex gap-4 items-end">
+                    <div class="glass-card rounded-2xl px-4 py-4">
+                        <label for="atelierLang" class="block text-xs font-medium mb-2 text-muted-foreground">
+                            <span data-ext-translate>Langue</span>
+                        </label>
+                        <select id="atelierLang"
+                                class="w-28 h-10 px-3 bg-secondary border border-white/10 rounded-xl focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer">
+                            <option value="fr">FR</option>
+                            <option value="en">EN</option>
+                            <option value="ar">AR</option>
+                            <option value="es">ES</option>
+                            <option value="de">DE</option>
+                        </select>
+                    </div>
+                    <div class="glass-card rounded-2xl px-6 py-4 text-center">
                         <p class="font-serif text-2xl font-bold text-primary">{{ ateliers.getTotalItemCount }}</p>
-                        <p class="text-xs text-muted-foreground">Ateliers</p>
+                        <p class="text-xs text-muted-foreground" data-ext-translate>Ateliers</p>
                     </div>
                 </div>
             </div>
@@ -41,7 +55,7 @@
                     <!-- Recherche par nom -->
                     <div class="flex-1">
                         <label for="search" class="block text-sm font-medium mb-2 text-muted-foreground">
-                            Rechercher un atelier
+                            <span data-ext-translate>Rechercher un atelier</span>
                         </label>
                         <div class="relative">
                             <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
@@ -50,6 +64,7 @@
                                    name="search"
                                    value="{{ search|default('') }}"
                                    placeholder="Ex: Python, Communication..."
+                                   data-ext-translate-attr="placeholder"
                                    class="w-full h-12 pl-12 pr-4 bg-secondary border border-white/10 rounded-xl focus:outline-none focus:border-primary transition-colors">
                         </div>
                     </div>
@@ -57,29 +72,29 @@
                     <!-- Filtre par contexte -->
                     <div class="md:w-64">
                         <label for="contexte" class="block text-sm font-medium mb-2 text-muted-foreground">
-                            Filtrer par contexte
+                            <span data-ext-translate>Filtrer par contexte</span>
                         </label>
                         <select id="contexte"
                                 name="contexte"
                                 class="w-full h-12 px-4 bg-secondary border border-white/10 rounded-xl focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer">
-                            <option value="">Tous les ateliers</option>
-                            <option value="0" {{ contexte is same as(0) ? 'selected' : '' }}>Soft Skill</option>
-                            <option value="1" {{ contexte is same as(1) ? 'selected' : '' }}>Hard Skill</option>
+                            <option value="" data-ext-translate>Tous les ateliers</option>
+                            <option value="0" data-ext-translate {{ contexte is same as(0) ? 'selected' : '' }}>Soft Skill</option>
+                            <option value="1" data-ext-translate {{ contexte is same as(1) ? 'selected' : '' }}>Hard Skill</option>
                         </select>
                     </div>
 
                     <!-- Tri par date -->
                     <div class="md:w-64">
                         <label for="sort" class="block text-sm font-medium mb-2 text-muted-foreground">
-                            Trier par
+                            <span data-ext-translate>Trier par</span>
                         </label>
                         <select id="sort"
                                 name="sort"
                                 class="w-full h-12 px-4 bg-secondary border border-white/10 rounded-xl focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer">
-                            <option value="date_asc" {{ sort == 'date_asc' ? 'selected' : '' }}>Date (plus proche)</option>
-                            <option value="date_desc" {{ sort == 'date_desc' ? 'selected' : '' }}>Date (plus lointaine)</option>
-                            <option value="titre_asc" {{ sort == 'titre_asc' ? 'selected' : '' }}>Titre (A-Z)</option>
-                            <option value="titre_desc" {{ sort == 'titre_desc' ? 'selected' : '' }}>Titre (Z-A)</option>
+                            <option value="date_asc" data-ext-translate {{ sort == 'date_asc' ? 'selected' : '' }}>Date (plus proche)</option>
+                            <option value="date_desc" data-ext-translate {{ sort == 'date_desc' ? 'selected' : '' }}>Date (plus lointaine)</option>
+                            <option value="titre_asc" data-ext-translate {{ sort == 'titre_asc' ? 'selected' : '' }}>Titre (A-Z)</option>
+                            <option value="titre_desc" data-ext-translate {{ sort == 'titre_desc' ? 'selected' : '' }}>Titre (Z-A)</option>
                         </select>
                     </div>
 
@@ -88,13 +103,13 @@
                         <button type="submit"
                                 class="h-12 px-6 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all flex items-center gap-2">
                             <i data-lucide="filter" class="w-5 h-5"></i>
-                            <span>Filtrer</span>
+                            <span data-ext-translate>Filtrer</span>
                         </button>
                         {% if search or contexte is not null %}
                             <a href="{{ path('app_reservation_ateliers') }}"
                                class="h-12 px-6 bg-secondary border border-white/10 text-foreground rounded-xl font-medium hover:bg-white/5 transition-all flex items-center gap-2">
                                 <i data-lucide="x" class="w-5 h-5"></i>
-                                <span>Réinitialiser</span>
+                                <span data-ext-translate>Réinitialiser</span>
                             </a>
                         {% endif %}
                     </div>
@@ -138,20 +153,20 @@
                                 {{ atelier.contexteAtelier == 0
                                     ? 'bg-personal/90 text-white'
                                     : 'bg-academic/90 text-white' }}">
-                                {{ atelier.contexteAtelier == 0 ? 'Soft Skill' : 'Hard Skill' }}
+                                <span data-ext-translate>{{ atelier.contexteAtelier == 0 ? 'Soft Skill' : 'Hard Skill' }}</span>
                             </span>
 
                             {% if topAtelier and atelier.id == topAtelier.id %}
                                 <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-400/90 text-amber-950">
                                     <i data-lucide="sparkles" class="w-3 h-3"></i>
-                                    Top atelier
+                                    <span data-ext-translate>Top atelier</span>
                                 </span>
                             {% endif %}
                         </div>
 
                         <div class="absolute top-4 right-4 glass-card px-3 py-1 rounded-full">
                             <span class="text-xs font-medium {{ places_restantes < 5 ? 'text-red-400' : 'text-foreground' }}">
-                                {{ places_restantes }} places
+                                <span data-ext-translate>{{ places_restantes }} places</span>
                             </span>
                         </div>
                     </div>
@@ -160,15 +175,15 @@
                     <div class="p-6">
                         <div class="flex items-center gap-2 text-xs text-muted-foreground mb-3">
                             <i data-lucide="folder" class="w-3 h-3"></i>
-                            {{ atelier.typeAtelier|capitalize }}
+                            <span data-ext-translate>{{ atelier.typeAtelier|capitalize }}</span>
                         </div>
 
                         <h3 class="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
-                            {{ atelier.titreAtelier }}
+                            <span data-ext-translate>{{ atelier.titreAtelier }}</span>
                         </h3>
 
                         <p class="text-sm text-muted-foreground mb-4 line-clamp-2">
-                            {{ atelier.descriptionAtelier }}
+                            <span data-ext-translate>{{ atelier.descriptionAtelier }}</span>
                         </p>
 
                         <div class="flex items-center gap-3 text-sm text-muted-foreground mb-6">
@@ -179,7 +194,7 @@
                         <!-- Progress -->
                         <div class="mb-6">
                             <div class="flex justify-between text-xs mb-2">
-                                <span class="text-muted-foreground">Places reservees</span>
+                                <span class="text-muted-foreground" data-ext-translate>Places reservees</span>
                                 <span>{{ atelier.reservations|length }}/{{ atelier.capacite }}</span>
                             </div>
                             <div class="h-2 bg-secondary rounded-full overflow-hidden">
@@ -195,13 +210,13 @@
                         {% if places_restantes > 0 %}
                             <a href="{{ path('app_reservation_reserver', { id: atelier.id }) }}"
                                class="flex items-center justify-center gap-2 w-full h-12 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 group/btn">
-                                <span>Reserver ma place</span>
+                                <span data-ext-translate>Reserver ma place</span>
                                 <i data-lucide="arrow-right" class="w-5 h-5 group-hover/btn:translate-x-1 transition-transform"></i>
                             </a>
                         {% else %}
                             <span class="flex items-center justify-center gap-2 w-full h-12 bg-primary/50 text-white rounded-xl font-medium cursor-not-allowed opacity-75">
                                 <i data-lucide="x-circle" class="w-5 h-5"></i>
-                                Complet
+                                <span data-ext-translate>Complet</span>
                             </span>
                         {% endif %}
                     </div>
@@ -209,7 +224,7 @@
                 {% else %}
                 <div class="col-span-full">
                     <div class="glass-card rounded-2xl p-10 text-center text-muted-foreground">
-                        Aucun atelier ne correspond à votre recherche.
+                        <span data-ext-translate>Aucun atelier ne correspond à votre recherche.</span>
                     </div>
                 </div>
                 {% endfor %}
@@ -268,6 +283,178 @@
             submitForm();
         });
     }
+})();
+</script>
+
+<script>
+(function() {
+    const translateUrl = {{ path('app_api_translate')|json_encode|raw }};
+    const storageKey = 'atelier_lang';
+
+    function pickDefaultLang(langSelect) {
+        const saved = (localStorage.getItem(storageKey) || '').toLowerCase();
+        if (saved && [...langSelect.options].some((o) => o.value === saved)) {
+            return saved;
+        }
+
+        const browserLang = (navigator.languages && navigator.languages[0] ? navigator.languages[0] : navigator.language || '').toLowerCase();
+        const candidate = browserLang.slice(0, 2);
+        if (candidate && [...langSelect.options].some((o) => o.value === candidate)) {
+            return candidate;
+        }
+
+        return 'fr';
+    }
+
+    async function init() {
+        const langSelect = document.getElementById('atelierLang');
+        if (!langSelect) {
+            return;
+        }
+
+        const frOnly = document.querySelectorAll('[data-ext-translate-fr-only]');
+        const nonFrOnly = document.querySelectorAll('[data-ext-translate-nonfr-only]');
+
+        const nodes = [];
+
+        function registerText(el) {
+            const original = (el.dataset.extOriginalText ?? '').trim();
+            if (original === '') {
+                el.dataset.extOriginalText = (el.textContent ?? '').trim();
+            }
+            nodes.push({ kind: 'text', el });
+        }
+
+        function registerAttr(el, attrName) {
+            const key = 'extOriginalAttr' + attrName.charAt(0).toUpperCase() + attrName.slice(1);
+            const original = (el.dataset[key] ?? '').trim();
+            if (original === '') {
+                el.dataset[key] = (el.getAttribute(attrName) ?? '').trim();
+            }
+            nodes.push({ kind: 'attr', el, attrName, key });
+        }
+
+        document.querySelectorAll('[data-ext-translate]').forEach(registerText);
+        document.querySelectorAll('[data-ext-translate-attr]').forEach((el) => {
+            const attr = (el.getAttribute('data-ext-translate-attr') ?? '').trim();
+            if (attr) {
+                registerAttr(el, attr);
+            }
+        });
+
+        function showForLang(target) {
+            const isFr = target === 'fr';
+            frOnly.forEach((el) => el.classList.toggle('hidden', !isFr));
+            nonFrOnly.forEach((el) => el.classList.toggle('hidden', isFr));
+            document.documentElement.dir = target === 'ar' ? 'rtl' : 'ltr';
+        }
+
+        function restoreOriginal() {
+            nodes.forEach((n) => {
+                if (n.kind === 'text') {
+                    n.el.textContent = n.el.dataset.extOriginalText ?? n.el.textContent;
+                    return;
+                }
+                n.el.setAttribute(n.attrName, n.el.dataset[n.key] ?? (n.el.getAttribute(n.attrName) ?? ''));
+            });
+        }
+
+        async function translateTo(target) {
+            if (target === 'fr') {
+                restoreOriginal();
+                showForLang(target);
+                return;
+            }
+
+            const originals = nodes.map((n) => {
+                if (n.kind === 'text') {
+                    return (n.el.dataset.extOriginalText ?? '').trim();
+                }
+                return (n.el.dataset[n.key] ?? '').trim();
+            }).filter((t) => t !== '');
+
+            const unique = [];
+            const indexByText = new Map();
+            originals.forEach((t) => {
+                if (!indexByText.has(t)) {
+                    indexByText.set(t, unique.length);
+                    unique.push(t);
+                }
+            });
+
+            const res = await fetch(translateUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ target: target, texts: unique }),
+            });
+
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(payload && payload.error ? payload.error : 'Erreur de traduction.');
+            }
+
+            const translations = Array.isArray(payload.translations) ? payload.translations : [];
+
+            nodes.forEach((n) => {
+                const original = (n.kind === 'text')
+                    ? (n.el.dataset.extOriginalText ?? '').trim()
+                    : (n.el.dataset[n.key] ?? '').trim();
+
+                if (!original) {
+                    return;
+                }
+
+                const idx = indexByText.get(original);
+                const translated = (idx !== undefined && translations[idx]) ? translations[idx] : original;
+
+                if (n.kind === 'text') {
+                    n.el.textContent = translated;
+                    return;
+                }
+                n.el.setAttribute(n.attrName, translated);
+            });
+
+            showForLang(target);
+        }
+
+        async function applyLang(target) {
+            langSelect.disabled = true;
+            try {
+                await translateTo(target);
+                localStorage.setItem(storageKey, target);
+            } catch (e) {
+                console.error(e);
+                alert(e && e.message ? e.message : 'Erreur de traduction.');
+                langSelect.value = 'fr';
+                restoreOriginal();
+                showForLang('fr');
+                localStorage.setItem(storageKey, 'fr');
+            } finally {
+                langSelect.disabled = false;
+            }
+        }
+
+        if (langSelect._extTranslateChangeHandler) {
+            langSelect.removeEventListener('change', langSelect._extTranslateChangeHandler);
+        }
+        langSelect._extTranslateChangeHandler = () => applyLang(langSelect.value);
+        langSelect.addEventListener('change', langSelect._extTranslateChangeHandler);
+
+        const target = pickDefaultLang(langSelect);
+        langSelect.value = target;
+        await applyLang(target);
+    }
+
+    init();
+    window.addEventListener('pageshow', (e) => {
+        if (e && e.persisted) {
+            init();
+        }
+    });
+    document.addEventListener('turbo:load', () => init());
 })();
 </script>
 {% endblock %}
