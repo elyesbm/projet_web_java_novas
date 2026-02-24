@@ -9,6 +9,7 @@ parameters:
     ai_provider: 'huggingface'
     ai_hf_model: 'katanemo/Arch-Router-1.5B'
     ai_gemini_model: 'gemini-1.5-flash-latest'
+    translate_provider: 'mymemory'
 
 services:
     # default configuration for services in *this* file
