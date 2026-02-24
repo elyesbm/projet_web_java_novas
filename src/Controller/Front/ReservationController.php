@@ -17,7 +17,6 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route('/reservation')]
 class ReservationController extends AbstractController
@@ -315,28 +314,6 @@ class ReservationController extends AbstractController
         ]);
 
         return new Response($printHtml, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
-    }
-
-    #[Route('/qrcode/{id}', name: 'app_reservation_qrcode', requirements: ['id' => '\\d+'])]
-    public function qrcode(
-        int $id,
-        ReservationRepository $reservationRepository,
-        UrlGeneratorInterface $urlGenerator,
-        UserRepository $userRepository
-    ): Response
-    {
-        $reservation = $reservationRepository->find($id);
-        if (!$reservation) {
-            throw $this->createNotFoundException('Reservation introuvable.');
-        }
-        $this->assertReservationOwner($reservation, $this->resolveUser($userRepository));
-
-        $pdfUrl = $urlGenerator->generate('app_reservation_export_pdf', ['id' => $id], UrlGeneratorInterface::ABSOLUTE_URL);
-
-        return $this->render('front/reservation/qrcode_reservation.html.twig', [
-            'reservation' => $reservation,
-            'qr_url' => $pdfUrl,
-        ]);
     }
 
     #[Route('/annuler/{id}', name: 'app_reservation_annuler', requirements: ['id' => '\\d+'], methods: ['POST'])]
