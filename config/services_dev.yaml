@@ -1,0 +1,7 @@
+parameters:
+    # VoiceRSS (dev): certaines configs Windows/XAMPP n'ont pas de CA root,
+    # ce qui provoque "unable to get local issuer certificate".
+    # En dev on désactive la vérification SSL pour que le TTS fonctionne.
+    # En prod, garde `voicerss_verify_ssl: '1'` (dans `config/services.yaml`).
+    voicerss_verify_ssl: '0'
+

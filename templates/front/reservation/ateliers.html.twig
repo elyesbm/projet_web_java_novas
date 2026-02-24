@@ -182,9 +182,16 @@
                             <span data-ext-translate>{{ atelier.titreAtelier }}</span>
                         </h3>
 
-                        <p class="text-sm text-muted-foreground mb-4 line-clamp-2">
-                            <span data-ext-translate>{{ atelier.descriptionAtelier }}</span>
-                        </p>
+                        <div class="flex items-start gap-3 mb-4">
+                            <p class="text-sm text-muted-foreground line-clamp-2 flex-1">
+                                <span class="js-atelier-description" data-ext-translate>{{ atelier.descriptionAtelier }}</span>
+                            </p>
+                            <button type="button"
+                                    class="js-tts-btn inline-flex items-center justify-center w-9 h-9 rounded-xl bg-secondary border border-white/10 hover:border-primary/50 hover:text-primary transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                    aria-label="Écouter la description">
+                                <i data-lucide="volume-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
 
                         <div class="flex items-center gap-3 text-sm text-muted-foreground mb-6">
                             <i data-lucide="calendar" class="w-4 h-4 text-primary"></i>
@@ -289,6 +296,7 @@
 <script>
 (function() {
     const translateUrl = {{ path('app_api_translate')|json_encode|raw }};
+    const ttsUrl = {{ path('app_api_tts')|json_encode|raw }};
     const storageKey = 'atelier_lang';
 
     function pickDefaultLang(langSelect) {
@@ -437,6 +445,72 @@
             }
         }
 
+        function setupTts() {
+            if (document._extTtsClickHandler) {
+                document.removeEventListener('click', document._extTtsClickHandler);
+            }
+
+            let currentAudio = null;
+
+            document._extTtsClickHandler = async (e) => {
+                const btn = e.target && e.target.closest ? e.target.closest('.js-tts-btn') : null;
+                if (!btn) {
+                    return;
+                }
+
+                const card = btn.closest('.group') || document;
+                const textEl = card.querySelector('.js-atelier-description');
+                const text = (textEl && textEl.textContent ? textEl.textContent : '').trim();
+                const lang = (langSelect && langSelect.value ? langSelect.value : 'fr');
+
+                if (!text) {
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.setAttribute('aria-busy', 'true');
+
+                try {
+                    const res = await fetch(ttsUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'audio/mpeg, application/json',
+                        },
+                        body: JSON.stringify({ text: text, lang: lang }),
+                    });
+
+                    if (!res.ok) {
+                        const payload = await res.json().catch(() => ({}));
+                        throw new Error(payload && payload.error ? payload.error : 'Erreur TTS.');
+                    }
+
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+
+                    if (currentAudio) {
+                        currentAudio.pause();
+                        currentAudio.src = '';
+                        currentAudio = null;
+                    }
+
+                    const audio = new Audio(url);
+                    currentAudio = audio;
+                    audio.addEventListener('ended', () => URL.revokeObjectURL(url), { once: true });
+                    audio.addEventListener('error', () => URL.revokeObjectURL(url), { once: true });
+                    await audio.play();
+                } catch (err) {
+                    console.error(err);
+                    alert(err && err.message ? err.message : 'Erreur TTS.');
+                } finally {
+                    btn.disabled = false;
+                    btn.removeAttribute('aria-busy');
+                }
+            };
+
+            document.addEventListener('click', document._extTtsClickHandler);
+        }
+
         if (langSelect._extTranslateChangeHandler) {
             langSelect.removeEventListener('change', langSelect._extTranslateChangeHandler);
         }
@@ -446,6 +520,7 @@
         const target = pickDefaultLang(langSelect);
         langSelect.value = target;
         await applyLang(target);
+        setupTts();
     }
 
     init();
