@@ -42,7 +42,7 @@ class ResetPasswordController extends AbstractController
 
                 // Envoi du mail
                 $emailMessage = (new Email())
-                    ->from(new \Symfony\Component\Mime\Address('elyesbennmoussa@gmail.com', 'NoVas'))
+                    ->from(new \Symfony\Component\Mime\Address('maryemf239@gmail.com', 'NOVAS'))
                     ->to($user->getEMAIL())
                     ->subject('NoVas — Réinitialisation de votre mot de passe')
                     ->html($this->renderView('front/auth/reset_password_email.html.twig', [
