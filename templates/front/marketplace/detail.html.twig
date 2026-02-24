@@ -80,32 +80,36 @@
 
                     <!-- Urgence / Activite -->
                     <div id="live-urgency-widget" data-article-id="{{ article.id }}" class="glass-card rounded-2xl p-6 border border-primary/20">
-                        <p class="text-center font-serif text-2xl font-semibold mb-4 text-foreground">
-                            Plus que <span id="live-stock-count" class="text-primary">7</span> articles disponibles !
+                        <p class="text-center font-serif text-2xl font-semibold mb-3 text-foreground">
+                            Attention: plus que <span id="live-stock-count" class="text-primary">7</span> en stock
                         </p>
-                        <p class="text-center text-lg mb-4">
-                            <span id="live-viewers-count" class="inline-flex items-center justify-center min-w-10 h-10 px-3 rounded-lg bg-primary/90 text-white font-bold mr-2">6</span>
-                            <span class="text-muted-foreground">personnes consultent ce produit en ce moment.</span>
+                        <p class="text-center text-lg mb-5">
+                            <span class="text-muted-foreground">En ce moment</span>
+                            <span id="live-viewers-count" class="inline-flex items-center justify-center min-w-10 h-10 px-3 rounded-lg bg-primary/90 text-white font-bold mx-2">6</span>
+                            <span class="text-muted-foreground">personnes consultent ce produit.</span>
                         </p>
 
                         <div class="w-full h-4 rounded-full bg-white/10 overflow-hidden mb-6">
-                            <div id="live-stock-bar" class="h-full rounded-full" style="width: 62%; background: repeating-linear-gradient(135deg, rgba(199,91,57,0.95) 0 9px, rgba(255,255,255,0.18) 9px 16px);"></div>
+                            <div id="live-stock-bar" class="h-full rounded-full" style="width: 62%; background: repeating-linear-gradient(135deg, rgba(225, 29, 72, 0.95) 0 9px, rgba(255,255,255,0.22) 9px 16px);"></div>
                         </div>
 
-                        <div class="grid grid-cols-4 gap-3 text-center border-t border-white/10 pt-5">
-                            <div>
+                        <div class="flex items-start justify-between text-center border-t border-white/10 pt-5">
+                            <div class="w-16">
                                 <div id="countdown-days" class="font-serif text-4xl font-bold leading-none">00</div>
                                 <div class="text-xs text-muted-foreground mt-1">jours</div>
                             </div>
-                            <div>
+                            <div class="font-serif text-4xl font-bold leading-none pt-0.5 text-muted-foreground">:</div>
+                            <div class="w-16">
                                 <div id="countdown-hours" class="font-serif text-4xl font-bold leading-none">00</div>
                                 <div class="text-xs text-muted-foreground mt-1">heures</div>
                             </div>
-                            <div>
+                            <div class="font-serif text-4xl font-bold leading-none pt-0.5 text-muted-foreground">:</div>
+                            <div class="w-16">
                                 <div id="countdown-minutes" class="font-serif text-4xl font-bold leading-none">00</div>
                                 <div class="text-xs text-muted-foreground mt-1">minutes</div>
                             </div>
-                            <div>
+                            <div class="font-serif text-4xl font-bold leading-none pt-0.5 text-muted-foreground">:</div>
+                            <div class="w-16">
                                 <div id="countdown-seconds" class="font-serif text-4xl font-bold leading-none">00</div>
                                 <div class="text-xs text-muted-foreground mt-1">secondes</div>
                             </div>

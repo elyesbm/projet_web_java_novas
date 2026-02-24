@@ -548,6 +548,95 @@ class MarketplaceController extends AbstractController
             return $this->json(['error' => 'Erreur Gemini: ' . $e->getMessage()], 502);
         }
     }
+
+    #[Route('/ai/generate-description', name: 'app_marketplace_ai_generate_description', methods: ['POST'])]
+    public function generateDescriptionWithAi(Request $request, HttpClientInterface $httpClient): JsonResponse
+    {
+        try {
+            $payload = $request->toArray();
+        } catch (\Throwable) {
+            return $this->json(['error' => 'Payload JSON invalide.'], 400);
+        }
+
+        $csrfToken = (string) ($payload['_token'] ?? '');
+        if (!$this->isCsrfTokenValid('marketplace_ai_generate_description', $csrfToken)) {
+            return $this->json(['error' => 'Token CSRF invalide.'], 403);
+        }
+
+        $title = trim((string) ($payload['titre'] ?? ''));
+        $category = trim((string) ($payload['categorie'] ?? ''));
+        $type = trim((string) ($payload['type'] ?? ''));
+        $price = trim((string) ($payload['prix'] ?? ''));
+
+        if ($title === '') {
+            return $this->json(['error' => 'Le titre est obligatoire pour generer une description.'], 400);
+        }
+
+        $groqApiKey = (string) (
+            $_ENV['MARKETPLACE_GROQ_API_KEY']
+            ?? $_SERVER['MARKETPLACE_GROQ_API_KEY']
+            ?? $_ENV['GROQ_API_KEY']
+            ?? $_SERVER['GROQ_API_KEY']
+            ?? ''
+        );
+        if ($groqApiKey === '') {
+            return $this->json(['error' => 'Cle Groq manquante. Configurez MARKETPLACE_GROQ_API_KEY dans .env.local.'], 500);
+        }
+
+        $model = (string) (
+            $_ENV['MARKETPLACE_GROQ_MODEL']
+            ?? $_SERVER['MARKETPLACE_GROQ_MODEL']
+            ?? 'llama-3.1-8b-instant'
+        );
+
+        $prompt = sprintf(
+            "Genere une description professionnelle et attractive pour un produit etudiant.\nTitre : %s\nCategorie : %s\nType : %s\nPrix : %s DT\nLa description doit etre claire, persuasive et adaptee a une marketplace universitaire.\nLongueur cible: 70 a 120 mots.",
+            $title,
+            $category !== '' ? $category : 'Non precisee',
+            $type !== '' ? $type : 'Non precise',
+            $price !== '' ? $price : 'Non precise'
+        );
+
+        try {
+            $response = $httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $groqApiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => $model,
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'Tu es un redacteur marketing francophone specialise en fiches produits pour marketplace etudiante.',
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $prompt,
+                        ],
+                    ],
+                    'temperature' => 0.7,
+                    'max_tokens' => 300,
+                ],
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $data = $response->toArray(false);
+            if ($statusCode >= 300) {
+                $err = (string) ($data['error']['message'] ?? 'Erreur Groq');
+                return $this->json(['error' => $err], 502);
+            }
+
+            $description = trim((string) ($data['choices'][0]['message']['content'] ?? ''));
+            if ($description === '') {
+                return $this->json(['error' => 'Reponse IA vide.'], 502);
+            }
+
+            return $this->json(['description' => $description]);
+        } catch (\Throwable $e) {
+            return $this->json(['error' => 'Erreur Groq: ' . $e->getMessage()], 502);
+        }
+    }
     #[Route('/paiement/success', name: 'app_marketplace_checkout_success', methods: ['GET'])]
     public function checkoutSuccess(Request $request): Response
     {
@@ -1115,7 +1204,7 @@ class MarketplaceController extends AbstractController
         if ($article instanceof Article) {
             $entityManager->remove($article);
             $entityManager->flush();
-            $this->addFlash('success', 'Le produit a Ã©tÃ© supprimÃ©.');
+            $this->addFlash('success', 'Le produit a été supprimé.');
         }
 
         return $this->redirectToRoute('app_marketplace_index');
@@ -1225,7 +1314,7 @@ class MarketplaceController extends AbstractController
             $entityManager->persist($categorie);
             $entityManager->flush();
 
-            $this->addFlash('success', 'CatÃ©gorie crÃ©Ã©e avec succÃ¨s.');
+            $this->addFlash('success', 'Catégorie créée avec succès.');
             return $this->redirectToRoute('app_marketplace_categories');
         }
 
@@ -1252,7 +1341,7 @@ class MarketplaceController extends AbstractController
                 $categorie->setNomCategorie($nom)->setDescriptionCategorie($description);
                 $entityManager->flush();
 
-                $this->addFlash('success', 'CatÃ©gorie modifiÃ©e avec succÃ¨s.');
+                $this->addFlash('success', 'Catégorie modifiée avec succès.');
                 return $this->redirectToRoute('app_marketplace_categories');
             }
         }
@@ -1276,7 +1365,7 @@ class MarketplaceController extends AbstractController
         if ($categorie instanceof Categorie) {
             $entityManager->remove($categorie);
             $entityManager->flush();
-            $this->addFlash('success', 'La catÃ©gorie a Ã©tÃ© supprimÃ©e.');
+            $this->addFlash('success', 'La catégorie a été supprimée.');
         }
 
         return $this->redirectToRoute('app_marketplace_categories');
