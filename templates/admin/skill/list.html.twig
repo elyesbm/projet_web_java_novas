@@ -88,11 +88,16 @@
                 </a>
             </div>
             <div id="btn-new-paths" class="flex items-center gap-2 hidden">
+                <a href="{{ path('app_admin_learning_path_generate') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm transition-colors shadow-lg shadow-violet-500/25">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    Générer avec IA
+                </a>
                 <a href="{{ path('app_admin_learning_path_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm transition-colors shadow-lg shadow-indigo-500/25">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     Nouveau parcours
                 </a>
             </div>
+
         </div>
 
         {# Contenu onglet Compétences #}
@@ -219,10 +224,17 @@
 
             <div class="flex items-center justify-between mb-6">
                 <p class="text-sm text-slate-500">{{ learningPaths|length }} parcours</p>
-                <a href="{{ path('app_admin_learning_path_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    Nouveau parcours
-                </a>
+                <div class="flex items-center gap-2">
+                    <a href="{{ path('app_admin_learning_path_generate') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm transition-colors shadow-lg shadow-violet-500/25">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        Générer avec IA
+                    </a>
+                    <a href="{{ path('app_admin_learning_path_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Nouveau parcours
+                    </a>
+                </div>
+
             </div>
             {% set has_path_filters = search_q_path or (search_niveau_path ?? '') != '' or (search_statut_path ?? '') != '' %}
             {% if learningPaths is empty %}

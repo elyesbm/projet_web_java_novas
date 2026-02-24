@@ -31,6 +31,62 @@ class SkillRepository extends ServiceEntityRepository
     }
 
     /**
+     * Returns all Skills that have at least one active LearningPath.
+     * Each element: ['skill' => Skill, 'nb_parcours' => int, 'duree_totale' => int, 'niveaux' => string]
+     *
+     * @return array<int, array{skill: Skill, nb_parcours: int, duree_totale: int, niveaux: string}>
+     */
+    public function findSkillsWithPlaylists(): array
+    {
+        // Main aggregation query (without GROUP_CONCAT which is not standard DQL)
+        $rows = $this->createQueryBuilder('s')
+            ->select(
+                's',
+                'COUNT(lp.id) as nb_parcours',
+                'SUM(lp.duree_estimee) as duree_totale'
+            )
+            ->join('s.learningPaths', 'lp')
+            ->andWhere('lp.statut_path = 1')
+            ->groupBy('s.id')
+            ->orderBy('nb_parcours', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        // Collect distinct niveaux per skill in a separate query
+        $niveauxRows = $this->getEntityManager()->createQuery(
+            'SELECT IDENTITY(lp.skill) as skill_id, lp.niveau_path
+             FROM App\Entity\LearningPath lp
+             WHERE lp.statut_path = 1
+             GROUP BY lp.skill, lp.niveau_path
+             ORDER BY lp.niveau_path ASC'
+        )->getResult();
+
+        $niveauxMap = [];
+        foreach ($niveauxRows as $nr) {
+            $sid = $nr['skill_id'];
+            $niveauxMap[$sid][] = $nr['niveau_path'];
+        }
+
+        $out = [];
+        foreach ($rows as $row) {
+            /** @var Skill $skill */
+            $skill = $row[0];
+            $skillId = $skill->getId();
+            $niveaux = isset($niveauxMap[$skillId])
+                ? implode(',', array_unique($niveauxMap[$skillId]))
+                : '';
+            $out[] = [
+                'skill'        => $skill,
+                'nb_parcours'  => (int) $row['nb_parcours'],
+                'duree_totale' => (int) $row['duree_totale'],
+                'niveaux'      => $niveaux,
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
      * Recherche et filtre pour le catalogue front.
      *
      * @param string|null $q        Recherche dans nom et description (LIKE)
@@ -119,29 +175,4 @@ class SkillRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-
-    //    /**
-    //     * @return Skill[] Returns an array of Skill objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('s.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Skill
-    //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }

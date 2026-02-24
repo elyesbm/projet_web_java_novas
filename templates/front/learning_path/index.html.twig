@@ -21,26 +21,113 @@
                     Votre chemin vers <span class="italic text-primary">l'excellence</span>
                 </h1>
                 <p class="text-muted-foreground text-lg">
-                    Des parcours structures pour developper vos competences, etape par etape, dans une approche inclusive et motivante.
+                    Des parcours structurés pour développer vos compétences, étape par étape, dans une approche inclusive et motivante.
                 </p>
+
+                {# ── Search bar ── #}
+                <form method="get" action="{{ path('app_learning_paths_index') }}" id="form-search-lp" class="mt-8 flex gap-2 max-w-xl mx-auto">
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"></i>
+                        <input type="text" name="q" id="search-q" value="{{ search_q|default('') }}"
+                            placeholder="Rechercher un parcours ou une compétence…"
+                            class="w-full h-12 pl-11 pr-4 rounded-xl bg-secondary border border-white/10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all text-sm"
+                            autocomplete="off">
+                    </div>
+                    <button type="submit"
+                        class="h-12 px-6 rounded-xl bg-primary text-white font-medium text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center gap-2 shrink-0">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                        Rechercher
+                    </button>
+                </form>
             </div>
         </div>
     </section>
 
-    <!-- Filters -->
+    <!-- Filters bar -->
     <section class="px-6 pb-8">
         <div class="max-w-7xl mx-auto">
-            <div class="glass-card rounded-2xl p-4 flex flex-wrap gap-4 justify-center">
-                <a href="{{ path('app_learning_paths_index') }}" class="px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-medium">Tous les parcours</a>
-                <a href="{{ path('app_learning_paths_index') }}" class="px-6 py-2.5 bg-secondary border border-white/10 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-academic"></span>
-                    Hard Skills
-                </a>
-                <a href="{{ path('app_learning_paths_index') }}" class="px-6 py-2.5 bg-secondary border border-white/10 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-personal"></span>
-                    Soft Skills
-                </a>
+            <form method="get" action="{{ path('app_learning_paths_index') }}" id="form-filters-lp">
+                {# Preserve search query #}
+                {% if search_q %}<input type="hidden" name="q" value="{{ search_q }}">{% endif %}
+
+                <div class="glass-card rounded-2xl p-4 flex flex-wrap gap-3 items-center justify-between">
+
+                    {# ── Playlists shortcut ── #}
+                    <a href="{{ path('app_learning_paths_playlists') }}"
+                       class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-white text-sm font-medium shadow-lg shadow-primary/25 hover:from-primary/90 hover:to-primary/70 transition-all shrink-0">
+                        <i data-lucide="list-music" class="w-4 h-4"></i>
+                        Voir les Playlists
+                    </a>
+
+                    {# ── Level filter ── #}
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <span class="text-xs text-muted-foreground font-medium uppercase tracking-wider mr-1">Niveau :</span>
+                        <a href="{{ path('app_learning_paths_index', { q: search_q|default(''), type: search_type|default('') }) }}"
+                           class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ search_niveau is null ? 'bg-primary text-white shadow-lg shadow-primary/25' : 'bg-secondary border border-white/10 text-muted-foreground hover:text-foreground' }}">
+                            Tous
+                        </a>
+                        <a href="{{ path('app_learning_paths_index', { q: search_q|default(''), niveau: 1, type: search_type|default('') }) }}"
+                           class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ search_niveau == 1 ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/25' : 'bg-secondary border border-white/10 text-muted-foreground hover:text-foreground' }}">
+                            🟡 Débutant
+                        </a>
+                        <a href="{{ path('app_learning_paths_index', { q: search_q|default(''), niveau: 2, type: search_type|default('') }) }}"
+                           class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ search_niveau == 2 ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25' : 'bg-secondary border border-white/10 text-muted-foreground hover:text-foreground' }}">
+                            🔵 Intermédiaire
+                        </a>
+                        <a href="{{ path('app_learning_paths_index', { q: search_q|default(''), niveau: 3, type: search_type|default('') }) }}"
+                           class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ search_niveau == 3 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25' : 'bg-secondary border border-white/10 text-muted-foreground hover:text-foreground' }}">
+                            🟢 Avancé
+                        </a>
+                    </div>
+
+                    {# ── Type filter ── #}
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <span class="text-xs text-muted-foreground font-medium uppercase tracking-wider mr-1">Type :</span>
+                        <a href="{{ path('app_learning_paths_index', { q: search_q|default(''), niveau: search_niveau }) }}"
+                           class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ search_type is empty ? 'bg-primary text-white' : 'bg-secondary border border-white/10 text-muted-foreground hover:text-foreground' }}">
+                            Tous
+                        </a>
+                        <a href="{{ path('app_learning_paths_index', { q: search_q|default(''), niveau: search_niveau, type: 'hard' }) }}"
+                           class="px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 {{ search_type == 'hard' ? 'bg-blue-600 text-white' : 'bg-secondary border border-white/10 text-muted-foreground hover:text-foreground' }}">
+                            <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                            Hard Skills
+                        </a>
+                        <a href="{{ path('app_learning_paths_index', { q: search_q|default(''), niveau: search_niveau, type: 'soft' }) }}"
+                           class="px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 {{ search_type == 'soft' ? 'bg-purple-600 text-white' : 'bg-secondary border border-white/10 text-muted-foreground hover:text-foreground' }}">
+                            <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                            Soft Skills
+                        </a>
+                    </div>
+
+                    {# ── Reset ── #}
+                    {% if has_filters %}
+                    <a href="{{ path('app_learning_paths_index') }}"
+                       class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors ml-auto">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                        Réinitialiser
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+
+            {# ── Results count ── #}
+            {% if has_filters %}
+            <div class="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                <i data-lucide="filter" class="w-4 h-4 text-primary"></i>
+                <span>
+                    <strong class="text-foreground">{{ totalFiltered }}</strong>
+                    parcours trouvé{{ totalFiltered != 1 ? 's' : '' }}
+                    {% if search_q %} pour « <em class="text-primary">{{ search_q }}</em> »{% endif %}
+                    {% if search_niveau %} · niveau {{ search_niveau == 1 ? 'Débutant' : (search_niveau == 2 ? 'Intermédiaire' : 'Avancé') }}{% endif %}
+                    {% if search_type %} · {{ search_type == 'hard' ? 'Hard Skills' : 'Soft Skills' }}{% endif %}
+                </span>
             </div>
+            {% else %}
+            <div class="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                <span>{{ totalActifs }} parcours disponibles</span>
+            </div>
+            {% endif %}
         </div>
     </section>
 
@@ -49,17 +136,28 @@
         <div class="max-w-7xl mx-auto">
             {% if parcours is empty %}
             <div class="glass-card rounded-3xl p-12 text-center">
+                {% if has_filters %}
+                <i data-lucide="search-x" class="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50"></i>
+                <h3 class="text-xl font-semibold mb-2">Aucun parcours trouvé</h3>
+                <p class="text-muted-foreground mb-6">Essayez d'autres mots-clés ou réinitialisez les filtres.</p>
+                <a href="{{ path('app_learning_paths_index') }}"
+                   class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-all">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    Voir tous les parcours
+                </a>
+                {% else %}
                 <i data-lucide="route" class="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50"></i>
                 <h3 class="text-xl font-semibold mb-2">Aucun parcours pour le moment</h3>
                 <p class="text-muted-foreground">Les parcours ajoutés par l'équipe apparaîtront ici.</p>
+                {% endif %}
             </div>
             {% else %}
-            <div class="grid md:grid-cols-2 gap-8">
+            <div class="grid md:grid-cols-2 gap-8" id="parcours-grid">
                 {% for lp in parcours %}
                 {% set typeSkill = lp.skill and lp.skill.contexteSkill == 'hard' ? 'hard' : 'soft' %}
                 {% set skillNom = lp.skill ? lp.skill.nomSkill : 'Compétence' %}
                 {% set niveauLabel = lp.niveauPath == 1 ? 'Débutant' : (lp.niveauPath == 2 ? 'Intermédiaire' : (lp.niveauPath == 3 ? 'Avancé' : '—')) %}
-                {% set certifiant = lp.statutPath == 1 %}
+                {% set typeIcone = lp.typeEtape == 'video' ? '🎥' : (lp.typeEtape == 'exercice' ? '💻' : (lp.typeEtape == 'quiz' ? '🧩' : '📝')) %}
                 <div class="glass-card rounded-3xl overflow-hidden group hover:border-primary/30 transition-all duration-500">
                     <!-- Image -->
                     <div class="relative h-56 overflow-hidden">
@@ -67,23 +165,26 @@
                         <div class="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
                         
                         <!-- Badges -->
-                        <div class="absolute top-4 left-4 flex gap-2">
-                            <span class="px-3 py-1.5 rounded-full text-xs font-medium {{ typeSkill == 'hard' ? 'bg-academic/90 text-white' : 'bg-personal/90 text-white' }} backdrop-blur-sm">
+                        <div class="absolute top-4 left-4 flex gap-2 flex-wrap">
+                            <span class="px-3 py-1.5 rounded-full text-xs font-medium {{ typeSkill == 'hard' ? 'bg-blue-600/90 text-white' : 'bg-purple-600/90 text-white' }} backdrop-blur-sm">
                                 {{ typeSkill == 'hard' ? 'Hard Skill' : 'Soft Skill' }}
                             </span>
-                            {% if certifiant %}
-                            <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-accent/90 text-white backdrop-blur-sm flex items-center gap-1">
-                                <i data-lucide="award" class="w-3 h-3"></i>
-                                Certifiant
+                            <span class="px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm
+                                {{ lp.niveauPath == 1 ? 'bg-amber-500/90 text-white' : (lp.niveauPath == 2 ? 'bg-blue-500/90 text-white' : 'bg-emerald-500/90 text-white') }}">
+                                {{ niveauLabel }}
+                            </span>
+                            {% if lp.typeEtape %}
+                            <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-black/60 text-white backdrop-blur-sm">
+                                {{ typeIcone }} {{ lp.typeEtape|capitalize }}
                             </span>
                             {% endif %}
                         </div>
                         
-                        <!-- Skill Link -->
+                        <!-- Skill link -->
                         <div class="absolute bottom-4 left-4">
                             <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-sm text-sm">
                                 <i data-lucide="sparkles" class="w-4 h-4 text-primary"></i>
-                                <span>Skill: {{ skillNom }}</span>
+                                <span>{{ skillNom }}</span>
                             </div>
                         </div>
                     </div>
@@ -91,7 +192,7 @@
                     <!-- Content -->
                     <div class="p-6">
                         <h3 class="font-serif text-2xl font-medium mb-3 group-hover:text-primary transition-colors">{{ lp.titrePath }}</h3>
-                        <p class="text-muted-foreground mb-6 line-clamp-2">{{ lp.descriptionSkill|default('Parcours d\'apprentissage.') }}</p>
+                        <p class="text-muted-foreground mb-6 line-clamp-2">{{ lp.descriptionSkill|default('Parcours d\'apprentissage structuré.') }}</p>
                         
                         <!-- Info Grid -->
                         <div class="grid grid-cols-3 gap-4 mb-6">
@@ -100,29 +201,36 @@
                                 <p class="text-xs text-muted-foreground">{{ lp.dureeEstimee }} h</p>
                             </div>
                             <div class="text-center p-3 bg-secondary/50 rounded-xl">
-                                <i data-lucide="book-open" class="w-5 h-5 text-primary mx-auto mb-1"></i>
-                                <p class="text-xs text-muted-foreground">{{ lp.dureeEstimee }} modules</p>
+                                <i data-lucide="bar-chart-2" class="w-5 h-5 text-primary mx-auto mb-1"></i>
+                                <p class="text-xs text-muted-foreground">{{ niveauLabel }}</p>
                             </div>
                             <div class="text-center p-3 bg-secondary/50 rounded-xl">
-                                <i data-lucide="users" class="w-5 h-5 text-primary mx-auto mb-1"></i>
-                                <p class="text-xs text-muted-foreground">—</p>
+                                {% if lp.url %}
+                                <i data-lucide="external-link" class="w-5 h-5 text-primary mx-auto mb-1"></i>
+                                <p class="text-xs text-muted-foreground">Ressource</p>
+                                {% else %}
+                                <i data-lucide="book-open" class="w-5 h-5 text-primary mx-auto mb-1"></i>
+                                <p class="text-xs text-muted-foreground">Contenu</p>
+                                {% endif %}
                             </div>
                         </div>
                         
-                        <!-- Niveaux -->
+                        <!-- Niveau bar -->
                         <div class="flex items-center gap-4 mb-6 p-4 bg-secondary/30 rounded-xl">
                             <div class="flex-1">
-                                <p class="text-xs text-muted-foreground mb-1">Niveau</p>
-                                <p class="text-sm font-medium">{{ niveauLabel }}</p>
+                                <p class="text-xs text-muted-foreground mb-1.5">Progression</p>
+                                <div class="h-1.5 bg-secondary rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all
+                                        {{ lp.niveauPath == 1 ? 'w-1/3 bg-amber-500' : (lp.niveauPath == 2 ? 'w-2/3 bg-blue-500' : 'w-full bg-emerald-500') }}">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="flex-1 text-right">
-                                <p class="text-xs text-muted-foreground mb-1">Objectif</p>
-                                <p class="text-sm font-medium text-primary">{{ niveauLabel }}</p>
-                            </div>
+                            <span class="text-sm font-medium text-primary">{{ niveauLabel }}</span>
                         </div>
                         
                         <!-- Action -->
-                        <a href="{{ path('app_learning_path_detail', { id: lp.id }) }}" class="flex items-center justify-center gap-2 w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 group/btn">
+                        <a href="{{ path('app_learning_path_detail', { id: lp.id }) }}"
+                           class="flex items-center justify-center gap-2 w-full h-14 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 group/btn">
                             <span>Commencer ce parcours</span>
                             <i data-lucide="arrow-right" class="w-5 h-5 group-hover/btn:translate-x-1 transition-transform"></i>
                         </a>
@@ -130,10 +238,81 @@
                 </div>
                 {% endfor %}
             </div>
+
+            {# ── Pagination ── #}
+            {% if total_pages > 1 %}
+            {% set paginationParams = {} %}
+            {% if search_q %}{% set paginationParams = paginationParams|merge({ q: search_q }) %}{% endif %}
+            {% if search_niveau is not null %}{% set paginationParams = paginationParams|merge({ niveau: search_niveau }) %}{% endif %}
+            {% if search_type %}{% set paginationParams = paginationParams|merge({ type: search_type }) %}{% endif %}
+            {% if search_skill_id %}{% set paginationParams = paginationParams|merge({ skill_id: search_skill_id }) %}{% endif %}
+
+            <nav class="mt-12 flex items-center justify-center gap-2" aria-label="Pagination">
+                {# Previous #}
+                {% if current_page > 1 %}
+                <a href="{{ path('app_learning_paths_index', paginationParams|merge({ page: current_page - 1 })) }}"
+                   class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/10 text-sm text-muted-foreground hover:text-foreground hover:border-white/20 transition-all">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i> Précédent
+                </a>
+                {% else %}
+                <span class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/5 text-sm text-muted-foreground cursor-not-allowed opacity-40">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i> Précédent
+                </span>
+                {% endif %}
+
+                {# Page numbers #}
+                {% for p in 1..total_pages %}
+                    {% if p == current_page %}
+                    <span class="w-10 h-10 flex items-center justify-center rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/25">
+                        {{ p }}
+                    </span>
+                    {% elseif p == 1 or p == total_pages or (p >= current_page - 1 and p <= current_page + 1) %}
+                    <a href="{{ path('app_learning_paths_index', paginationParams|merge({ page: p })) }}"
+                       class="w-10 h-10 flex items-center justify-center rounded-xl border border-white/10 text-sm text-muted-foreground hover:text-foreground hover:border-white/20 transition-all">
+                        {{ p }}
+                    </a>
+                    {% elseif p == 2 or p == total_pages - 1 %}
+                    <span class="w-6 flex items-center justify-center text-muted-foreground text-xs">···</span>
+                    {% endif %}
+                {% endfor %}
+
+                {# Next #}
+                {% if current_page < total_pages %}
+                <a href="{{ path('app_learning_paths_index', paginationParams|merge({ page: current_page + 1 })) }}"
+                   class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/10 text-sm text-muted-foreground hover:text-foreground hover:border-white/20 transition-all">
+                    Suivant <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </a>
+                {% else %}
+                <span class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/5 text-sm text-muted-foreground cursor-not-allowed opacity-40">
+                    Suivant <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </span>
+                {% endif %}
+            </nav>
+            <p class="text-center text-xs text-muted-foreground mt-3">
+                Page {{ current_page }} sur {{ total_pages }} · {{ totalFiltered }} parcours au total
+            </p>
+            {% endif %}
+
             {% endif %}
         </div>
     </section>
 </div>
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Live search with debounce (updates grid via form submit after 500ms pause)
+    const searchInput = document.getElementById('search-q');
+    if (!searchInput) return;
+    let debounceTimer;
+    searchInput.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            document.getElementById('form-search-lp')?.submit();
+        }, 600);
+    });
+});
+</script>
 {% endblock %}
-
-
+{% endblock %}

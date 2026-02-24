@@ -1,0 +1,160 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Playlists de compétences - NoVas{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background">
+    {% include 'front/partials/_auth_nav.html.twig' %}
+
+    {# ── Hero ── #}
+    <section class="pt-32 pb-12 px-6 relative overflow-hidden">
+        <div class="absolute inset-0 gradient-orb"></div>
+        <div class="absolute top-20 right-20 w-80 h-80 bg-accent/10 rounded-full blur-[120px]"></div>
+
+        <div class="max-w-7xl mx-auto relative text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm mb-5">
+                <i data-lucide="list-music" class="w-4 h-4"></i>
+                Playlists de parcours
+            </div>
+            <h1 class="font-serif text-4xl md:text-5xl font-medium mb-4">
+                Tout ce qu'il faut pour maîtriser <span class="italic text-primary">une compétence</span>
+            </h1>
+            <p class="text-muted-foreground text-lg max-w-2xl mx-auto">
+                Chaque playlist regroupe tous les parcours d'apprentissage liés à une compétence &mdash; du débutant à l'avancé. Choisissez votre compétence, pas vos parcours.
+            </p>
+
+            {# Stats row #}
+            <div class="mt-8 flex flex-wrap justify-center gap-6">
+                <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/50 border border-white/5 text-sm">
+                    <i data-lucide="layers" class="w-4 h-4 text-primary"></i>
+                    <span class="text-muted-foreground">{{ playlists|length }} compétences</span>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/50 border border-white/5 text-sm">
+                    <i data-lucide="route" class="w-4 h-4 text-accent"></i>
+                    <span class="text-muted-foreground">
+                        {{ playlists|reduce((carry, p) => carry + p.nb_parcours, 0) }} parcours au total
+                    </span>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/50 border border-white/5 text-sm">
+                    <i data-lucide="clock" class="w-4 h-4 text-amber-400"></i>
+                    <span class="text-muted-foreground">
+                        {{ playlists|reduce((carry, p) => carry + p.duree_totale, 0) }} h de contenu
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ── Grid des playlists ── #}
+    <section class="px-6 pb-24">
+        <div class="max-w-7xl mx-auto">
+
+            {% if playlists is empty %}
+            <div class="glass-card rounded-3xl p-16 text-center">
+                <i data-lucide="list-music" class="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-40"></i>
+                <h3 class="text-xl font-semibold mb-2">Aucune playlist disponible</h3>
+                <p class="text-muted-foreground">Les playlists apparaissent dès qu'une compétence a au moins un parcours actif.</p>
+            </div>
+            {% else %}
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for item in playlists %}
+                {% set skill = item.skill %}
+                {% set isHard = skill.contexteSkill == 'hard' %}
+
+                {# Parse niveaux CSV → labels #}
+                {% set niveauxRaw = item.niveaux|split(',') %}
+                {% set niveauMin = niveauxRaw|first|trim %}
+                {% set niveauMax = niveauxRaw|last|trim %}
+
+                <a href="{{ path('app_learning_path_playlist_detail', { skillId: skill.id }) }}"
+                   class="glass-card rounded-3xl p-6 flex flex-col gap-5 hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+
+                    {# Decorative glow #}
+                    <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500
+                        {{ isHard ? 'bg-blue-600/20' : 'bg-purple-600/20' }} blur-2xl pointer-events-none"></div>
+
+                    {# Header #}
+                    <div class="flex items-start justify-between">
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl
+                            {{ isHard ? 'bg-blue-600/20 border border-blue-500/30' : 'bg-purple-600/20 border border-purple-500/30' }}">
+                            {{ isHard ? '💻' : '🧠' }}
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-medium
+                            {{ isHard ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'bg-purple-600/20 text-purple-400 border border-purple-500/20' }}">
+                            {{ isHard ? 'Hard Skill' : 'Soft Skill' }}
+                        </span>
+                    </div>
+
+                    {# Skill name + category #}
+                    <div>
+                        <h2 class="text-xl font-serif font-semibold group-hover:text-primary transition-colors mb-1">
+                            {{ skill.nomSkill }}
+                        </h2>
+                        <p class="text-xs text-muted-foreground uppercase tracking-wider">{{ skill.categorie }}</p>
+                        {% if skill.descriptionSkill %}
+                        <p class="text-sm text-muted-foreground mt-2 line-clamp-2">{{ skill.descriptionSkill }}</p>
+                        {% endif %}
+                    </div>
+
+                    {# Stats #}
+                    <div class="grid grid-cols-3 gap-3 border-t border-white/5 pt-4">
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-primary">{{ item.nb_parcours }}</p>
+                            <p class="text-xs text-muted-foreground mt-0.5">parcours</p>
+                        </div>
+                        <div class="text-center border-x border-white/5">
+                            <p class="text-2xl font-bold text-amber-400">{{ item.duree_totale }}</p>
+                            <p class="text-xs text-muted-foreground mt-0.5">heures</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-lg font-bold text-accent">
+                                {{ niveauxRaw|length > 1 ? niveauMin ~ '→' ~ niveauMax : niveauMin }}
+                            </p>
+                            <p class="text-xs text-muted-foreground mt-0.5">niveaux</p>
+                        </div>
+                    </div>
+
+                    {# Niveau badges #}
+                    <div class="flex flex-wrap gap-2">
+                        {% for n in niveauxRaw %}
+                        {% set nl = n|trim %}
+                        {% if nl == '1' %}
+                        <span class="px-2.5 py-1 rounded-full text-xs bg-amber-500/20 text-amber-400 border border-amber-500/20">🟡 Débutant</span>
+                        {% elseif nl == '2' %}
+                        <span class="px-2.5 py-1 rounded-full text-xs bg-blue-500/20 text-blue-400 border border-blue-500/20">🔵 Intermédiaire</span>
+                        {% elseif nl == '3' %}
+                        <span class="px-2.5 py-1 rounded-full text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">🟢 Avancé</span>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if skill.scoreDemande %}
+                        <span class="px-2.5 py-1 rounded-full text-xs bg-primary/20 text-primary border border-primary/20 ml-auto">
+                            🔥 Demande {{ skill.scoreDemande }}/5
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    {# CTA #}
+                    <div class="flex items-center justify-between mt-auto pt-2">
+                        <span class="text-sm text-muted-foreground">Voir la playlist</span>
+                        <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all duration-300">
+                            <i data-lucide="arrow-right" class="w-4 h-4 text-primary group-hover:text-white transition-colors"></i>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# Link back to catalogue #}
+            <div class="text-center mt-12">
+                <a href="{{ path('app_learning_paths_index') }}"
+                   class="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                    Voir tous les parcours individuels
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -464,6 +464,275 @@ PROMPT;
         return 'openai/gpt-4o-mini';
     }
 
+    /**
+     * Generate a complete LearningPath (multiple steps) for a given Skill.
+     *
+     * @return array<int, array{titre_path: string, description_skill: string, duree_estimee: int, type_etape: string, url: string, contexte_path: int, statut_path: int, niveau_path: int}>
+     */
+    public function generateLearningPaths(
+        Skill $skill,
+        string $userPrompt,
+        int $niveau = 1,
+        int $nbEtapes = 5
+    ): array {
+        if (!$this->isConfigured()) {
+            return [];
+        }
+
+        $niveauLabel = match ($niveau) {
+            2 => 'intermédiaire',
+            3 => 'avancé',
+            default => 'débutant',
+        };
+
+        $systemPrompt = <<<PROMPT
+Tu es un expert en conception pédagogique. Tu dois générer exactement {$nbEtapes} étapes de parcours d'apprentissage pour la compétence suivante :
+- Nom : {$skill->getNomSkill()}
+- Catégorie : {$skill->getCategorie()}
+- Type : {$skill->getContexteSkill()}
+- Description : {$skill->getDescriptionSkill()}
+- Niveau cible : {$niveauLabel}
+
+Instructions supplémentaires de l'administrateur : {$userPrompt}
+
+RÈGLES ABSOLUES :
+1. Réponds UNIQUEMENT avec un tableau JSON valide, sans texte avant ni après, sans balises markdown, sans commentaires.
+2. Le tableau doit contenir EXACTEMENT {$nbEtapes} objets.
+3. Chaque objet doit avoir ces champs EXACTEMENT (aucun champ supplémentaire) :
+   - "titre_path" : string, titre court et accrocheur de l'étape (max 100 chars)
+   - "description_skill" : string, description pédagogique concise de l'étape (max 250 chars)
+   - "duree_estimee" : int, durée estimée en heures (entre 1 et 40)
+   - "type_etape" : string, exactement l'une des valeurs suivantes : "post", "video", "exercice", "quiz"
+   - "url" : string, une URL réelle et pertinente commençant par https:// (MDN, YouTube, freeCodeCamp, OpenClassrooms, Coursera, W3Schools, etc.), ou "" si non applicable
+   - "contexte_path" : int, toujours 0 (public)
+   - "statut_path" : int, toujours 1 (actif)
+   - "niveau_path" : int, {$niveau}
+4. Les étapes doivent être ordonnées logiquement du plus simple au plus complexe.
+5. Varie les types d'étapes (ne pas mettre que des "video" ou que des "post").
+
+Exemple de format attendu (ne pas copier le contenu, seulement le format) :
+[
+  {"titre_path":"Introduction","description_skill":"Découvrez les bases...","duree_estimee":2,"type_etape":"video","url":"https://www.youtube.com/watch?v=example","contexte_path":0,"statut_path":1,"niveau_path":1},
+  {"titre_path":"Premier exercice","description_skill":"Pratiquez...","duree_estimee":3,"type_etape":"exercice","url":"","contexte_path":0,"statut_path":1,"niveau_path":1}
+]
+PROMPT;
+
+        $provider = $this->getAiProvider();
+        $rawResponse = '';
+
+        try {
+            if ($provider === 'openrouter') {
+                $rawResponse = $this->callOpenRouterForJson($systemPrompt);
+            } elseif ($provider === 'xai') {
+                $rawResponse = $this->callXaiForJson($systemPrompt);
+            } else {
+                $rawResponse = $this->callGeminiForJson($systemPrompt);
+                if ($this->isGeminiQuotaMessage($rawResponse)) {
+                    if (!empty($this->getOpenRouterApiKey())) {
+                        $rawResponse = $this->callOpenRouterForJson($systemPrompt);
+                    } elseif (!empty($this->getXaiApiKey())) {
+                        $rawResponse = $this->callXaiForJson($systemPrompt);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error('generateLearningPaths error', ['message' => $e->getMessage()]);
+            return [];
+        }
+
+        return $this->parseGeneratedSteps($rawResponse, $niveau, $nbEtapes);
+    }
+
+    private function callGeminiForJson(string $prompt): string
+    {
+        $apiKey = $this->getGeminiApiKey();
+        if (empty($apiKey)) {
+            return '';
+        }
+
+        $requestBody = [
+            'contents' => [['parts' => [['text' => $prompt]]]],
+            'generationConfig' => [
+                'maxOutputTokens' => 3000,
+                'temperature' => 0.4,
+                'topP' => 0.9,
+            ],
+        ];
+
+        foreach ($this->getCandidateGeminiModels() as $model) {
+            $url = sprintf(
+                '%s/models/%s:generateContent?key=%s',
+                self::GEMINI_API_BASE_URL,
+                rawurlencode($model),
+                urlencode($apiKey)
+            );
+
+            $response = $this->httpClient->request('POST', $url, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => $requestBody,
+                'timeout' => 60,
+            ]);
+
+            if ($response->getStatusCode() === 200) {
+                $data = $response->toArray(false);
+                $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+                if (is_string($text) && trim($text) !== '') {
+                    return trim($text);
+                }
+            } elseif ($response->getStatusCode() === 404) {
+                continue;
+            } else {
+                $this->logger->error('Gemini JSON error', ['status' => $response->getStatusCode(), 'model' => $model]);
+                if ($response->getStatusCode() === 429) {
+                    return 'Limite Gemini atteinte (429). Reessayez dans une minute.';
+                }
+                break;
+            }
+        }
+
+        return '';
+    }
+
+    private function callXaiForJson(string $prompt): string
+    {
+        $apiKey = $this->getXaiApiKey();
+        if (empty($apiKey)) {
+            return '';
+        }
+
+        $response = $this->httpClient->request('POST', self::XAI_API_BASE_URL . '/chat/completions', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type' => 'application/json',
+            ],
+            'json' => [
+                'model' => $this->getXaiModel(),
+                'messages' => [['role' => 'user', 'content' => $prompt]],
+                'temperature' => 0.4,
+                'max_tokens' => 3000,
+            ],
+            'timeout' => 60,
+        ]);
+
+        if ($response->getStatusCode() === 200) {
+            $data = $response->toArray(false);
+            return trim((string) ($data['choices'][0]['message']['content'] ?? ''));
+        }
+
+        $this->logger->error('callXaiForJson failed', [
+            'status' => $response->getStatusCode(),
+            'body'   => substr($response->getContent(false), 0, 800),
+        ]);
+        return '';
+    }
+
+    private function callOpenRouterForJson(string $prompt): string
+    {
+        $apiKey = $this->getOpenRouterApiKey();
+        if (empty($apiKey)) {
+            return '';
+        }
+
+        $response = $this->httpClient->request('POST', self::OPENROUTER_API_BASE_URL . '/chat/completions', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type' => 'application/json',
+            ],
+            'json' => [
+                'model' => $this->getOpenRouterModel(),
+                'messages' => [['role' => 'user', 'content' => $prompt]],
+                'temperature' => 0.4,
+                'max_tokens' => 3000,
+            ],
+            'timeout' => 60,
+        ]);
+
+        if ($response->getStatusCode() === 200) {
+            $data = $response->toArray(false);
+            return trim((string) ($data['choices'][0]['message']['content'] ?? ''));
+        }
+
+        $this->logger->error('callOpenRouterForJson failed', [
+            'status' => $response->getStatusCode(),
+            'body'   => substr($response->getContent(false), 0, 800),
+        ]);
+        return '';
+    }
+
+    /**
+     * @return array<int, array{titre_path: string, description_skill: string, duree_estimee: int, type_etape: string, url: string, contexte_path: int, statut_path: int, niveau_path: int}>
+     */
+    private function parseGeneratedSteps(string $raw, int $niveau, int $nbEtapes): array
+    {
+        if (empty(trim($raw))) {
+            return [];
+        }
+
+        // Strip markdown fences if present
+        $cleaned = preg_replace('/^```(?:json)?\s*/im', '', $raw);
+        $cleaned = preg_replace('/```\s*$/im', '', $cleaned ?? $raw);
+        $cleaned = trim($cleaned ?? $raw);
+
+        // Extract JSON array
+        $start = strpos($cleaned, '[');
+        $end = strrpos($cleaned, ']');
+        if ($start === false || $end === false || $end <= $start) {
+            $this->logger->error('generateLearningPaths: no JSON array found', ['raw' => substr($raw, 0, 500)]);
+            return [];
+        }
+
+        $jsonStr = substr($cleaned, $start, $end - $start + 1);
+
+        try {
+            $decoded = json_decode($jsonStr, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            $this->logger->error('generateLearningPaths: JSON parse error', ['error' => $e->getMessage(), 'json' => substr($jsonStr, 0, 500)]);
+            return [];
+        }
+
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $validTypes = ['post', 'video', 'exercice', 'quiz'];
+        $steps = [];
+
+        foreach ($decoded as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $titre = trim((string) ($item['titre_path'] ?? ''));
+            if (empty($titre)) {
+                continue;
+            }
+
+            $typeEtape = in_array($item['type_etape'] ?? '', $validTypes, true)
+                ? $item['type_etape']
+                : 'post';
+
+            $duree = max(1, min(40, (int) ($item['duree_estimee'] ?? 2)));
+            $url = filter_var($item['url'] ?? '', FILTER_VALIDATE_URL) ? $item['url'] : '';
+
+            $steps[] = [
+                'titre_path' => mb_substr($titre, 0, 255),
+                'description_skill' => mb_substr(trim((string) ($item['description_skill'] ?? '')), 0, 255),
+                'duree_estimee' => $duree,
+                'type_etape' => $typeEtape,
+                'url' => $url,
+                'contexte_path' => 0,
+                'statut_path' => 1,
+                'niveau_path' => $niveau,
+            ];
+
+            if (count($steps) >= $nbEtapes) {
+                break;
+            }
+        }
+
+        return $steps;
+    }
+
     public function isConfigured(): bool
     {
         return !empty($this->getGeminiApiKey()) || !empty($this->getXaiApiKey()) || !empty($this->getOpenRouterApiKey());
