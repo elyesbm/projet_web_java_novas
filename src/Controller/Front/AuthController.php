@@ -53,7 +53,7 @@ class AuthController extends AbstractController
     public function loginFace(
         Request $request,
         FaceRecognitionService $faceRecognitionService,
-        TokenStorageInterface $tokenStorage
+        \Symfony\Bundle\SecurityBundle\Security $security
     ): Response {
         $content = $request->getContent();
         $data = json_decode($content, true);
@@ -90,13 +90,6 @@ class AuthController extends AbstractController
                 'email' => $user->getEMAIL(),
             ]);
             
-            // Invalider l'éventuelle session existante et recréer pour le pending
-            $session->invalidate();
-            $request->getSession()->set('2fa_user_pending', [
-                'id' => $user->getId(),
-                'email' => $user->getEMAIL(),
-            ]);
-
             return $this->json([
                 'success' => true, 
                 'redirect' => $this->generateUrl('app_2fa_verify')
@@ -104,10 +97,7 @@ class AuthController extends AbstractController
         }
 
         // Authentification manuelle - inscription dans la session Symfony
-        $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
-        $tokenStorage->setToken($token);
-        $request->getSession()->set('_security_main', serialize($token));
-        $request->getSession()->save();
+        $security->login($user, 'security.authenticator.form_login.main');
 
         // Calcul de l'URL de redirection selon le rôle
         $roles = $user->getRoles();

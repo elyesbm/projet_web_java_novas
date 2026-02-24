@@ -43,7 +43,7 @@ class Skill
     private ?string $contexte_skill = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'skills')]
-    #[ORM\JoinColumn(name: 'createur_id', referencedColumnName: 'ID', nullable: true)]
+    #[ORM\JoinColumn(name: 'createur_id', referencedColumnName: 'ID', nullable: true, onDelete: 'CASCADE')]
     private ?User $createur = null;
 
     #[ORM\OneToMany(mappedBy: 'skill', targetEntity: LearningPath::class)]

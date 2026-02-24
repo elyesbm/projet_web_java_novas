@@ -134,7 +134,7 @@ class TwoFactorController extends AbstractController
      * Vérifier le code 2FA après la connexion
      */
     #[Route('/verify', name: 'app_2fa_verify')]
-    public function verify(Request $request, SessionInterface $session): Response
+    public function verify(Request $request, SessionInterface $session, \Symfony\Bundle\SecurityBundle\Security $security): Response
     {
         $userPending = $session->get('2fa_user_pending');
         if (!$userPending) {
@@ -180,8 +180,8 @@ class TwoFactorController extends AbstractController
             }
 
             if ($isValid) {
-                // Authentifier l'utilisateur avec un token valide
-                return $this->handleSuccessfulAuthentication($authenticatingUser, $request);
+                // Authentifier l'utilisateur via le composant Security de Symfony
+                return $this->handleSuccessfulAuthentication($authenticatingUser, $request, $security);
             }
 
             $this->addFlash('error', 'Code invalide.');
@@ -190,13 +190,11 @@ class TwoFactorController extends AbstractController
         return $this->render('front/2fa/verify.html.twig');
     }
 
-    private function handleSuccessfulAuthentication(User $user, Request $request): Response
+    private function handleSuccessfulAuthentication(User $user, Request $request, \Symfony\Bundle\SecurityBundle\Security $security): Response
     {
-        // Créer un token d'authentification valide
-        $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
-        
-        // Stocker le token dans la session
-        $request->getSession()->set('_security_main', serialize($token));
+        // Connecter l'utilisateur officiellement. Dans Symfony > 6.2, c'est la façon sécurisée.
+        // 'main' correspond au nom du firewall dans security.yaml
+        $security->login($user, 'security.authenticator.form_login.main');
 
         // Nettoyer la session
         $request->getSession()->remove('2fa_user_pending');
