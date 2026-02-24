@@ -4,6 +4,7 @@ namespace App\Controller\Front;
 
 use App\Repository\AtelierRepository;
 use App\Repository\ReservationRepository;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +15,12 @@ class AtelierController extends AbstractController
 {
     #[Route('', name: 'app_ateliers')]
     #[Route('', name: 'app_reservation_ateliers')]
-    public function index(Request $request, AtelierRepository $atelierRepository, ReservationRepository $reservationRepository): Response
+    public function index(
+        Request $request,
+        AtelierRepository $atelierRepository,
+        ReservationRepository $reservationRepository,
+        PaginatorInterface $paginator
+    ): Response
     {
         $search = $request->query->get('search', '');
         $contexte = $request->query->get('contexte');
@@ -33,7 +39,9 @@ class AtelierController extends AbstractController
             $sort = 'date_asc';
         }
 
-        $ateliers = $atelierRepository->searchAndFilter($search, $contexteInt, $sort);
+        $queryBuilder = $atelierRepository->searchAndFilterQueryBuilder($search, $contexteInt, $sort);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $ateliers = $paginator->paginate($queryBuilder, $page, 3);
         $topAtelierRow = $reservationRepository->findTopAtelierByReservations();
 
         return $this->render('front/reservation/ateliers.html.twig', [

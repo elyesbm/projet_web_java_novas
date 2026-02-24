@@ -84,7 +84,17 @@
 
             {# DESCRIPTION #}
             {% set e = form.description_atelier.vars.errors|length %}
-            <label class="block mt-6 mb-2 font-medium">Description</label>
+            <label class="block mt-6 mb-2 font-medium flex items-center justify-between">
+                <span>Description</span>
+                <button
+                    type="button"
+                    id="ai-generate-description"
+                    class="text-xs px-3 py-1 rounded-lg border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition"
+                >
+                    Generer description IA
+                </button>
+            </label>
+            <p id="ai-description-status" class="text-xs text-slate-500 mb-2 hidden"></p>
             {{ form_widget(form.description_atelier, {
                 attr: {
                     class: 'w-full px-4 py-3 rounded-xl border resize-none ' ~
@@ -174,6 +184,70 @@ function previewImage(url) {
     img.src = url;
     img.classList.remove('hidden');
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const button = document.getElementById('ai-generate-description');
+    const status = document.getElementById('ai-description-status');
+    const titleInput = document.getElementById('{{ form.titre_atelier.vars.id }}');
+    const descriptionInput = document.getElementById('{{ form.description_atelier.vars.id }}');
+
+    if (!button || !status || !titleInput || !descriptionInput) {
+        return;
+    }
+
+    const endpoint = '{{ path('app_admin_ateliers_ai_description') }}';
+    const csrfToken = '{{ csrf_token('ai_generate_atelier_description') }}';
+
+    const setStatus = (message, type = 'info') => {
+        status.textContent = message;
+        status.className = 'text-xs mb-2 ' + (type === 'error'
+            ? 'text-red-600'
+            : type === 'success'
+                ? 'text-emerald-600'
+                : 'text-slate-500');
+        status.classList.remove('hidden');
+    };
+
+    button.addEventListener('click', async () => {
+        const title = titleInput.value.trim();
+        if (!title) {
+            setStatus('Veuillez saisir le titre de l\'atelier avant de generer la description.', 'error');
+            titleInput.focus();
+            return;
+        }
+
+        button.disabled = true;
+        const originalLabel = button.textContent;
+        button.textContent = 'Generation...';
+        setStatus('Generation en cours...', 'info');
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                },
+                body: JSON.stringify({ title }),
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data.error || 'Erreur lors de la generation.');
+            }
+
+            descriptionInput.value = data.description || '';
+            setStatus('Description generee avec succes.', 'success');
+            descriptionInput.focus();
+        } catch (error) {
+            setStatus(error.message || 'Erreur lors de la generation.', 'error');
+        } finally {
+            button.disabled = false;
+            button.textContent = originalLabel;
+        }
+    });
+});
 </script>
 
 {% endblock %}
