@@ -243,6 +243,7 @@
             </div>
             <div class="flex items-center gap-3">
                 <button type="submit" id="ai-analyze-submit" class="px-4 py-2 bg-primary text-white rounded-xl">Analyser</button>
+                <button type="button" id="ai-analyze-reset" class="px-4 py-2 bg-secondary border border-white/10 rounded-xl">Reinitialiser</button>
                 <button type="button" data-ai-analyze-close class="px-4 py-2 bg-secondary border border-white/10 rounded-xl">Fermer</button>
             </div>
         </form>
@@ -270,6 +271,7 @@
             const errorBox = document.getElementById('ai-analyze-error');
             const resultBox = document.getElementById('ai-analyze-result');
             const submitBtn = document.getElementById('ai-analyze-submit');
+            const resetBtn = document.getElementById('ai-analyze-reset');
             const price = document.getElementById('ai-price');
             const reviews = document.getElementById('ai-reviews');
             const demand = document.getElementById('ai-demand');
@@ -296,6 +298,16 @@
             document.querySelectorAll('[data-ai-analyze-open]').forEach((el) => el.addEventListener('click', openModal));
             document.querySelectorAll('[data-ai-analyze-close]').forEach((el) => el.addEventListener('click', closeModal));
             modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function () {
+                    form.reset();
+                    clearMessages();
+                    price.textContent = '';
+                    reviews.textContent = '';
+                    demand.textContent = '';
+                    why.textContent = '';
+                });
+            }
 
             form.addEventListener('submit', async function (e) {
                 e.preventDefault();
