@@ -167,19 +167,79 @@
         return 'bg-red-500/20 text-red-300 border-red-500/40';
       };
 
+      let currentMatches = [];
+
+      const replaceByOffset = (sourceText, offset, length, replacement) => {
+        const chars = Array.from(sourceText);
+        const safeOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0;
+        const safeLength = Number.isFinite(length) ? Math.max(0, length) : 0;
+        const end = Math.min(chars.length, safeOffset + safeLength);
+        chars.splice(safeOffset, end - safeOffset, ...Array.from(replacement));
+        return chars.join('');
+      };
+
+      const applySuggestion = (matchIndex, replacementIndex, triggerElement) => {
+        const match = currentMatches[matchIndex];
+        if (!match || !Array.isArray(match.replacements) || !match.replacements[replacementIndex]) {
+          return;
+        }
+
+        const replacement = String(match.replacements[replacementIndex]);
+        const before = textarea.value;
+        const after = replaceByOffset(before, Number(match.offset || 0), Number(match.length || 0), replacement);
+
+        if (before === after) {
+          renderError('Impossible d appliquer la suggestion sur le texte actuel. Relancez la verification.');
+          return;
+        }
+
+        const replacementLength = Array.from(replacement).length;
+        const delta = replacementLength - Number(match.length || 0);
+        const pivot = Number(match.offset || 0);
+
+        currentMatches = currentMatches.map((item, index) => {
+          if (index === matchIndex || !item || typeof item !== 'object') {
+            return item;
+          }
+
+          const itemOffset = Number(item.offset || 0);
+          if (itemOffset > pivot) {
+            return { ...item, offset: itemOffset + delta };
+          }
+
+          return item;
+        });
+
+        textarea.value = after;
+        textarea.focus();
+
+        if (triggerElement) {
+          triggerElement.disabled = true;
+          triggerElement.classList.add('opacity-60', 'line-through');
+        }
+      };
+
       const renderResult = (payload) => {
         const totalErrors = Number(payload.totalErrors || 0);
         const qualityScore = Number(payload.qualityScore || 0);
         const matches = Array.isArray(payload.matches) ? payload.matches : [];
+        currentMatches = matches.map((item) => ({
+          ...item,
+          offset: Number(item.offset || 0),
+          length: Number(item.length || 0),
+          replacements: Array.isArray(item.replacements) ? item.replacements : []
+        }));
 
         let errorsHtml = '<p class="text-xs text-muted-foreground mt-2">Aucune erreur detectee.</p>';
-        if (matches.length > 0) {
-          const items = matches.map((match) => {
+        if (currentMatches.length > 0) {
+          const items = currentMatches.map((match, matchIndex) => {
             const message = escapeHtml(match.message || 'Erreur');
-            const replacements = Array.isArray(match.replacements) && match.replacements.length > 0
-              ? match.replacements.map((item) => escapeHtml(item)).join(', ')
-              : 'Aucune suggestion';
-            return `<li class="py-2 border-b border-white/5 last:border-b-0"><p class="font-medium">${message}</p><p class="text-xs text-muted-foreground mt-1">Suggestions: ${replacements}</p></li>`;
+            const replacementsHtml = match.replacements.length > 0
+              ? match.replacements.map((item, replacementIndex) => (
+                `<button type="button" class="js-offer-suggestion mr-2 mb-2 px-2 py-1 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 transition text-xs" data-match-index="${matchIndex}" data-replacement-index="${replacementIndex}">${escapeHtml(item)}</button>`
+              )).join('')
+              : '<span class="text-xs text-muted-foreground">Aucune suggestion</span>';
+            return `<li class="py-2 border-b border-white/5 last:border-b-0"><p class="font-medium">${message}</p><p class="text-xs text-muted-foreground mt-1 mb-2">Cliquez une suggestion pour corriger automatiquement:</p><div>${replacementsHtml}</div></li>`;
           }).join('');
           errorsHtml = `<ul class="mt-2">${items}</ul>`;
         }
@@ -194,9 +254,18 @@
           </div>
           ${errorsHtml}
         `;
+
+        resultBox.querySelectorAll('.js-offer-suggestion').forEach((element) => {
+          element.addEventListener('click', () => {
+            const matchIndex = Number(element.getAttribute('data-match-index'));
+            const replacementIndex = Number(element.getAttribute('data-replacement-index'));
+            applySuggestion(matchIndex, replacementIndex, element);
+          });
+        });
       };
 
       const renderError = (message) => {
+        currentMatches = [];
         resultBox.className = 'mt-3 p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-sm text-red-200';
         resultBox.textContent = message;
       };
