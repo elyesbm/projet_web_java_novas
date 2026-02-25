@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OffrejobRepository::class)]
 class Offrejob
@@ -42,9 +43,17 @@ class Offrejob
     #[ORM\Column(
         type: Types::ENUM,
         enumType: OffreStatut::class,
-        options: ['values' => ['OUVERTE', 'FERMEE'], 'default' => 'OUVERTE']
+        options: ['values' => ['OUVERTE', 'FERMEE', 'EXPIREE'], 'default' => 'OUVERTE']
     )]
     private ?OffreStatut $statut_offre = null;
+
+    #[ORM\Column(name: 'capacite_max', type: Types::INTEGER, options: ['default' => 5])]
+    #[Assert\Positive(message: 'La capacite maximale doit etre superieure a 0.')]
+    private int $capacite_max = 5;
+
+    #[ORM\Column(name: 'capacite_restante', type: Types::INTEGER, options: ['default' => 5])]
+    #[Assert\GreaterThanOrEqual(value: 0, message: 'La capacite restante ne peut pas etre negative.')]
+    private int $capacite_restante = 5;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeInterface $date_creation_offre = null;
@@ -90,6 +99,36 @@ class Offrejob
             ? $statut_offre
             : OffreStatut::from($statut_offre);
         return $this;
+    }
+    public function getCapaciteMax(): int
+    {
+        return $this->capacite_max;
+    }
+    public function setCapaciteMax(int $capacite_max): static
+    {
+        if ($capacite_max <= 0) {
+            throw new \InvalidArgumentException('La capacite maximale doit etre superieure a 0.');
+        }
+
+        $this->capacite_max = $capacite_max;
+        return $this;
+    }
+    public function getCapaciteRestante(): int
+    {
+        return $this->capacite_restante;
+    }
+    public function setCapaciteRestante(int $capacite_restante): static
+    {
+        if ($capacite_restante < 0) {
+            throw new \InvalidArgumentException('La capacite restante ne peut pas etre negative.');
+        }
+
+        $this->capacite_restante = $capacite_restante;
+        return $this;
+    }
+    public function isComplet(): bool
+    {
+        return $this->capacite_restante <= 0;
     }
     public function getDateCreationOffre(): ?\DateTimeInterface { return $this->date_creation_offre; }
     public function setDateCreationOffre(\DateTimeInterface $date_creation_offre): static { $this->date_creation_offre = $date_creation_offre; return $this; }

@@ -3,10 +3,11 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Offrejob;
-use App\Entity\CandidatureJob;
-use App\Repository\OffrejobRepository;
+use App\Enum\OffreStatut;
 use App\Repository\CandidatureJobRepository;
+use App\Repository\OffrejobRepository;
 use App\Service\JobStatsService;
+use App\Service\OffreQuotaManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,7 +21,6 @@ use Symfony\UX\Chartjs\Model\Chart;
 #[Route('/admin/jobs')]
 class JobsAdminController extends AbstractController
 {
-    // ✅ LIST (Search + Sort)
     #[Route('', name: 'app_admin_jobs_list', methods: ['GET'])]
     public function list(Request $request, OffrejobRepository $repo): Response
     {
@@ -30,7 +30,6 @@ class JobsAdminController extends AbstractController
         $sort = (string) $request->query->get('sort', 'date');
         $dir = (string) $request->query->get('dir', 'desc');
 
-        // Admin voit tout → on réutilise searchAndSort()
         $offres = $repo->searchAndSort($q ?: null, null, null, null, $sort, $dir);
 
         return $this->render('admin/jobs/list.html.twig', [
@@ -154,8 +153,7 @@ class JobsAdminController extends AbstractController
         return $response;
     }
 
-    // ✅ CREATE
-    #[Route('/new', name: 'app_admin_jobs_new', methods: ['GET','POST'])]
+    #[Route('/new', name: 'app_admin_jobs_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
@@ -170,7 +168,8 @@ class JobsAdminController extends AbstractController
 
             $categorie = (string) $request->request->get('categorie_offre', 'TUTORAT');
             $lieu = (string) $request->request->get('lieu', 'EN_LIGNE');
-            $statut = (string) ($request->request->get('statut_offre') ?: 'OUVERTE');
+            $statut = (string) ($request->request->get('statut_offre') ?: OffreStatut::OUVERTE->value);
+            $capaciteMax = (int) $request->request->get('capacite_max', 5);
 
             if (!in_array($categorie, ['TUTORAT', 'AIDE', 'CREATION'], true)) {
                 $categorie = 'TUTORAT';
@@ -178,8 +177,12 @@ class JobsAdminController extends AbstractController
             if (!in_array($lieu, ['EN_LIGNE', 'PRESENTIEL'], true)) {
                 $lieu = 'EN_LIGNE';
             }
-            if (!in_array($statut, ['OUVERTE', 'FERMEE'], true)) {
-                $statut = 'OUVERTE';
+            if (!in_array($statut, [OffreStatut::OUVERTE->value, OffreStatut::FERMEE->value, OffreStatut::EXPIREE->value], true)) {
+                $statut = OffreStatut::OUVERTE->value;
+            }
+            if ($capaciteMax <= 0) {
+                $this->addFlash('danger', 'La capacite maximale doit etre superieure a 0.');
+                return $this->redirectToRoute('app_admin_jobs_new');
             }
 
             $offre->setTitreOffre((string) $request->request->get('titre_offre'));
@@ -187,16 +190,15 @@ class JobsAdminController extends AbstractController
             $offre->setCategorieOffre($categorie);
             $offre->setLieu($lieu);
             $offre->setStatutOffre($statut);
+            $offre->setCapaciteMax($capaciteMax);
+            $offre->setCapaciteRestante($capaciteMax);
             $offre->setDateCreationOffre(new \DateTime());
-
-            // ✅ admin crée mais on doit mettre un createur (nullable=false)
-            // => on met l'utilisateur connecté comme createur (simple)
             $offre->setCreateur($this->getUser());
 
             $em->persist($offre);
             $em->flush();
 
-            $this->addFlash('success', 'Offre créée ✅');
+            $this->addFlash('success', 'Offre creee.');
             return $this->redirectToRoute('app_admin_jobs_list');
         }
 
@@ -206,8 +208,7 @@ class JobsAdminController extends AbstractController
         ]);
     }
 
-    // ✅ EDIT  
-    #[Route('/{id}/edit', name: 'app_admin_jobs_edit', methods: ['GET','POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'app_admin_jobs_edit', methods: ['GET', 'POST'], requirements: ['id' => '\\d+'])]
     public function edit(Offrejob $offre, Request $request, EntityManagerInterface $em): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
@@ -221,6 +222,7 @@ class JobsAdminController extends AbstractController
             $categorie = (string) $request->request->get('categorie_offre', $offre->getCategorieOffre());
             $lieu = (string) $request->request->get('lieu', $offre->getLieu());
             $statut = (string) ($request->request->get('statut_offre') ?: $offre->getStatutOffre());
+            $capaciteMax = (int) $request->request->get('capacite_max', $offre->getCapaciteMax());
 
             if (!in_array($categorie, ['TUTORAT', 'AIDE', 'CREATION'], true)) {
                 $categorie = $offre->getCategorieOffre() ?: 'TUTORAT';
@@ -228,19 +230,36 @@ class JobsAdminController extends AbstractController
             if (!in_array($lieu, ['EN_LIGNE', 'PRESENTIEL'], true)) {
                 $lieu = $offre->getLieu() ?: 'EN_LIGNE';
             }
-            if (!in_array($statut, ['OUVERTE', 'FERMEE'], true)) {
-                $statut = $offre->getStatutOffre() ?: 'OUVERTE';
+            if (!in_array($statut, [OffreStatut::OUVERTE->value, OffreStatut::FERMEE->value, OffreStatut::EXPIREE->value], true)) {
+                $statut = $offre->getStatutOffre() ?: OffreStatut::OUVERTE->value;
+            }
+            if ($capaciteMax <= 0) {
+                $this->addFlash('danger', 'La capacite maximale doit etre superieure a 0.');
+                return $this->redirectToRoute('app_admin_jobs_edit', ['id' => $offre->getId()]);
+            }
+
+            $acceptedCount = $this->countAcceptedCandidatures($offre);
+            if ($capaciteMax < $acceptedCount) {
+                $this->addFlash('danger', sprintf('La capacite maximale doit etre >= au nombre de candidatures acceptees (%d).', $acceptedCount));
+                return $this->redirectToRoute('app_admin_jobs_edit', ['id' => $offre->getId()]);
             }
 
             $offre->setTitreOffre((string) $request->request->get('titre_offre'));
             $offre->setDescriptionOffre((string) $request->request->get('description_offre'));
             $offre->setCategorieOffre($categorie);
             $offre->setLieu($lieu);
+            $offre->setCapaciteMax($capaciteMax);
+
+            $remaining = max(0, $capaciteMax - $acceptedCount);
+            $offre->setCapaciteRestante($remaining);
+            if ($remaining === 0 && $statut === OffreStatut::OUVERTE->value) {
+                $statut = OffreStatut::FERMEE->value;
+            }
             $offre->setStatutOffre($statut);
 
             $em->flush();
 
-            $this->addFlash('success', 'Offre modifiée ✅');
+            $this->addFlash('success', 'Offre modifiee.');
             return $this->redirectToRoute('app_admin_jobs_list');
         }
 
@@ -250,8 +269,7 @@ class JobsAdminController extends AbstractController
         ]);
     }
 
-    // ✅ DELETE
-    #[Route('/{id}/delete', name: 'app_admin_jobs_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/delete', name: 'app_admin_jobs_delete', methods: ['POST'], requirements: ['id' => '\\d+'])]
     public function delete(Offrejob $offre, Request $request, EntityManagerInterface $em): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
@@ -264,73 +282,85 @@ class JobsAdminController extends AbstractController
         $em->remove($offre);
         $em->flush();
 
-        $this->addFlash('success', 'Offre supprimée 🗑️');
+        $this->addFlash('success', 'Offre supprimee.');
         return $this->redirectToRoute('app_admin_jobs_list');
     }
 
-    // ✅ VIEW CANDIDATURES FOR ONE OFFER
     #[Route('/{id}/candidatures', name: 'app_admin_jobs_candidatures')]
-public function candidatures(
-    Offrejob $offre,
-    CandidatureJobRepository $repo
-): Response
-{
-    // 1️⃣ récupérer candidatures de CETTE offre
-    $cands = $repo->findBy(
-        ['offre' => $offre],
-        ['date_candidature' => 'DESC']
-    );
+    public function candidatures(
+        Offrejob $offre,
+        CandidatureJobRepository $repo
+    ): Response {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-    // 2️⃣ 👉 ICI EXACTEMENT le même code stats
-    $stats = [
-        'total' => count($cands),
-        'enAttente' => 0,
-        'acceptees' => 0,
-        'refusees' => 0,
-    ];
+        $cands = $repo->findBy(
+            ['offre' => $offre],
+            ['date_candidature' => 'DESC']
+        );
 
-    foreach ($cands as $c) {
-        $st = $c->getStatutCandidature();
-        if ($st === 'EN_ATTENTE') $stats['enAttente']++;
-        elseif ($st === 'ACCEPTEE') $stats['acceptees']++;
-        elseif ($st === 'REFUSEE') $stats['refusees']++;
+        $stats = [
+            'total' => count($cands),
+            'enAttente' => 0,
+            'acceptees' => 0,
+            'refusees' => 0,
+        ];
+
+        foreach ($cands as $c) {
+            $st = $c->getStatutCandidature();
+            if ($st === 'EN_ATTENTE') {
+                $stats['enAttente']++;
+            } elseif ($st === 'ACCEPTEE') {
+                $stats['acceptees']++;
+            } elseif ($st === 'REFUSEE') {
+                $stats['refusees']++;
+            }
+        }
+
+        return $this->render('front/jobs/mes_candidatures.html.twig', [
+            'candidatures' => $cands,
+            'stats' => $stats,
+            'admin_view' => true,
+            'can_manage' => true,
+            'manage_route' => 'app_admin_jobs_candidature_status',
+            'offre' => $offre,
+        ]);
     }
 
-    // 3️⃣ render Twig (même template que front)
-    return $this->render('front/jobs/mes_candidatures.html.twig', [
-        'candidatures' => $cands,
-        'stats' => $stats,
-        'admin_view' => true, // 🔑 clé magique
-        'can_manage' => true,
-        'manage_route' => 'app_admin_jobs_candidature_status',
-        'offre' => $offre,
-    ]);
-}
-
-
-    // ✅ ACCEPT / REFUSE
-    #[Route('/candidature/{id}/status/{status}', name: 'app_admin_jobs_candidature_status', methods: ['POST'], requirements: ['id' => '\d+', 'status' => 'ACCEPTEE|REFUSEE'])]
+    #[Route('/candidature/{id}/status/{status}', name: 'app_admin_jobs_candidature_status', methods: ['POST'], requirements: ['id' => '\\d+', 'status' => 'ACCEPTEE|REFUSEE'])]
     public function setCandidatureStatus(
         int $id,
         string $status,
         Request $request,
         CandidatureJobRepository $candRepo,
-        EntityManagerInterface $em
+        OffreQuotaManager $quotaManager
     ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         $cand = $candRepo->find($id);
-        if (!$cand) throw $this->createNotFoundException();
+        if (!$cand) {
+            throw $this->createNotFoundException();
+        }
 
         if (! $this->isCsrfTokenValid('cand_status_' . $cand->getId() . '_' . $status, (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Jeton CSRF invalide.');
             return $this->redirectToRoute('app_admin_jobs_candidatures', ['id' => $cand->getOffre()->getId()]);
         }
 
-        $cand->setStatutCandidature($status);
-        $em->flush();
+        $result = $quotaManager->applyCandidatureStatus($cand, $status);
+        $this->addFlash($result['ok'] ? 'success' : 'warning', $result['message']);
 
-        $this->addFlash('success', 'Statut mis à jour ✅');
         return $this->redirectToRoute('app_admin_jobs_candidatures', ['id' => $cand->getOffre()->getId()]);
+    }
+
+    private function countAcceptedCandidatures(Offrejob $offre): int
+    {
+        $count = 0;
+        foreach ($offre->getCandidatures() as $candidature) {
+            if ($candidature->getStatutCandidature() === 'ACCEPTEE') {
+                $count++;
+            }
+        }
+
+        return $count;
     }
 }

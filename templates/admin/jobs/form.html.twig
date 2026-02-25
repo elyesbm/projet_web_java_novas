@@ -5,7 +5,7 @@
 
 {% block title %}{{ isCreate ? 'Nouvelle' : 'Modifier' }} offre - NOVAS Admin{% endblock %}
 {% block page_title %}{{ isCreate ? 'Nouvelle offre' : 'Modifier l\'offre' }}{% endblock %}
-{% block page_subtitle %}Détails de l'offre d'emploi{% endblock %}
+{% block page_subtitle %}Details de l'offre d'emploi{% endblock %}
 
 {% block body %}
 <div class="max-w-5xl mx-auto">
@@ -15,146 +15,126 @@
                 <i data-lucide="briefcase" class="w-8 h-8"></i>
             </div>
             <div>
-                <h2 class="text-2xl font-bold">Détails de l'offre</h2>
+                <h2 class="text-2xl font-bold">Details de l'offre</h2>
                 <p class="text-amber-100">Attirez les meilleurs candidats</p>
             </div>
         </div>
     </div>
 
-    {# ✅ FORM START: action depends on mode #}
-    <form method="post"
-          action="{% if isCreate %}{{ path('app_admin_jobs_new') }}{% else %}{{ path('app_admin_jobs_edit', {id: offre.id}) }}{% endif %}">
+    <form method="post" action="{% if isCreate %}{{ path('app_admin_jobs_new') }}{% else %}{{ path('app_admin_jobs_edit', {id: offre.id}) }}{% endif %}">
         <input type="hidden" name="_token" value="{{ isCreate ? csrf_token('admin_jobs_form_create') : csrf_token('admin_jobs_form_edit_' ~ offre.id) }}">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 space-y-6">
                 <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
                     <div class="space-y-6">
-
-                        {# ✅ Titre #}
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
                                 Titre <span class="text-rose-500">*</span>
                             </label>
-                            <input
-                                type="text"
-                                name="titre_offre"
-                                required
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500 text-lg"
-                                placeholder="ex: Tutorat Mathématiques L1-L2"
-                                value="{{ offre.titreOffre|default('') }}"
-                            >
+                            <input type="text" name="titre_offre" required
+                                   class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500 text-lg"
+                                   placeholder="ex: Tutorat Mathematiques L1-L2"
+                                   value="{{ offre.titreOffre|default('') }}">
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
-                            {# ✅ Catégorie (radio) #}
                             <div class="space-y-2">
-                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Catégorie</label>
-
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Categorie</label>
                                 {% set cat = offre.categorieOffre|default('TUTORAT') %}
-
                                 <div class="grid grid-cols-3 gap-2">
-
                                     <label class="cursor-pointer">
-                                        <input type="radio" name="categorie_offre" value="TUTORAT" class="peer sr-only"
-                                               {{ cat == 'TUTORAT' ? 'checked' : '' }}>
+                                        <input type="radio" name="categorie_offre" value="TUTORAT" class="peer sr-only" {{ cat == 'TUTORAT' ? 'checked' : '' }}>
                                         <div class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-900/20 text-center transition-all">
                                             <i data-lucide="book-open" class="w-5 h-5 mx-auto mb-1 text-amber-500"></i>
                                             <span class="text-xs font-medium">Tutorat</span>
                                         </div>
                                     </label>
-
                                     <label class="cursor-pointer">
-                                        <input type="radio" name="categorie_offre" value="AIDE" class="peer sr-only"
-                                               {{ cat == 'AIDE' ? 'checked' : '' }}>
+                                        <input type="radio" name="categorie_offre" value="AIDE" class="peer sr-only" {{ cat == 'AIDE' ? 'checked' : '' }}>
                                         <div class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-900/20 text-center transition-all">
                                             <i data-lucide="help-circle" class="w-5 h-5 mx-auto mb-1 text-amber-500"></i>
                                             <span class="text-xs font-medium">Aide</span>
                                         </div>
                                     </label>
-
                                     <label class="cursor-pointer">
-                                        <input type="radio" name="categorie_offre" value="CREATION" class="peer sr-only"
-                                               {{ cat == 'CREATION' ? 'checked' : '' }}>
+                                        <input type="radio" name="categorie_offre" value="CREATION" class="peer sr-only" {{ cat == 'CREATION' ? 'checked' : '' }}>
                                         <div class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-900/20 text-center transition-all">
                                             <i data-lucide="lightbulb" class="w-5 h-5 mx-auto mb-1 text-amber-500"></i>
-                                            <span class="text-xs font-medium">Création</span>
+                                            <span class="text-xs font-medium">Creation</span>
                                         </div>
                                     </label>
-
                                 </div>
                             </div>
 
-                            {# ✅ Lieu (select) #}
                             <div class="space-y-2">
                                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Lieu</label>
-
                                 {% set lieuVal = offre.lieu|default('EN_LIGNE') %}
-
                                 <select name="lieu"
                                         class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500">
                                     <option value="EN_LIGNE" {{ lieuVal == 'EN_LIGNE' ? 'selected' : '' }}>En ligne</option>
-                                    <option value="PRESENTIEL" {{ lieuVal == 'PRESENTIEL' ? 'selected' : '' }}>Présentiel</option>
+                                    <option value="PRESENTIEL" {{ lieuVal == 'PRESENTIEL' ? 'selected' : '' }}>Presentiel</option>
                                 </select>
                             </div>
                         </div>
 
-                        {# ✅ Statut (simple select) #}
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Statut</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                {% set st = offre.statutOffre|default('OUVERTE') %}
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Statut</label>
+                                <select name="statut_offre"
+                                        class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500">
+                                    <option value="OUVERTE" {{ st == 'OUVERTE' ? 'selected' : '' }}>OUVERTE</option>
+                                    <option value="FERMEE" {{ st == 'FERMEE' ? 'selected' : '' }}>FERMEE</option>
+                                    <option value="EXPIREE" {{ st == 'EXPIREE' ? 'selected' : '' }}>EXPIREE</option>
+                                </select>
+                            </div>
 
-                            {% set st = offre.statutOffre|default('OUVERTE') %}
-
-                            <select name="statut_offre"
-                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500">
-                                <option value="OUVERTE" {{ st == 'OUVERTE' ? 'selected' : '' }}>OUVERTE</option>
-                                <option value="FERMEE" {{ st == 'FERMEE' ? 'selected' : '' }}>FERMEE</option>
-                            </select>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Capacite max</label>
+                                <input type="number" min="1" name="capacite_max"
+                                       value="{{ offre.capaciteMax|default(5) }}"
+                                       class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500">
+                                {% if not isCreate %}
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Restante: {{ offre.capaciteRestante }}</p>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        {# ✅ Description #}
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
                                 Description <span class="text-rose-500">*</span>
                             </label>
-                            <textarea
-                                name="description_offre"
-                                rows="5"
-                                required
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500 resize-none"
-                                placeholder="Décrivez la mission...">{{ offre.descriptionOffre|default('') }}</textarea>
+                            <textarea name="description_offre" rows="5" required
+                                      class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500 resize-none"
+                                      placeholder="Decrivez la mission...">{{ offre.descriptionOffre|default('') }}</textarea>
                         </div>
-
                     </div>
                 </div>
             </div>
 
-            {# Right column: keep your design (optional fields kept but ignored in backend) #}
             <div class="space-y-6">
                 <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Rémunération</h3>
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Remuneration</h3>
                     <div class="space-y-4">
-
-                        {# These inputs are UI only for now (your DB table doesn't have them) #}
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Tarif horaire</label>
                             <div class="relative">
                                 <input type="number" min="0" step="0.50"
                                        class="w-full pl-4 pr-12 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500 text-2xl font-bold text-amber-600"
                                        placeholder="25" disabled>
-                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">€/h</span>
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">EUR/h</span>
                             </div>
-                            <p class="text-xs text-slate-400">Optionnel (non stocké dans la DB actuelle).</p>
+                            <p class="text-xs text-slate-400">Optionnel (non stocke dans la DB actuelle).</p>
                         </div>
 
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Durée estimée</label>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Duree estimee</label>
                             <input type="text"
                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500"
                                    placeholder="ex: 2h/semaine" disabled>
-                            <p class="text-xs text-slate-400">Optionnel (non stocké dans la DB actuelle).</p>
+                            <p class="text-xs text-slate-400">Optionnel (non stocke dans la DB actuelle).</p>
                         </div>
-
                     </div>
                 </div>
 
@@ -170,7 +150,6 @@
                     </a>
                 </div>
             </div>
-
         </div>
     </form>
 </div>

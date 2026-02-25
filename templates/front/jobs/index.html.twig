@@ -10,10 +10,8 @@
 {% set sort = sort|default('date') %}
 {% set dir = dir|default('desc') %}
 
-<!-- Navigation -->
 {% include 'front/partials/_auth_nav.html.twig' %}
 
-<!-- Hero Section -->
 <section class="relative pt-32 pb-16 overflow-hidden">
     <div class="absolute inset-0 gradient-orb"></div>
     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]"></div>
@@ -31,17 +29,13 @@
             </p>
         </div>
 
-        <!-- Search & Filters -->
         <form method="get" action="{{ path('front_jobs_index') }}" class="glass-card rounded-2xl p-6 mb-12 max-w-4xl mx-auto">
             <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-1 relative">
                     <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"></i>
-                    <input
-                        type="text"
-                        name="q"
-                        value="{{ q }}"
-                        placeholder="Rechercher une offre (titre, description, categorie, lieu)..."
-                        class="w-full pl-12 pr-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none text-sm">
+                    <input type="text" name="q" value="{{ q }}"
+                           placeholder="Rechercher une offre (titre, description, categorie, lieu)..."
+                           class="w-full pl-12 pr-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none text-sm">
                 </div>
             </div>
             <div class="flex flex-wrap gap-3 mt-4">
@@ -80,7 +74,6 @@
             </div>
         </form>
 
-        {# Stats from offres #}
         {% set stats_offres = offres_for_stats|default([]) %}
         {% set total = stats_offres|length %}
         {% set tutorat = 0 %}
@@ -96,6 +89,7 @@
                 {% set autres = autres + 1 %}
             {% endif %}
         {% endfor %}
+
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 max-w-4xl mx-auto">
             <div class="glass-card rounded-xl p-4 text-center">
                 <p class="text-2xl font-bold text-primary">{{ total }}</p>
@@ -117,74 +111,81 @@
     </div>
 </section>
 
-<!-- Jobs List -->
 <section class="py-12 relative">
     <div class="max-w-7xl mx-auto px-6">
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for offre in offres|default([]) %}
-            <div class="glass-card rounded-2xl p-6 hover:border-primary/30 transition-all group relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors"></div>
-                <div class="relative">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                            {% set cat = offre.categorieOffre|default('')|lower %}
-                            {% if 'tutor' in cat %}
-                                <i data-lucide="book-open" class="w-6 h-6 text-primary"></i>
-                            {% elseif 'aide' in cat %}
-                                <i data-lucide="help-circle" class="w-6 h-6 text-primary"></i>
-                            {% else %}
-                                <i data-lucide="briefcase" class="w-6 h-6 text-primary"></i>
-                            {% endif %}
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-medium
-                            {% if 'tutor' in cat %}bg-primary/20 text-primary
-                            {% elseif 'aide' in cat %}bg-accent/20 text-accent
-                            {% else %}bg-primary/10 text-primary{% endif %}">
-                            {{ offre.categorieOffre|default('—') }}
-                        </span>
-                    </div>
-                    <h3 class="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
-                        {{ offre.titreOffre|default('Sans titre') }}
-                    </h3>
-                    <p class="text-sm text-muted-foreground mb-4 line-clamp-2">
-                        {{ offre.descriptionOffre|default('') }}
-                    </p>
-                    <div class="flex items-center gap-4 mb-4 text-sm">
-                        <div class="flex items-center gap-1.5 text-muted-foreground">
-                            <i data-lucide="map-pin" class="w-4 h-4"></i>
-                            <span>{{ offre.lieu|default('—') }}</span>
-                        </div>
-                        <div class="flex items-center gap-1.5 text-muted-foreground">
-                            <i data-lucide="calendar" class="w-4 h-4"></i>
-                            <span>{{ offre.dateCreationOffre ? offre.dateCreationOffre|date('d/m/Y') : '—' }}</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between pt-4 border-t border-white/10">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
-                                {{ (offre.createur and offre.createur.email) ? offre.createur.email|first : '?' }}
+                {% set cat = offre.categorieOffre|default('')|lower %}
+                {% set restante = offre.capaciteRestante is defined ? offre.capaciteRestante : 0 %}
+                <div class="glass-card rounded-2xl p-6 hover:border-primary/30 transition-all group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors"></div>
+                    <div class="relative">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                                {% if 'tutor' in cat %}
+                                    <i data-lucide="book-open" class="w-6 h-6 text-primary"></i>
+                                {% elseif 'aide' in cat %}
+                                    <i data-lucide="help-circle" class="w-6 h-6 text-primary"></i>
+                                {% else %}
+                                    <i data-lucide="briefcase" class="w-6 h-6 text-primary"></i>
+                                {% endif %}
                             </div>
-                            <div class="text-sm">
-                                <p class="font-medium">{{ (offre.createur and offre.createur.email) ? offre.createur.email : 'Utilisateur' }}</p>
-                                <p class="text-xs text-muted-foreground">{{ offre.statutOffre|default('OUVERTE') }}</p>
+                            <div class="flex items-center gap-2">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium {% if 'tutor' in cat %}bg-primary/20 text-primary{% elseif 'aide' in cat %}bg-accent/20 text-accent{% else %}bg-primary/10 text-primary{% endif %}">
+                                    {{ offre.categorieOffre|default('-') }}
+                                </span>
+                                {% if restante <= 0 %}
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300">Complet</span>
+                                {% endif %}
                             </div>
                         </div>
+
+                        <h3 class="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">{{ offre.titreOffre|default('Sans titre') }}</h3>
+                        <p class="text-sm text-muted-foreground mb-4 line-clamp-2">{{ offre.descriptionOffre|default('') }}</p>
+
+                        <div class="flex items-center gap-4 mb-3 text-sm">
+                            <div class="flex items-center gap-1.5 text-muted-foreground">
+                                <i data-lucide="map-pin" class="w-4 h-4"></i>
+                                <span>{{ offre.lieu|default('-') }}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-muted-foreground">
+                                <i data-lucide="calendar" class="w-4 h-4"></i>
+                                <span>{{ offre.dateCreationOffre ? offre.dateCreationOffre|date('d/m/Y') : '-' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 text-sm text-muted-foreground">
+                            Places restantes: <span class="font-semibold text-foreground">{{ restante }}</span>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-4 border-t border-white/10">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
+                                    {{ (offre.createur and offre.createur.email) ? offre.createur.email|first : '?' }}
+                                </div>
+                                <div class="text-sm">
+                                    <p class="font-medium">{{ (offre.createur and offre.createur.email) ? offre.createur.email : 'Utilisateur' }}</p>
+                                    <p class="text-xs text-muted-foreground">{{ offre.statutOffre|default('OUVERTE') }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="{{ path('front_jobs_detail', {'id': offre.id}) }}"
+                           class="mt-4 block w-full py-3 rounded-xl bg-primary/10 text-primary text-center font-medium hover:bg-primary hover:text-white transition-all">
+                            Voir l'offre
+                        </a>
                     </div>
-                    <a href="{{ path('front_jobs_detail', {'id': offre.id}) }}"
-                       class="mt-4 block w-full py-3 rounded-xl bg-primary/10 text-primary text-center font-medium hover:bg-primary hover:text-white transition-all">
-                        Voir l'offre
-                    </a>
                 </div>
-            </div>
             {% else %}
-            <div class="col-span-full text-center py-16">
-                <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <i data-lucide="inbox" class="w-8 h-8 text-primary"></i>
+                <div class="col-span-full text-center py-16">
+                    <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="inbox" class="w-8 h-8 text-primary"></i>
+                    </div>
+                    <p class="text-muted-foreground">Aucune offre disponible pour le moment</p>
                 </div>
-                <p class="text-muted-foreground">Aucune offre disponible pour le moment</p>
-            </div>
             {% endfor %}
         </div>
+
         {% if offres.pageCount > 1 %}
             <div class="mt-12 d-flex justify-content-center">
                 {{ knp_pagination_render(offres, 'pagination/jobs_pagination.html.twig') }}
@@ -193,7 +194,6 @@
     </div>
 </section>
 
-<!-- CTA -->
 <section class="py-24 relative overflow-hidden mt-12">
     <div class="absolute inset-0 bg-primary/5"></div>
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[100px]"></div>

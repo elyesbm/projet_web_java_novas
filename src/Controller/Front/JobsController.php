@@ -10,6 +10,7 @@ use App\Enum\OffreStatut;
 use App\Repository\OffrejobRepository;
 use App\Repository\CandidatureJobRepository;
 use App\Repository\UserRepository;
+use App\Service\OffreQuotaManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
@@ -139,6 +140,11 @@ class JobsController extends AbstractController
         $already = $candRepo->findOneBy(['offre' => $offre, 'candidat' => $user]);
         if ($already) {
             $this->addFlash('warning', 'Vous avez dÃ©jÃ  postulÃ© Ã  cette offre.');
+            return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
+        }
+
+        if ($offre->getStatutOffre() !== OffreStatut::OUVERTE->value || $offre->getCapaciteRestante() <= 0) {
+            $this->addFlash('warning', 'Cette offre n\'accepte plus de candidatures.');
             return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
         }
 
@@ -309,6 +315,7 @@ class JobsController extends AbstractController
             'description_offre' => '',
             'lieu' => 'EN_LIGNE',
             'statut_offre' => 'OUVERTE',
+            'capacite_max' => 5,
         ];
         $errors = [];
 
@@ -349,6 +356,7 @@ class JobsController extends AbstractController
         $form['description_offre'] = trim((string) $request->request->get('description_offre', ''));
         $form['lieu'] = (string) $request->request->get('lieu', $form['lieu']);
         $form['statut_offre'] = (string) $request->request->get('statut_offre', $form['statut_offre']);
+        $form['capacite_max'] = (int) $request->request->get('capacite_max', $form['capacite_max']);
 
         $this->validateJobForm($form, $errors);
 
@@ -369,6 +377,8 @@ class JobsController extends AbstractController
         $o->setCategorieOffre($form['categorie_offre']);
         $o->setLieu($form['lieu']);
         $o->setStatutOffre($form['statut_offre']);
+        $o->setCapaciteMax($form['capacite_max']);
+        $o->setCapaciteRestante($form['capacite_max']);
         $o->setDateCreationOffre(new \DateTime());
         $o->setCreateur($user);
 
@@ -401,6 +411,7 @@ class JobsController extends AbstractController
             'description_offre' => $offre->getDescriptionOffre() ?: '',
             'lieu' => $offre->getLieu() ?: 'EN_LIGNE',
             'statut_offre' => $offre->getStatutOffre() ?: 'OUVERTE',
+            'capacite_max' => $offre->getCapaciteMax(),
         ];
         $errors = [];
 
@@ -414,8 +425,17 @@ class JobsController extends AbstractController
             $form['description_offre'] = trim((string) $request->request->get('description_offre', ''));
             $form['lieu'] = (string) $request->request->get('lieu', $form['lieu']);
             $form['statut_offre'] = (string) $request->request->get('statut_offre', $form['statut_offre']);
+            $form['capacite_max'] = (int) $request->request->get('capacite_max', $form['capacite_max']);
 
             $this->validateJobForm($form, $errors);
+
+            $acceptedCount = $this->countAcceptedCandidatures($offre);
+            if ($form['capacite_max'] < $acceptedCount) {
+                $errors['capacite_max'] = sprintf(
+                    'La capacite maximale doit etre >= au nombre de candidatures acceptees (%d).',
+                    $acceptedCount
+                );
+            }
 
             if ($errors) {
                 return $this->render('front/jobs/ajouter.html.twig', [
@@ -432,7 +452,16 @@ class JobsController extends AbstractController
             $offre->setDescriptionOffre($form['description_offre']);
             $offre->setCategorieOffre($form['categorie_offre']);
             $offre->setLieu($form['lieu']);
-            $offre->setStatutOffre($form['statut_offre']);
+            $offre->setCapaciteMax($form['capacite_max']);
+
+            $remaining = max(0, $form['capacite_max'] - $acceptedCount);
+            $offre->setCapaciteRestante($remaining);
+
+            $status = $form['statut_offre'];
+            if ($remaining === 0 && $status === OffreStatut::OUVERTE->value) {
+                $status = OffreStatut::FERMEE->value;
+            }
+            $offre->setStatutOffre($status);
 
             $em->flush();
 
@@ -529,7 +558,7 @@ class JobsController extends AbstractController
         Request $request,
         CandidatureJobRepository $candRepo,
         UserRepository $userRepo,
-        EntityManagerInterface $em
+        OffreQuotaManager $quotaManager
     ): Response {
         $cand = $candRepo->find($id);
         if (!$cand) {
@@ -550,10 +579,8 @@ class JobsController extends AbstractController
             return $this->redirectToRoute('front_jobs_candidatures', ['id' => $cand->getOffre()->getId()]);
         }
 
-        $cand->setStatutCandidature($status);
-        $em->flush();
-
-        $this->addFlash('success', 'Statut mis à jour.');
+        $result = $quotaManager->applyCandidatureStatus($cand, $status);
+        $this->addFlash($result['ok'] ? 'success' : 'warning', $result['message']);
         return $this->redirectToRoute('front_jobs_candidatures', ['id' => $cand->getOffre()->getId()]);
     }
 
@@ -578,7 +605,8 @@ class JobsController extends AbstractController
     {
         return [
             OffreStatut::OUVERTE->value => 'Ouverte',
-            OffreStatut::FERMEE->value => 'FermÃ©e',
+            OffreStatut::FERMEE->value => 'Fermee',
+            OffreStatut::EXPIREE->value => 'Expiree',
         ];
     }
 
@@ -613,8 +641,26 @@ class JobsController extends AbstractController
         if (! array_key_exists($form['statut_offre'], $this->statutOptions())) {
             $errors['statut_offre'] = 'Statut invalide.';
         }
+
+        if (! isset($form['capacite_max']) || $form['capacite_max'] <= 0) {
+            $errors['capacite_max'] = 'La capacite maximale doit etre superieure a 0.';
+        }
+    }
+
+    private function countAcceptedCandidatures(Offrejob $offre): int
+    {
+        $count = 0;
+        foreach ($offre->getCandidatures() as $candidature) {
+            if ($candidature->getStatutCandidature() === 'ACCEPTEE') {
+                $count++;
+            }
+        }
+
+        return $count;
     }
 }
+
+
 
 
 
