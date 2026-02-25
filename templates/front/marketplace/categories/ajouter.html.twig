@@ -25,10 +25,10 @@
                     <div class="mb-4 p-3 rounded bg-red-500/20 text-red-400">{{ flash }}</div>
                 {% endfor %}
 
-                <form id="categorie-form" method="post" action="{{ path('app_marketplace_categorie_ajouter') }}" class="space-y-4">
+                <form id="categorie-form" method="post" action="{{ path('app_marketplace_categorie_ajouter') }}" class="space-y-4" novalidate>
                     <div>
                         <label class="block text-sm font-medium mb-1">Nom</label>
-                        <input id="nom" name="nom" type="text" value="{{ data.nom|default('') }}" class="h-12 w-full bg-secondary border border-white/10 rounded-xl px-3" required>
+                        <input id="nom" name="nom" type="text" value="{{ data.nom|default('') }}" class="h-12 w-full bg-secondary border border-white/10 rounded-xl px-3">
                         <p id="nom-error" class="text-sm text-red-500 mt-1 hidden">Le nom est obligatoire (2 caractères minimum).</p>
                     </div>
 
@@ -45,22 +45,55 @@
             </div>
         </div>
     </section>
-
-    {% block javascripts %}
-        <script>
-            (function(){
-                const form = document.getElementById('categorie-form');
-                const nom = document.getElementById('nom');
-                const nomError = document.getElementById('nom-error');
-                form.addEventListener('submit', function(e){
-                    let ok = true;
-                    const v = nom.value.trim();
-                    if (v.length < 2) { ok = false; nomError.classList.remove('hidden'); }
-                    else { nomError.classList.add('hidden'); }
-                    if (!ok) { e.preventDefault(); nom.focus(); }
-                });
-            })();
-        </script>
-    {% endblock %}
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const form = document.getElementById('categorie-form');
+            const nom = document.getElementById('nom');
+            const nomError = document.getElementById('nom-error');
+
+            if (!form || !nom || !nomError) return;
+
+            function setNomError(message) {
+                nomError.textContent = message;
+                nomError.classList.remove('hidden');
+                nom.classList.add('border-red-500');
+            }
+
+            function clearNomError() {
+                nomError.classList.add('hidden');
+                nom.classList.remove('border-red-500');
+            }
+
+            nom.addEventListener('input', () => {
+                if (nom.value.trim().length >= 2) {
+                    clearNomError();
+                }
+            });
+
+            form.addEventListener('submit', function (e) {
+                const nomValue = nom.value.trim();
+
+                if (!nomValue) {
+                    e.preventDefault();
+                    setNomError('Le nom de la catégorie est obligatoire.');
+                    nom.focus();
+                    return;
+                }
+
+                if (nomValue.length < 2) {
+                    e.preventDefault();
+                    setNomError('Le nom doit contenir au moins 2 caractères.');
+                    nom.focus();
+                    return;
+                }
+
+                clearNomError();
+            });
+        })();
+    </script>
 {% endblock %}

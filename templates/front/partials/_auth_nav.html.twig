@@ -1,4 +1,13 @@
 {% set current_route = app.request.attributes.get('_route')|default('') %}
+{% set cart_items = app.request.hasPreviousSession ? app.session.get('marketplace_cart', []) : [] %}
+{% set cart_qty = app.request.hasPreviousSession ? app.session.get('marketplace_cart_qty', {}) : {} %}
+{% set cart_count = 0 %}
+{% for qty in cart_qty %}
+    {% set cart_count = cart_count + qty %}
+{% endfor %}
+{% if cart_count == 0 %}
+    {% set cart_count = cart_items|length %}
+{% endif %}
 
 <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/85 backdrop-blur-xl">
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -17,6 +26,12 @@
         </div>
 
         <div class="flex items-center gap-3">
+            <a href="{{ path('app_marketplace_panier') }}" class="relative inline-flex items-center justify-center w-10 h-10 rounded-xl border border-white/15 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors {{ current_route starts with 'app_marketplace_panier' ? 'text-primary border-primary/30 bg-primary/10' : '' }}" title="Panier">
+                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                {% if cart_count > 0 %}
+                    <span class="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-white text-[10px] leading-5 text-center font-semibold">{{ cart_count }}</span>
+                {% endif %}
+            </a>
             {% if app.user %}
                 {% if is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('app_admin_dashboard') }}" class="hidden sm:inline-flex text-sm px-4 py-2 rounded-xl border border-white/15 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors">
@@ -49,6 +64,7 @@
             <a href="{{ path('app_marketplace_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_marketplace_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Marketplace</a>
             <a href="{{ path('front_jobs_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'front_jobs_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Jobs</a>
             <a href="{{ path('app_publications_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_publication' or current_route starts with 'app_publications_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Forum</a>
+            <a href="{{ path('app_marketplace_panier') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_marketplace_panier' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Panier{% if cart_count > 0 %} ({{ cart_count }}){% endif %}</a>
             <a href="{{ path('app_user_profile') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_user_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Profil</a>
         </div>
     </div>

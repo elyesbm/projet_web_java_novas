@@ -1,0 +1,29 @@
+{% extends 'front/base_home.html.twig' %}
+
+{% block title %}Paiement reussi - Marketplace{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-background">
+    {% include 'front/partials/_auth_nav.html.twig' %}
+
+    <section class="pt-32 pb-24 px-6">
+        <div class="max-w-3xl mx-auto">
+            <div class="glass-card rounded-3xl p-10 text-center">
+                <div class="w-16 h-16 rounded-2xl bg-green-500/20 text-green-400 mx-auto flex items-center justify-center mb-4">
+                    <i data-lucide="check-circle-2" class="w-9 h-9"></i>
+                </div>
+                <h1 class="font-serif text-3xl font-medium mb-3">Paiement confirme</h1>
+                <p class="text-muted-foreground mb-6">Merci pour votre achat. Votre paiement Stripe a ete traite en mode test.</p>
+                {% if session_id %}
+                    <p class="text-xs text-muted-foreground mb-6">Session Stripe: {{ session_id }}</p>
+                {% endif %}
+                <div class="flex flex-col sm:flex-row justify-center gap-3">
+                    <a href="{{ path('app_marketplace_index', {'send_sms': 1, 'session_id': session_id}) }}" class="px-5 py-3 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors">Retour marketplace</a>
+                    <a href="{{ path('app_marketplace_panier') }}" class="px-5 py-3 rounded-xl bg-secondary border border-white/10 hover:bg-white/5 transition-colors">Voir panier</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+

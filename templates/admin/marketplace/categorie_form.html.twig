@@ -6,7 +6,7 @@
 
 {% block body %}
 <div class="max-w-3xl mx-auto">
-    <form method="post" class="space-y-6">
+    <form id="admin-marketplace-categorie-form" method="post" class="space-y-6">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6 space-y-4">
             <div class="space-y-2">
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -45,3 +45,67 @@
 </div>
 {% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const form = document.getElementById('admin-marketplace-categorie-form');
+            if (!form) return;
+
+            function showNotification(message, type = 'error') {
+                const containerId = 'admin-marketplace-categorie-notification-container';
+                let container = document.getElementById(containerId);
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = containerId;
+                    container.className = 'fixed top-24 right-4 z-50 space-y-2';
+                    document.body.appendChild(container);
+                }
+
+                const bgClass = type === 'success' ? 'bg-emerald-600' : 'bg-red-600';
+                const notif = document.createElement('div');
+                notif.className = `${bgClass} text-white px-4 py-3 rounded-xl shadow-lg flex items-start gap-3 border border-white/20`;
+                notif.innerHTML = `
+                    <div class="mt-0.5">
+                        <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i>
+                    </div>
+                    <div class="text-sm">${message}</div>
+                `;
+                container.appendChild(notif);
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+
+                setTimeout(() => {
+                    notif.classList.add('opacity-0');
+                    setTimeout(() => notif.remove(), 180);
+                }, 3500);
+            }
+
+            form.addEventListener('submit', function (e) {
+                const data = new FormData(form);
+                const errors = [];
+
+                const nom = (data.get('nom') || '').toString().trim();
+                const description = (data.get('description') || '').toString().trim();
+
+                if (!nom) {
+                    errors.push('Le nom de la categorie est obligatoire.');
+                } else if (nom.length < 2) {
+                    errors.push('Le nom doit contenir au moins 2 caracteres.');
+                } else if (nom.length > 255) {
+                    errors.push('Le nom ne doit pas depasser 255 caracteres.');
+                }
+
+                if (description.length > 1000) {
+                    errors.push('La description est trop longue (max 1000 caracteres).');
+                }
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    errors.forEach((msg) => showNotification(msg, 'error'));
+                }
+            });
+        })();
+    </script>
+{% endblock %}

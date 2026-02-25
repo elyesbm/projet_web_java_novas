@@ -7,23 +7,21 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
-final class Version20260219120000 extends AbstractMigration
+final class Version20260223143000 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Add ACTIF column to user table';
+        return 'Add vues_article column on article for popularity stats';
     }
 
     public function up(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE user ADD ACTIF TINYINT(1) DEFAULT 1 NOT NULL');
+        $this->addSql('ALTER TABLE article ADD vues_article INT NOT NULL DEFAULT 0');
     }
 
     public function down(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE user DROP COLUMN ACTIF');
+        $this->addSql('ALTER TABLE article DROP vues_article');
     }
 }
+

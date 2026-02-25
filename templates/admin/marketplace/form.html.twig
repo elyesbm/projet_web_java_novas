@@ -6,7 +6,7 @@
 
 {% block body %}
 <div class="max-w-5xl mx-auto">
-    <form method="post" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <form id="admin-marketplace-form" method="post" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {# Main Form #}
         <div class="lg:col-span-2 space-y-6">
@@ -36,7 +36,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Prix (€) <span class="text-rose-500">*</span></label>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Prix (DT) <span class="text-rose-500">*</span></label>
                         <input
                             type="text"
                             name="prix"
@@ -156,7 +156,7 @@
                     {{ article is defined and article and article.titreArticle ? article.titreArticle : 'Titre de l\'article' }}
                 </h4>
                 <p class="text-2xl font-bold text-rose-600 mb-3">
-                    {{ article is defined and article and article.prixArticle is not null ? (article.prixArticle|number_format(2, ',', ' ')) ~ ' €' : '-- €' }}
+                    {{ article is defined and article and article.prixArticle is not null ? (article.prixArticle|number_format(2, ',', ' ')) ~ ' DT' : '-- DT' }}
                 </p>
                 <div class="flex items-center gap-2 text-sm text-slate-500">
                     <i data-lucide="map-pin" class="w-4 h-4"></i>
@@ -176,4 +176,114 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const form = document.getElementById('admin-marketplace-form');
+            if (!form) return;
+
+            function showNotification(message, type = 'error') {
+                const containerId = 'admin-marketplace-notification-container';
+                let container = document.getElementById(containerId);
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = containerId;
+                    container.className = 'fixed top-24 right-4 z-50 space-y-2';
+                    document.body.appendChild(container);
+                }
+
+                const bgClass = type === 'success' ? 'bg-emerald-600' : 'bg-red-600';
+                const notif = document.createElement('div');
+                notif.className = `${bgClass} text-white px-4 py-3 rounded-xl shadow-lg flex items-start gap-3 border border-white/20`;
+                notif.innerHTML = `
+                    <div class="mt-0.5">
+                        <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i>
+                    </div>
+                    <div class="text-sm">${message}</div>
+                `;
+                container.appendChild(notif);
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+
+                setTimeout(() => {
+                    notif.classList.add('opacity-0');
+                    setTimeout(() => notif.remove(), 180);
+                }, 3500);
+            }
+
+            form.addEventListener('submit', function (e) {
+                const data = new FormData(form);
+                const errors = [];
+
+                const titre = (data.get('titre') || '').toString().trim();
+                const contenu = (data.get('contenu') || '').toString().trim();
+                const prixRaw = (data.get('prix') || '').toString().trim();
+                const categorie = (data.get('categorie') || '').toString().trim();
+                const type = (data.get('type') || '').toString().trim() || 'academic';
+                const statut = (data.get('statut') || '').toString().trim() || 'disponible';
+                const imageFile = data.get('image');
+
+                if (!titre) {
+                    errors.push('Le titre est obligatoire.');
+                } else if (titre.length < 2) {
+                    errors.push('Le titre doit contenir au moins 2 caracteres.');
+                } else if (titre.length > 255) {
+                    errors.push('Le titre ne doit pas depasser 255 caracteres.');
+                }
+
+                if (!contenu) {
+                    errors.push('Le contenu est obligatoire.');
+                } else if (contenu.length < 10) {
+                    errors.push('Le contenu doit contenir au moins 10 caracteres.');
+                } else if (contenu.length > 5000) {
+                    errors.push('Le contenu est trop long (max 5000 caracteres).');
+                }
+
+                if (!prixRaw) {
+                    errors.push('Le prix est obligatoire.');
+                } else if (!/^\d+(?:[.,]\d+)?$/.test(prixRaw)) {
+                    errors.push('Le prix doit etre un nombre.');
+                } else {
+                    const prix = parseFloat(prixRaw.replace(',', '.'));
+                    if (isNaN(prix) || prix < 0) {
+                        errors.push('Le prix doit etre superieur ou egal a 0.');
+                    } else if (prix > 1000000) {
+                        errors.push('Le prix est trop eleve (max 1 000 000).');
+                    }
+                }
+
+                if (!categorie) {
+                    errors.push('La categorie est obligatoire.');
+                } else if (!/^\d+$/.test(categorie)) {
+                    errors.push('La categorie selectionnee est invalide.');
+                }
+
+                const allowedTypes = ['academic', 'commercial', 'service', 'other'];
+                if (type && !allowedTypes.includes(type)) {
+                    errors.push('Le type selectionne est invalide.');
+                }
+
+                const allowedStatus = ['disponible', 'vendu', 'reserve'];
+                if (statut && !allowedStatus.includes(statut)) {
+                    errors.push('Le statut selectionne est invalide.');
+                }
+
+                if (imageFile && typeof imageFile.name === 'string' && imageFile.name !== '') {
+                    const fileName = imageFile.name.toLowerCase();
+                    if (!/\.(jpg|jpeg|png|gif|webp)$/.test(fileName)) {
+                        errors.push('Le format de l image est invalide (jpg, png, gif, webp).');
+                    }
+                }
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    errors.forEach((msg) => showNotification(msg, 'error'));
+                }
+            });
+        })();
+    </script>
 {% endblock %}
