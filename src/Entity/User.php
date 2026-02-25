@@ -86,6 +86,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'condidat', targetEntity: CondidatureJob::class)]
     private Collection $condidatureJobs;
 
+    #[ORM\OneToMany(mappedBy: 'candidat', targetEntity: CandidatureJob::class)]
+    private Collection $candidatureJobs;
+
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Reservation::class)]
     private Collection $reservations;
 
@@ -102,6 +105,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->publications = new ArrayCollection();
         $this->offrejobs = new ArrayCollection();
         $this->condidatureJobs = new ArrayCollection();
+        $this->candidatureJobs = new ArrayCollection();
         $this->reservations = new ArrayCollection();
         $this->skills = new ArrayCollection();
     }
@@ -179,6 +183,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getPublications(): Collection { return $this->publications; }
     public function getOffrejobs(): Collection { return $this->offrejobs; }
     public function getCondidatureJobs(): Collection { return $this->condidatureJobs; }
+    public function getCandidatureJobs(): Collection { return $this->candidatureJobs; }
     public function getReservations(): Collection { return $this->reservations; }
     public function getSkills(): Collection { return $this->skills; }
 }

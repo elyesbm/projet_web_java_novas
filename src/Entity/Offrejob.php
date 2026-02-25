@@ -55,6 +55,10 @@ class Offrejob
     #[Assert\GreaterThanOrEqual(value: 0, message: 'La capacite restante ne peut pas etre negative.')]
     private int $capacite_restante = 5;
 
+    #[ORM\Column(name: 'date_expiration', type: Types::DATETIME_IMMUTABLE)]
+    #[Assert\GreaterThan('now', message: 'La date d expiration doit etre dans le futur.')]
+    private ?\DateTimeImmutable $date_expiration = null;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeInterface $date_creation_offre = null;
 
@@ -68,6 +72,7 @@ class Offrejob
     public function __construct()
     {
         $this->candidatures = new ArrayCollection();
+        $this->date_expiration = (new \DateTimeImmutable())->modify('+30 days');
     }
 
     public function getId(): ?int { return $this->id; }
@@ -129,6 +134,19 @@ class Offrejob
     public function isComplet(): bool
     {
         return $this->capacite_restante <= 0;
+    }
+    public function getDateExpiration(): ?\DateTimeImmutable
+    {
+        return $this->date_expiration;
+    }
+    public function setDateExpiration(\DateTimeImmutable $date_expiration): static
+    {
+        $this->date_expiration = $date_expiration;
+        return $this;
+    }
+    public function isExpired(): bool
+    {
+        return $this->date_expiration !== null && $this->date_expiration <= new \DateTimeImmutable();
     }
     public function getDateCreationOffre(): ?\DateTimeInterface { return $this->date_creation_offre; }
     public function setDateCreationOffre(\DateTimeInterface $date_creation_offre): static { $this->date_creation_offre = $date_creation_offre; return $this; }

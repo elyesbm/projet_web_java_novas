@@ -57,14 +57,14 @@
                         <option value="{{ key }}" {{ statut == key ? 'selected' : '' }}>{{ label }}</option>
                     {% endfor %}
                 </select>
-                <select name="sort" class="px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none text-sm">
+                <select name="job_sort" class="px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none text-sm">
                     <option value="date" {{ sort == 'date' ? 'selected' : '' }}>Trier: Date</option>
                     <option value="titre" {{ sort == 'titre' ? 'selected' : '' }}>Trier: Titre</option>
                     <option value="categorie" {{ sort == 'categorie' ? 'selected' : '' }}>Trier: Categorie</option>
                     <option value="lieu" {{ sort == 'lieu' ? 'selected' : '' }}>Trier: Lieu</option>
                     <option value="statut" {{ sort == 'statut' ? 'selected' : '' }}>Trier: Statut</option>
                 </select>
-                <select name="dir" class="px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none text-sm">
+                <select name="job_dir" class="px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none text-sm">
                     <option value="desc" {{ dir == 'desc' ? 'selected' : '' }}>Desc</option>
                     <option value="asc" {{ dir == 'asc' ? 'selected' : '' }}>Asc</option>
                 </select>
@@ -117,6 +117,7 @@
             {% for offre in offres|default([]) %}
                 {% set cat = offre.categorieOffre|default('')|lower %}
                 {% set restante = offre.capaciteRestante is defined ? offre.capaciteRestante : 0 %}
+                {% set expired = offre.statutOffre == 'EXPIREE' or (offre.dateExpiration is defined and offre.dateExpiration and offre.dateExpiration < date()) %}
                 <div class="glass-card rounded-2xl p-6 hover:border-primary/30 transition-all group relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors"></div>
                     <div class="relative">
@@ -134,6 +135,9 @@
                                 <span class="px-3 py-1 rounded-full text-xs font-medium {% if 'tutor' in cat %}bg-primary/20 text-primary{% elseif 'aide' in cat %}bg-accent/20 text-accent{% else %}bg-primary/10 text-primary{% endif %}">
                                     {{ offre.categorieOffre|default('-') }}
                                 </span>
+                                {% if expired %}
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300">Expir&eacute;e</span>
+                                {% endif %}
                                 {% if restante <= 0 %}
                                     <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300">Complet</span>
                                 {% endif %}

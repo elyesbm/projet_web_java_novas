@@ -170,6 +170,7 @@ class JobsAdminController extends AbstractController
             $lieu = (string) $request->request->get('lieu', 'EN_LIGNE');
             $statut = (string) ($request->request->get('statut_offre') ?: OffreStatut::OUVERTE->value);
             $capaciteMax = (int) $request->request->get('capacite_max', 5);
+            $dateExpiration = $this->parseDateExpiration((string) $request->request->get('date_expiration', ''));
 
             if (!in_array($categorie, ['TUTORAT', 'AIDE', 'CREATION'], true)) {
                 $categorie = 'TUTORAT';
@@ -184,6 +185,10 @@ class JobsAdminController extends AbstractController
                 $this->addFlash('danger', 'La capacite maximale doit etre superieure a 0.');
                 return $this->redirectToRoute('app_admin_jobs_new');
             }
+            if (! $dateExpiration || $dateExpiration <= new \DateTimeImmutable()) {
+                $this->addFlash('danger', 'La date d expiration doit etre dans le futur.');
+                return $this->redirectToRoute('app_admin_jobs_new');
+            }
 
             $offre->setTitreOffre((string) $request->request->get('titre_offre'));
             $offre->setDescriptionOffre((string) $request->request->get('description_offre'));
@@ -193,6 +198,7 @@ class JobsAdminController extends AbstractController
             $offre->setCapaciteMax($capaciteMax);
             $offre->setCapaciteRestante($capaciteMax);
             $offre->setDateCreationOffre(new \DateTime());
+            $offre->setDateExpiration($dateExpiration);
             $offre->setCreateur($this->getUser());
 
             $em->persist($offre);
@@ -223,6 +229,7 @@ class JobsAdminController extends AbstractController
             $lieu = (string) $request->request->get('lieu', $offre->getLieu());
             $statut = (string) ($request->request->get('statut_offre') ?: $offre->getStatutOffre());
             $capaciteMax = (int) $request->request->get('capacite_max', $offre->getCapaciteMax());
+            $dateExpiration = $this->parseDateExpiration((string) $request->request->get('date_expiration', $offre->getDateExpiration()?->format('Y-m-d\TH:i')));
 
             if (!in_array($categorie, ['TUTORAT', 'AIDE', 'CREATION'], true)) {
                 $categorie = $offre->getCategorieOffre() ?: 'TUTORAT';
@@ -237,6 +244,10 @@ class JobsAdminController extends AbstractController
                 $this->addFlash('danger', 'La capacite maximale doit etre superieure a 0.');
                 return $this->redirectToRoute('app_admin_jobs_edit', ['id' => $offre->getId()]);
             }
+            if (! $dateExpiration || $dateExpiration <= new \DateTimeImmutable()) {
+                $this->addFlash('danger', 'La date d expiration doit etre dans le futur.');
+                return $this->redirectToRoute('app_admin_jobs_edit', ['id' => $offre->getId()]);
+            }
 
             $acceptedCount = $this->countAcceptedCandidatures($offre);
             if ($capaciteMax < $acceptedCount) {
@@ -249,6 +260,7 @@ class JobsAdminController extends AbstractController
             $offre->setCategorieOffre($categorie);
             $offre->setLieu($lieu);
             $offre->setCapaciteMax($capaciteMax);
+            $offre->setDateExpiration($dateExpiration);
 
             $remaining = max(0, $capaciteMax - $acceptedCount);
             $offre->setCapaciteRestante($remaining);
@@ -362,5 +374,18 @@ class JobsAdminController extends AbstractController
         }
 
         return $count;
+    }
+
+    private function parseDateExpiration(?string $value): ?\DateTimeImmutable
+    {
+        if (! is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        try {
+            return new \DateTimeImmutable($value);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

@@ -44,6 +44,14 @@ class OffreQuotaManager
 
             $previousStatus = $candidature->getStatutCandidature();
             if ($newStatus === CandidatureStatus::ACCEPTEE->value) {
+                if ($offre->isExpired()) {
+                    $offre->setStatutOffre(OffreStatut::EXPIREE);
+                    $this->entityManager->flush();
+                    $connection->commit();
+
+                    return ['ok' => false, 'message' => 'Impossible d\'accepter: offre expiree.'];
+                }
+
                 if ($offre->getStatutOffre() !== OffreStatut::OUVERTE->value) {
                     $connection->rollBack();
                     return ['ok' => false, 'message' => 'Impossible d\'accepter: offre non ouverte.'];

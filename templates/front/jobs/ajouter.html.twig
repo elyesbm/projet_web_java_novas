@@ -74,9 +74,16 @@
 
         <div>
           <label class="block text-sm font-medium mb-2">Description detaillee</label>
-          <textarea name="description_offre" rows="6"
+          <textarea id="offer-text-to-check" name="description_offre" rows="6"
                     placeholder="Decrivez la mission, les taches attendues, le profil recherche..."
                     class="w-full px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none resize-none transition-colors">{{ form.description_offre|default('') }}</textarea>
+          <div class="mt-3 flex items-center gap-3">
+            <button id="btn-check-offer-text" type="button" class="px-4 py-2 rounded-xl border border-primary/40 text-primary hover:bg-primary/10 transition text-sm">
+              Verifier le texte
+            </button>
+            <span class="text-xs text-muted-foreground">Correction orthographique et qualite du texte</span>
+          </div>
+          <div id="offer-text-check-result" class="hidden mt-3 p-4 rounded-xl border border-white/10 bg-background/50 text-sm"></div>
         </div>
 
         <div>
@@ -107,6 +114,14 @@
           <p class="text-xs text-muted-foreground mt-2">Nombre maximum de candidatures acceptees.</p>
         </div>
 
+        <div>
+          <label class="block text-sm font-medium mb-2">Date d expiration</label>
+          <input type="datetime-local" name="date_expiration"
+                 value="{{ form.date_expiration|default('') }}"
+                 class="w-full px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none transition-colors">
+          <p class="text-xs text-muted-foreground mt-2">La date doit etre dans le futur.</p>
+        </div>
+
         <input type="hidden" name="statut_offre" value="{{ form.statut_offre|default('OUVERTE') }}">
 
         <div class="flex gap-4 pt-4">
@@ -122,4 +137,107 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    (function () {
+      const textarea = document.getElementById('offer-text-to-check');
+      const button = document.getElementById('btn-check-offer-text');
+      const resultBox = document.getElementById('offer-text-check-result');
+
+      if (!textarea || !button || !resultBox) {
+        return;
+      }
+
+      const escapeHtml = (value) => {
+        const div = document.createElement('div');
+        div.textContent = value;
+        return div.innerHTML;
+      };
+
+      const getBadgeClass = (score) => {
+        if (score >= 80) {
+          return 'bg-green-500/20 text-green-300 border-green-500/40';
+        }
+        if (score >= 60) {
+          return 'bg-orange-500/20 text-orange-300 border-orange-500/40';
+        }
+        return 'bg-red-500/20 text-red-300 border-red-500/40';
+      };
+
+      const renderResult = (payload) => {
+        const totalErrors = Number(payload.totalErrors || 0);
+        const qualityScore = Number(payload.qualityScore || 0);
+        const matches = Array.isArray(payload.matches) ? payload.matches : [];
+
+        let errorsHtml = '<p class="text-xs text-muted-foreground mt-2">Aucune erreur detectee.</p>';
+        if (matches.length > 0) {
+          const items = matches.map((match) => {
+            const message = escapeHtml(match.message || 'Erreur');
+            const replacements = Array.isArray(match.replacements) && match.replacements.length > 0
+              ? match.replacements.map((item) => escapeHtml(item)).join(', ')
+              : 'Aucune suggestion';
+            return `<li class="py-2 border-b border-white/5 last:border-b-0"><p class="font-medium">${message}</p><p class="text-xs text-muted-foreground mt-1">Suggestions: ${replacements}</p></li>`;
+          }).join('');
+          errorsHtml = `<ul class="mt-2">${items}</ul>`;
+        }
+
+        resultBox.className = 'mt-3 p-4 rounded-xl border border-white/10 bg-background/50 text-sm';
+        resultBox.innerHTML = `
+          <div class="flex items-center justify-between gap-3">
+            <p class="font-medium">Erreurs detectees: ${totalErrors}</p>
+            <span class="px-3 py-1 rounded-full border text-xs font-semibold ${getBadgeClass(qualityScore)}">
+              Score qualite: ${qualityScore}/100
+            </span>
+          </div>
+          ${errorsHtml}
+        `;
+      };
+
+      const renderError = (message) => {
+        resultBox.className = 'mt-3 p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-sm text-red-200';
+        resultBox.textContent = message;
+      };
+
+      button.addEventListener('click', async () => {
+        const text = textarea.value.trim();
+        if (!text) {
+          renderError('Veuillez saisir une description avant la verification.');
+          return;
+        }
+
+        const originalText = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Verification...';
+
+        try {
+          const response = await fetch('{{ path('app_api_text_check_offer') }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              text: text,
+              language: 'fr'
+            })
+          });
+
+          const data = await response.json().catch(() => ({ error: 'Reponse serveur invalide.' }));
+          if (!response.ok) {
+            throw new Error(data.error || 'Erreur pendant la verification.');
+          }
+
+          renderResult(data);
+        } catch (error) {
+          renderError(error.message || 'Service de correction indisponible.');
+        } finally {
+          button.disabled = false;
+          button.textContent = originalText;
+        }
+      });
+    })();
+  </script>
 {% endblock %}

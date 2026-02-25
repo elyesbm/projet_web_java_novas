@@ -30,9 +30,13 @@ class JobsController extends AbstractController
         $q = trim((string) $request->query->get('q', ''));
         $categorie = $this->normalizeFilter($request->query->get('categorie'), $this->categorieOptions());
         $lieu = $this->normalizeFilter($request->query->get('lieu'), $this->lieuOptions());
-        $statut = $this->normalizeFilter($request->query->get('statut'), $this->statutOptions());
-        $sort = (string) $request->query->get('sort', 'date');
-        $dir = (string) $request->query->get('dir', 'desc');
+        $rawStatut = $request->query->get('statut');
+        $statut = $this->normalizeFilter($rawStatut, $this->statutOptions());
+        if ($statut === null && (! is_string($rawStatut) || trim($rawStatut) === '')) {
+            $statut = OffreStatut::OUVERTE->value;
+        }
+        $sort = (string) $request->query->get('job_sort', 'date');
+        $dir = (string) $request->query->get('job_dir', 'desc');
 
         $allFilteredOffres = $repo->searchAndSort($q ?: null, $categorie, $lieu, $statut, $sort, $dir);
         $qb = $repo->searchAndSortQueryBuilder($q ?: null, $categorie, $lieu, $statut, $sort, $dir);
@@ -61,8 +65,14 @@ class JobsController extends AbstractController
     public function detail(
         Offrejob $offre,
         CandidatureJobRepository $candRepo,
-        OffrejobRepository $offreRepo
+        OffrejobRepository $offreRepo,
+        EntityManagerInterface $em
     ): Response {
+        if ($offre->getStatutOffre() === OffreStatut::OUVERTE->value && $offre->isExpired()) {
+            $offre->setStatutOffre(OffreStatut::EXPIREE);
+            $em->flush();
+        }
+
         $user = $this->getUser();
 
         $isCreateur = false;
@@ -140,6 +150,13 @@ class JobsController extends AbstractController
         $already = $candRepo->findOneBy(['offre' => $offre, 'candidat' => $user]);
         if ($already) {
             $this->addFlash('warning', 'Vous avez dÃ©jÃ  postulÃ© Ã  cette offre.');
+            return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
+        }
+
+        if ($offre->getStatutOffre() === OffreStatut::OUVERTE->value && $offre->isExpired()) {
+            $offre->setStatutOffre(OffreStatut::EXPIREE);
+            $em->flush();
+            $this->addFlash('warning', 'Cette offre est expiree.');
             return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
         }
 
@@ -316,6 +333,7 @@ class JobsController extends AbstractController
             'lieu' => 'EN_LIGNE',
             'statut_offre' => 'OUVERTE',
             'capacite_max' => 5,
+            'date_expiration' => (new \DateTimeImmutable('+30 days'))->format('Y-m-d\TH:i'),
         ];
         $errors = [];
 
@@ -357,6 +375,7 @@ class JobsController extends AbstractController
         $form['lieu'] = (string) $request->request->get('lieu', $form['lieu']);
         $form['statut_offre'] = (string) $request->request->get('statut_offre', $form['statut_offre']);
         $form['capacite_max'] = (int) $request->request->get('capacite_max', $form['capacite_max']);
+        $form['date_expiration'] = trim((string) $request->request->get('date_expiration', $form['date_expiration']));
 
         $this->validateJobForm($form, $errors);
 
@@ -380,6 +399,7 @@ class JobsController extends AbstractController
         $o->setCapaciteMax($form['capacite_max']);
         $o->setCapaciteRestante($form['capacite_max']);
         $o->setDateCreationOffre(new \DateTime());
+        $o->setDateExpiration($this->parseDateExpiration($form['date_expiration']) ?? new \DateTimeImmutable('+30 days'));
         $o->setCreateur($user);
 
         $em->persist($o);
@@ -412,6 +432,7 @@ class JobsController extends AbstractController
             'lieu' => $offre->getLieu() ?: 'EN_LIGNE',
             'statut_offre' => $offre->getStatutOffre() ?: 'OUVERTE',
             'capacite_max' => $offre->getCapaciteMax(),
+            'date_expiration' => $offre->getDateExpiration()?->format('Y-m-d\TH:i') ?? '',
         ];
         $errors = [];
 
@@ -426,6 +447,7 @@ class JobsController extends AbstractController
             $form['lieu'] = (string) $request->request->get('lieu', $form['lieu']);
             $form['statut_offre'] = (string) $request->request->get('statut_offre', $form['statut_offre']);
             $form['capacite_max'] = (int) $request->request->get('capacite_max', $form['capacite_max']);
+            $form['date_expiration'] = trim((string) $request->request->get('date_expiration', $form['date_expiration']));
 
             $this->validateJobForm($form, $errors);
 
@@ -453,6 +475,7 @@ class JobsController extends AbstractController
             $offre->setCategorieOffre($form['categorie_offre']);
             $offre->setLieu($form['lieu']);
             $offre->setCapaciteMax($form['capacite_max']);
+            $offre->setDateExpiration($this->parseDateExpiration($form['date_expiration']) ?? $offre->getDateExpiration() ?? new \DateTimeImmutable('+30 days'));
 
             $remaining = max(0, $form['capacite_max'] - $acceptedCount);
             $offre->setCapaciteRestante($remaining);
@@ -645,6 +668,13 @@ class JobsController extends AbstractController
         if (! isset($form['capacite_max']) || $form['capacite_max'] <= 0) {
             $errors['capacite_max'] = 'La capacite maximale doit etre superieure a 0.';
         }
+
+        $expiration = $this->parseDateExpiration($form['date_expiration'] ?? null);
+        if (! $expiration) {
+            $errors['date_expiration'] = 'La date d expiration est invalide.';
+        } elseif ($expiration <= new \DateTimeImmutable()) {
+            $errors['date_expiration'] = 'La date d expiration doit etre dans le futur.';
+        }
     }
 
     private function countAcceptedCandidatures(Offrejob $offre): int
@@ -658,7 +688,21 @@ class JobsController extends AbstractController
 
         return $count;
     }
+
+    private function parseDateExpiration(?string $value): ?\DateTimeImmutable
+    {
+        if (! is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        try {
+            return new \DateTimeImmutable($value);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
 }
+
 
 
 

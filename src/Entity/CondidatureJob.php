@@ -22,7 +22,7 @@ class CondidatureJob
     #[ORM\Column(type: 'date')]
     private ?\DateTimeInterface $date_condidature = null;
 
-    #[ORM\ManyToOne(targetEntity: Offrejob::class, inversedBy: 'condidatures')]
+    #[ORM\ManyToOne(targetEntity: Offrejob::class)]
     #[ORM\JoinColumn(name: 'offre_id', referencedColumnName: 'id_offre', nullable: false)]
     private ?Offrejob $offre = null;
 

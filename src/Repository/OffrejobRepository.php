@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Offrejob;
+use App\Enum\OffreStatut;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -103,6 +104,20 @@ class OffrejobRepository extends ServiceEntityRepository
         return $qb->orderBy($sortCol, $dir)->getQuery()->getResult();
     }
 
+    /**
+     * @return Offrejob[]
+     */
+    public function findExpiredOpenedOffers(\DateTimeImmutable $now): array
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.statut_offre = :opened')
+            ->andWhere('o.date_expiration < :now')
+            ->setParameter('opened', OffreStatut::OUVERTE->value)
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getResult();
+    }
+
     private function applyFilters($qb, ?string $categorie, ?string $lieu, ?string $statut): void
     {
         if ($categorie) {
@@ -116,8 +131,22 @@ class OffrejobRepository extends ServiceEntityRepository
         }
 
         if ($statut) {
-            $qb->andWhere('o.statut_offre = :statut')
-               ->setParameter('statut', $statut);
+            $now = new \DateTimeImmutable();
+
+            if ($statut === OffreStatut::OUVERTE->value) {
+                $qb->andWhere('o.statut_offre = :statut_open')
+                   ->andWhere('o.date_expiration >= :now')
+                   ->setParameter('statut_open', OffreStatut::OUVERTE->value)
+                   ->setParameter('now', $now);
+            } elseif ($statut === OffreStatut::EXPIREE->value) {
+                $qb->andWhere('(o.statut_offre = :statut_expiree OR (o.statut_offre = :statut_opened AND o.date_expiration < :now))')
+                   ->setParameter('statut_expiree', OffreStatut::EXPIREE->value)
+                   ->setParameter('statut_opened', OffreStatut::OUVERTE->value)
+                   ->setParameter('now', $now);
+            } else {
+                $qb->andWhere('o.statut_offre = :statut')
+                   ->setParameter('statut', $statut);
+            }
         }
     }
 }
