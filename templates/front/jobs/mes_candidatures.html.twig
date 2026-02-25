@@ -130,6 +130,21 @@
                             Voir l'offre
                         </a>
 
+                        {% if admin_view %}
+                            {% if candidature.cvName %}
+                                <a href="{{ vich_uploader_asset(candidature, 'cvFile') }}"
+                                   target="_blank"
+                                   rel="noopener"
+                                   class="px-4 py-2 rounded-xl bg-sky-500/20 text-sky-300 hover:bg-sky-500 hover:text-white transition text-sm font-medium text-center">
+                                    Telecharger CV
+                                </a>
+                            {% else %}
+                                <span class="px-4 py-2 rounded-xl bg-white/5 text-muted-foreground text-sm text-center">
+                                    CV non fourni
+                                </span>
+                            {% endif %}
+                        {% endif %}
+
                         {# USER: contact only if accepted #}
                         {% if (not admin_view) and isOk and candidature.offre.createur and candidature.offre.createur.email %}
                             <a href="mailto:{{ candidature.offre.createur.email }}"

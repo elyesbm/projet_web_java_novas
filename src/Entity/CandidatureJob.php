@@ -6,7 +6,11 @@ use App\Enum\CandidatureStatus;
 use App\Repository\CandidatureJobRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
+#[Vich\Uploadable]
 #[ORM\Entity(repositoryClass: CandidatureJobRepository::class)]
 #[ORM\Table(name: 'candidature_job')]
 #[ORM\UniqueConstraint(name: 'uniq_offre_candidat', columns: ['offre_id', 'candidat_id'])]
@@ -41,6 +45,21 @@ class CandidatureJob
     #[ORM\JoinColumn(name: 'candidat_id', referencedColumnName: 'ID', nullable: false, onDelete: 'CASCADE')]
     private ?User $candidat = null;
 
+    #[ORM\Column(name: 'cv_name', length: 255, nullable: true)]
+    private ?string $cvName = null;
+
+    #[Vich\UploadableField(mapping: 'candidature_cv', fileNameProperty: 'cvName')]
+    #[Assert\File(
+        maxSize: '2M',
+        mimeTypes: ['application/pdf', 'application/x-pdf'],
+        mimeTypesMessage: 'Veuillez televerser un fichier PDF valide.',
+        maxSizeMessage: 'Le CV ne doit pas depasser 2 Mo.'
+    )]
+    private ?File $cvFile = null;
+
+    #[ORM\Column(name: 'updated_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
     public function getId(): ?int { return $this->id; }
     public function getMessageCandidature(): ?string { return $this->message_candidature; }
     public function setMessageCandidature(string $message_candidature): static { $this->message_candidature = $message_candidature; return $this; }
@@ -59,4 +78,42 @@ class CandidatureJob
     public function setOffre(?Offrejob $offre): static { $this->offre = $offre; return $this; }
     public function getCandidat(): ?User { return $this->candidat; }
     public function setCandidat(?User $candidat): static { $this->candidat = $candidat; return $this; }
+
+    public function getCvName(): ?string
+    {
+        return $this->cvName;
+    }
+
+    public function setCvName(?string $cvName): static
+    {
+        $this->cvName = $cvName;
+        return $this;
+    }
+
+    public function getCvFile(): ?File
+    {
+        return $this->cvFile;
+    }
+
+    public function setCvFile(?File $cvFile = null): static
+    {
+        $this->cvFile = $cvFile;
+
+        if (null !== $cvFile) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+        return $this;
+    }
 }

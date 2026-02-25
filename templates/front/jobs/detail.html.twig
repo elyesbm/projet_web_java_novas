@@ -170,13 +170,21 @@
                     {% else %}
                     <h3 class="text-lg font-semibold mb-4">Postuler Ã  cette offre</h3>
 
-                    <form action="{{ path('front_jobs_apply', {'id': offre.id}) }}" method="POST" class="space-y-4">
+                    <form action="{{ path('front_jobs_apply', {'id': offre.id}) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                         <input type="hidden" name="_token" value="{{ csrf_token('jobs_apply_' ~ offre.id) }}">
                         <div>
                             <label class="block text-sm font-medium mb-2">Votre message</label>
                             <textarea name="message_candidature" rows="4"
                                       placeholder="PrÃ©sentez-vous et expliquez pourquoi vous Ãªtes intÃ©ressÃ©..."
                                       class="w-full px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none resize-none text-sm" required></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">CV (PDF, max 2 Mo)</label>
+                            <input type="file"
+                                   name="cv_file"
+                                   accept="application/pdf,.pdf"
+                                   class="w-full px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none text-sm">
+                            <p class="text-xs text-muted-foreground mt-2">Ajoutez votre CV en PDF pour appuyer votre candidature.</p>
                         </div>
                         <button type="submit" class="w-full py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition shadow-lg shadow-primary/25">
                             Envoyer ma candidature
@@ -212,3 +220,4 @@
     </div>
 </section>
 {% endblock %}
+

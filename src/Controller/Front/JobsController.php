@@ -14,10 +14,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class JobsController extends AbstractController
 {
@@ -117,7 +119,8 @@ class JobsController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         CandidatureJobRepository $candRepo,
-        UserRepository $userRepo
+        UserRepository $userRepo,
+        ValidatorInterface $validator
     ): Response {
         if (! $this->isCsrfTokenValid('jobs_apply_' . $offre->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Jeton CSRF invalide.');
@@ -145,12 +148,28 @@ class JobsController extends AbstractController
             return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
         }
 
+        $cvFile = $request->files->get('cv_file');
+        if ($cvFile !== null && ! $cvFile instanceof UploadedFile) {
+            $this->addFlash('warning', 'Fichier CV invalide.');
+            return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
+        }
+
         $c = new CandidatureJob();
         $c->setOffre($offre);
         $c->setCandidat($user);
         $c->setMessageCandidature($msg);
         $c->setStatutCandidature('EN_ATTENTE');
         $c->setDateCandidature(new \DateTime());
+        $c->setCvFile($cvFile);
+
+        $violations = $validator->validate($c);
+        if (count($violations) > 0) {
+            foreach ($violations as $violation) {
+                $this->addFlash('warning', $violation->getMessage());
+            }
+
+            return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
+        }
 
         $em->persist($c);
         $em->flush();
