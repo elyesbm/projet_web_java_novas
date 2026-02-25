@@ -168,6 +168,9 @@ class JobsAdminController extends AbstractController
 
             $categorie = (string) $request->request->get('categorie_offre', 'TUTORAT');
             $lieu = (string) $request->request->get('lieu', 'EN_LIGNE');
+            $adresse = trim((string) $request->request->get('adresse', ''));
+            $latitude = $this->parseNullableFloat($request->request->get('latitude'));
+            $longitude = $this->parseNullableFloat($request->request->get('longitude'));
             $statut = (string) ($request->request->get('statut_offre') ?: OffreStatut::OUVERTE->value);
             $capaciteMax = (int) $request->request->get('capacite_max', 5);
             $dateExpiration = $this->parseDateExpiration((string) $request->request->get('date_expiration', ''));
@@ -185,6 +188,16 @@ class JobsAdminController extends AbstractController
                 $this->addFlash('danger', 'La capacite maximale doit etre superieure a 0.');
                 return $this->redirectToRoute('app_admin_jobs_new');
             }
+            if ($lieu === 'PRESENTIEL') {
+                if ($adresse === '' || mb_strlen($adresse) < 3) {
+                    $this->addFlash('danger', 'L adresse est obligatoire pour une offre en presentiel.');
+                    return $this->redirectToRoute('app_admin_jobs_new');
+                }
+                if ($latitude === null || $longitude === null) {
+                    $this->addFlash('danger', 'Veuillez localiser l adresse pour recuperer les coordonnees.');
+                    return $this->redirectToRoute('app_admin_jobs_new');
+                }
+            }
             if (! $dateExpiration || $dateExpiration <= new \DateTimeImmutable()) {
                 $this->addFlash('danger', 'La date d expiration doit etre dans le futur.');
                 return $this->redirectToRoute('app_admin_jobs_new');
@@ -194,6 +207,9 @@ class JobsAdminController extends AbstractController
             $offre->setDescriptionOffre((string) $request->request->get('description_offre'));
             $offre->setCategorieOffre($categorie);
             $offre->setLieu($lieu);
+            $offre->setAdresse($lieu === 'PRESENTIEL' ? $adresse : null);
+            $offre->setLatitude($lieu === 'PRESENTIEL' ? $latitude : null);
+            $offre->setLongitude($lieu === 'PRESENTIEL' ? $longitude : null);
             $offre->setStatutOffre($statut);
             $offre->setCapaciteMax($capaciteMax);
             $offre->setCapaciteRestante($capaciteMax);
@@ -227,6 +243,9 @@ class JobsAdminController extends AbstractController
 
             $categorie = (string) $request->request->get('categorie_offre', $offre->getCategorieOffre());
             $lieu = (string) $request->request->get('lieu', $offre->getLieu());
+            $adresse = trim((string) $request->request->get('adresse', (string) ($offre->getAdresse() ?? '')));
+            $latitude = $this->parseNullableFloat($request->request->get('latitude', $offre->getLatitude()));
+            $longitude = $this->parseNullableFloat($request->request->get('longitude', $offre->getLongitude()));
             $statut = (string) ($request->request->get('statut_offre') ?: $offre->getStatutOffre());
             $capaciteMax = (int) $request->request->get('capacite_max', $offre->getCapaciteMax());
             $dateExpiration = $this->parseDateExpiration((string) $request->request->get('date_expiration', $offre->getDateExpiration()?->format('Y-m-d\TH:i')));
@@ -244,6 +263,16 @@ class JobsAdminController extends AbstractController
                 $this->addFlash('danger', 'La capacite maximale doit etre superieure a 0.');
                 return $this->redirectToRoute('app_admin_jobs_edit', ['id' => $offre->getId()]);
             }
+            if ($lieu === 'PRESENTIEL') {
+                if ($adresse === '' || mb_strlen($adresse) < 3) {
+                    $this->addFlash('danger', 'L adresse est obligatoire pour une offre en presentiel.');
+                    return $this->redirectToRoute('app_admin_jobs_edit', ['id' => $offre->getId()]);
+                }
+                if ($latitude === null || $longitude === null) {
+                    $this->addFlash('danger', 'Veuillez localiser l adresse pour recuperer les coordonnees.');
+                    return $this->redirectToRoute('app_admin_jobs_edit', ['id' => $offre->getId()]);
+                }
+            }
             if (! $dateExpiration || $dateExpiration <= new \DateTimeImmutable()) {
                 $this->addFlash('danger', 'La date d expiration doit etre dans le futur.');
                 return $this->redirectToRoute('app_admin_jobs_edit', ['id' => $offre->getId()]);
@@ -259,6 +288,9 @@ class JobsAdminController extends AbstractController
             $offre->setDescriptionOffre((string) $request->request->get('description_offre'));
             $offre->setCategorieOffre($categorie);
             $offre->setLieu($lieu);
+            $offre->setAdresse($lieu === 'PRESENTIEL' ? $adresse : null);
+            $offre->setLatitude($lieu === 'PRESENTIEL' ? $latitude : null);
+            $offre->setLongitude($lieu === 'PRESENTIEL' ? $longitude : null);
             $offre->setCapaciteMax($capaciteMax);
             $offre->setDateExpiration($dateExpiration);
 
@@ -387,5 +419,27 @@ class JobsAdminController extends AbstractController
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    private function parseNullableFloat($value): ?float
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            $value = trim($value);
+            if ($value === '' || !is_numeric($value)) {
+                return null;
+            }
+
+            return (float) $value;
+        }
+
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        return (float) $value;
     }
 }

@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: OffrejobRepository::class)]
 class Offrejob
@@ -58,6 +59,15 @@ class Offrejob
     #[ORM\Column(name: 'date_expiration', type: Types::DATETIME_IMMUTABLE)]
     #[Assert\GreaterThan('now', message: 'La date d expiration doit etre dans le futur.')]
     private ?\DateTimeImmutable $date_expiration = null;
+
+    #[ORM\Column(name: 'adresse', length: 255, nullable: true)]
+    private ?string $adresse = null;
+
+    #[ORM\Column(name: 'latitude', type: Types::FLOAT, nullable: true)]
+    private ?float $latitude = null;
+
+    #[ORM\Column(name: 'longitude', type: Types::FLOAT, nullable: true)]
+    private ?float $longitude = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeInterface $date_creation_offre = null;
@@ -148,9 +158,53 @@ class Offrejob
     {
         return $this->date_expiration !== null && $this->date_expiration <= new \DateTimeImmutable();
     }
+    public function getAdresse(): ?string
+    {
+        return $this->adresse;
+    }
+    public function setAdresse(?string $adresse): static
+    {
+        $this->adresse = $adresse !== null ? trim($adresse) : null;
+        if ($this->adresse === '') {
+            $this->adresse = null;
+        }
+        return $this;
+    }
+    public function getLatitude(): ?float
+    {
+        return $this->latitude;
+    }
+    public function setLatitude(?float $latitude): static
+    {
+        $this->latitude = $latitude;
+        return $this;
+    }
+    public function getLongitude(): ?float
+    {
+        return $this->longitude;
+    }
+    public function setLongitude(?float $longitude): static
+    {
+        $this->longitude = $longitude;
+        return $this;
+    }
     public function getDateCreationOffre(): ?\DateTimeInterface { return $this->date_creation_offre; }
     public function setDateCreationOffre(\DateTimeInterface $date_creation_offre): static { $this->date_creation_offre = $date_creation_offre; return $this; }
     public function getCreateur(): ?User { return $this->createur; }
     public function setCreateur(?User $createur): static { $this->createur = $createur; return $this; }
     public function getCandidatures(): Collection { return $this->candidatures; }
+
+    #[Assert\Callback]
+    public function validateAdresseForPresentiel(ExecutionContextInterface $context): void
+    {
+        if ($this->getLieu() !== OffreLieu::PRESENTIEL->value) {
+            return;
+        }
+
+        if ($this->adresse === null || trim($this->adresse) === '') {
+            $context->buildViolation('L adresse est obligatoire pour une offre en presentiel.')
+                ->atPath('adresse')
+                ->addViolation();
+        }
+    }
 }

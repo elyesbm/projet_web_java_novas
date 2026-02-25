@@ -45,7 +45,8 @@ class OffrejobRepository extends ServiceEntityRepository
             $qb->andWhere('LOWER(o.titre_offre) LIKE :q
                         OR LOWER(o.description_offre) LIKE :q
                         OR LOWER(o.categorie_offre) LIKE :q
-                        OR LOWER(o.lieu) LIKE :q')
+                        OR LOWER(o.lieu) LIKE :q
+                        OR LOWER(COALESCE(o.adresse, \'\')) LIKE :q')
                ->setParameter('q', '%'.mb_strtolower($q).'%');
         }
 
@@ -84,7 +85,8 @@ class OffrejobRepository extends ServiceEntityRepository
             $qb->andWhere('LOWER(o.titre_offre) LIKE :q
                         OR LOWER(o.description_offre) LIKE :q
                         OR LOWER(o.categorie_offre) LIKE :q
-                        OR LOWER(o.lieu) LIKE :q')
+                        OR LOWER(o.lieu) LIKE :q
+                        OR LOWER(COALESCE(o.adresse, \'\')) LIKE :q')
                ->setParameter('q', '%'.mb_strtolower($q).'%');
         }
 

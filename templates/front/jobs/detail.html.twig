@@ -59,7 +59,7 @@
                     <div class="flex flex-wrap gap-4 mb-6 text-sm">
                         <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5">
                             <i data-lucide="map-pin" class="w-4 h-4 text-primary"></i>
-                            <span>{{ offre.lieu }}</span>
+                            <span>{{ offre.lieu }}{% if offre.lieu == 'PRESENTIEL' and offre.adresse %} - {{ offre.adresse }}{% endif %}</span>
                         </div>
                         <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5">
                             <i data-lucide="calendar" class="w-4 h-4 text-primary"></i>

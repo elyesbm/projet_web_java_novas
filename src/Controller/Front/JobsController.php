@@ -331,6 +331,9 @@ class JobsController extends AbstractController
             'titre_offre' => '',
             'description_offre' => '',
             'lieu' => 'EN_LIGNE',
+            'adresse' => '',
+            'latitude' => '',
+            'longitude' => '',
             'statut_offre' => 'OUVERTE',
             'capacite_max' => 5,
             'date_expiration' => (new \DateTimeImmutable('+30 days'))->format('Y-m-d\TH:i'),
@@ -373,6 +376,9 @@ class JobsController extends AbstractController
         $form['titre_offre'] = trim((string) $request->request->get('titre_offre', ''));
         $form['description_offre'] = trim((string) $request->request->get('description_offre', ''));
         $form['lieu'] = (string) $request->request->get('lieu', $form['lieu']);
+        $form['adresse'] = trim((string) $request->request->get('adresse', ''));
+        $form['latitude'] = trim((string) $request->request->get('latitude', ''));
+        $form['longitude'] = trim((string) $request->request->get('longitude', ''));
         $form['statut_offre'] = (string) $request->request->get('statut_offre', $form['statut_offre']);
         $form['capacite_max'] = (int) $request->request->get('capacite_max', $form['capacite_max']);
         $form['date_expiration'] = trim((string) $request->request->get('date_expiration', $form['date_expiration']));
@@ -395,6 +401,9 @@ class JobsController extends AbstractController
         $o->setDescriptionOffre($form['description_offre']);
         $o->setCategorieOffre($form['categorie_offre']);
         $o->setLieu($form['lieu']);
+        $o->setAdresse($form['lieu'] === OffreLieu::PRESENTIEL->value ? $form['adresse'] : null);
+        $o->setLatitude($form['lieu'] === OffreLieu::PRESENTIEL->value ? $this->parseNullableFloat($form['latitude']) : null);
+        $o->setLongitude($form['lieu'] === OffreLieu::PRESENTIEL->value ? $this->parseNullableFloat($form['longitude']) : null);
         $o->setStatutOffre($form['statut_offre']);
         $o->setCapaciteMax($form['capacite_max']);
         $o->setCapaciteRestante($form['capacite_max']);
@@ -430,6 +439,9 @@ class JobsController extends AbstractController
             'titre_offre' => $offre->getTitreOffre() ?: '',
             'description_offre' => $offre->getDescriptionOffre() ?: '',
             'lieu' => $offre->getLieu() ?: 'EN_LIGNE',
+            'adresse' => $offre->getAdresse() ?: '',
+            'latitude' => $offre->getLatitude() !== null ? (string) $offre->getLatitude() : '',
+            'longitude' => $offre->getLongitude() !== null ? (string) $offre->getLongitude() : '',
             'statut_offre' => $offre->getStatutOffre() ?: 'OUVERTE',
             'capacite_max' => $offre->getCapaciteMax(),
             'date_expiration' => $offre->getDateExpiration()?->format('Y-m-d\TH:i') ?? '',
@@ -445,6 +457,9 @@ class JobsController extends AbstractController
             $form['titre_offre'] = trim((string) $request->request->get('titre_offre', ''));
             $form['description_offre'] = trim((string) $request->request->get('description_offre', ''));
             $form['lieu'] = (string) $request->request->get('lieu', $form['lieu']);
+            $form['adresse'] = trim((string) $request->request->get('adresse', $form['adresse']));
+            $form['latitude'] = trim((string) $request->request->get('latitude', $form['latitude']));
+            $form['longitude'] = trim((string) $request->request->get('longitude', $form['longitude']));
             $form['statut_offre'] = (string) $request->request->get('statut_offre', $form['statut_offre']);
             $form['capacite_max'] = (int) $request->request->get('capacite_max', $form['capacite_max']);
             $form['date_expiration'] = trim((string) $request->request->get('date_expiration', $form['date_expiration']));
@@ -474,6 +489,9 @@ class JobsController extends AbstractController
             $offre->setDescriptionOffre($form['description_offre']);
             $offre->setCategorieOffre($form['categorie_offre']);
             $offre->setLieu($form['lieu']);
+            $offre->setAdresse($form['lieu'] === OffreLieu::PRESENTIEL->value ? $form['adresse'] : null);
+            $offre->setLatitude($form['lieu'] === OffreLieu::PRESENTIEL->value ? $this->parseNullableFloat($form['latitude']) : null);
+            $offre->setLongitude($form['lieu'] === OffreLieu::PRESENTIEL->value ? $this->parseNullableFloat($form['longitude']) : null);
             $offre->setCapaciteMax($form['capacite_max']);
             $offre->setDateExpiration($this->parseDateExpiration($form['date_expiration']) ?? $offre->getDateExpiration() ?? new \DateTimeImmutable('+30 days'));
 
@@ -661,6 +679,26 @@ class JobsController extends AbstractController
             $errors['lieu'] = 'Lieu invalide.';
         }
 
+        if (($form['lieu'] ?? '') === OffreLieu::PRESENTIEL->value) {
+            if (($form['adresse'] ?? '') === '' || mb_strlen((string) $form['adresse']) < 3) {
+                $errors['adresse'] = 'L adresse est obligatoire pour une offre en presentiel.';
+            }
+
+            $lat = $this->parseNullableFloat($form['latitude'] ?? null);
+            $lon = $this->parseNullableFloat($form['longitude'] ?? null);
+
+            if ($lat === null || $lon === null) {
+                $errors['adresse'] = 'Veuillez localiser l adresse pour recuperer les coordonnees.';
+            } else {
+                if ($lat < -90 || $lat > 90) {
+                    $errors['adresse'] = 'Latitude invalide.';
+                }
+                if ($lon < -180 || $lon > 180) {
+                    $errors['adresse'] = 'Longitude invalide.';
+                }
+            }
+        }
+
         if (! array_key_exists($form['statut_offre'], $this->statutOptions())) {
             $errors['statut_offre'] = 'Statut invalide.';
         }
@@ -700,6 +738,24 @@ class JobsController extends AbstractController
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    private function parseNullableFloat($value): ?float
+    {
+        if (!is_string($value) && !is_numeric($value)) {
+            return null;
+        }
+
+        $value = is_string($value) ? trim($value) : (string) $value;
+        if ($value === '') {
+            return null;
+        }
+
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        return (float) $value;
     }
 }
 

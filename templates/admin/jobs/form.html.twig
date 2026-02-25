@@ -6,6 +6,10 @@
 {% block title %}{{ isCreate ? 'Nouvelle' : 'Modifier' }} offre - NOVAS Admin{% endblock %}
 {% block page_title %}{{ isCreate ? 'Nouvelle offre' : 'Modifier l\'offre' }}{% endblock %}
 {% block page_subtitle %}Details de l'offre d'emploi{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
 
 {% block body %}
 <div class="max-w-5xl mx-auto">
@@ -71,11 +75,30 @@
                                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Lieu</label>
                                 {% set lieuVal = offre.lieu|default('EN_LIGNE') %}
                                 <select name="lieu"
+                                        id="admin-job-lieu"
                                         class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500">
                                     <option value="EN_LIGNE" {{ lieuVal == 'EN_LIGNE' ? 'selected' : '' }}>En ligne</option>
                                     <option value="PRESENTIEL" {{ lieuVal == 'PRESENTIEL' ? 'selected' : '' }}>Presentiel</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div id="admin-presentiel-fields" class="space-y-2 {{ lieuVal == 'PRESENTIEL' ? '' : 'hidden' }}">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Adresse (presentiel)</label>
+                            <div class="flex flex-col md:flex-row gap-3">
+                                <input id="admin-job-adresse" type="text" name="adresse"
+                                       value="{{ offre.adresse|default('') }}"
+                                       placeholder="Ex: Avenue Habib Bourguiba, Tunis"
+                                       class="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-amber-500">
+                                <button id="admin-localiser-btn" type="button"
+                                        class="px-4 py-3 rounded-xl border border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-sm">
+                                    Localiser
+                                </button>
+                            </div>
+                            <input id="admin-job-latitude" type="hidden" name="latitude" value="{{ offre.latitude is not null ? offre.latitude : '' }}">
+                            <input id="admin-job-longitude" type="hidden" name="longitude" value="{{ offre.longitude is not null ? offre.longitude : '' }}">
+                            <p id="admin-geocode-feedback" class="text-xs text-slate-500 dark:text-slate-400">Renseignez l adresse puis cliquez sur "Localiser".</p>
+                            <div id="admin-job-map-preview" class="h-64 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden {{ (offre.latitude is not null and offre.longitude is not null) ? '' : 'hidden' }}"></div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
@@ -161,4 +184,131 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        (function () {
+            const lieuSelect = document.getElementById('admin-job-lieu');
+            const presentielFields = document.getElementById('admin-presentiel-fields');
+            const adresseInput = document.getElementById('admin-job-adresse');
+            const latitudeInput = document.getElementById('admin-job-latitude');
+            const longitudeInput = document.getElementById('admin-job-longitude');
+            const localiserButton = document.getElementById('admin-localiser-btn');
+            const feedback = document.getElementById('admin-geocode-feedback');
+            const mapContainer = document.getElementById('admin-job-map-preview');
+
+            let map = null;
+            let marker = null;
+
+            const toggleFields = () => {
+                if (!lieuSelect || !presentielFields) {
+                    return;
+                }
+                if (lieuSelect.value === 'PRESENTIEL') {
+                    presentielFields.classList.remove('hidden');
+                } else {
+                    presentielFields.classList.add('hidden');
+                    if (mapContainer) {
+                        mapContainer.classList.add('hidden');
+                    }
+                }
+            };
+
+            const setFeedback = (message, type) => {
+                if (!feedback) {
+                    return;
+                }
+
+                if (type === 'error') {
+                    feedback.className = 'text-xs text-red-500 mt-2';
+                } else if (type === 'success') {
+                    feedback.className = 'text-xs text-emerald-600 dark:text-emerald-400 mt-2';
+                } else {
+                    feedback.className = 'text-xs text-slate-500 dark:text-slate-400 mt-2';
+                }
+
+                feedback.textContent = message;
+            };
+
+            const showMarker = (lat, lon, label) => {
+                if (!mapContainer || typeof L === 'undefined') {
+                    return;
+                }
+
+                if (!map) {
+                    map = L.map(mapContainer).setView([lat, lon], 14);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
+                }
+
+                mapContainer.classList.remove('hidden');
+                map.invalidateSize();
+                map.setView([lat, lon], 15);
+
+                if (!marker) {
+                    marker = L.marker([lat, lon]).addTo(map);
+                } else {
+                    marker.setLatLng([lat, lon]);
+                }
+
+                if (label) {
+                    marker.bindPopup(label).openPopup();
+                }
+            };
+
+            if (lieuSelect) {
+                lieuSelect.addEventListener('change', toggleFields);
+                toggleFields();
+            }
+
+            if (mapContainer && latitudeInput && longitudeInput && latitudeInput.value !== '' && longitudeInput.value !== '') {
+                showMarker(Number(latitudeInput.value), Number(longitudeInput.value), adresseInput ? adresseInput.value : '');
+            }
+
+            if (localiserButton && adresseInput && latitudeInput && longitudeInput) {
+                localiserButton.addEventListener('click', async () => {
+                    const adresse = adresseInput.value.trim();
+                    if (!adresse) {
+                        setFeedback('Veuillez saisir une adresse.', 'error');
+                        return;
+                    }
+
+                    const initial = localiserButton.textContent;
+                    localiserButton.disabled = true;
+                    localiserButton.textContent = 'Localisation...';
+
+                    try {
+                        const response = await fetch('{{ path('app_api_geocode') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ adresse: adresse })
+                        });
+
+                        const data = await response.json().catch(() => ({ error: 'Reponse geocodage invalide.' }));
+                        if (!response.ok) {
+                            throw new Error(data.error || 'Adresse introuvable.');
+                        }
+
+                        latitudeInput.value = String(data.lat);
+                        longitudeInput.value = String(data.lon);
+                        setFeedback('Adresse localisee: ' + (data.displayName || adresse), 'success');
+                        showMarker(Number(data.lat), Number(data.lon), data.displayName || adresse);
+                    } catch (error) {
+                        setFeedback(error.message || 'Service de geocodage indisponible.', 'error');
+                    } finally {
+                        localiserButton.disabled = false;
+                        localiserButton.textContent = initial;
+                    }
+                });
+            }
+        })();
+    </script>
 {% endblock %}
