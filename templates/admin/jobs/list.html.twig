@@ -62,10 +62,16 @@
                 <button onclick="switchTab('candidatures')" id="tab-candidatures" class="py-4 text-sm font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">Candidatures</button>
             </div>
 
-            <a href="{{ path('app_admin_jobs_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm transition-colors shadow-lg shadow-amber-500/25">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-                Nouvelle offre
-            </a>
+            <div class="flex items-center gap-2">
+                <a href="{{ path('app_admin_jobs_export_pdf') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm transition-colors">
+                    <i data-lucide="file-down" class="w-4 h-4"></i>
+                    Export PDF
+                </a>
+                <a href="{{ path('app_admin_jobs_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm transition-colors shadow-lg shadow-amber-500/25">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Nouvelle offre
+                </a>
+            </div>
         </div>
 
         {# Offres Tab #}

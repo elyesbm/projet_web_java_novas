@@ -40,8 +40,35 @@ final class Version20260224153249 extends AbstractMigration
                 $this->addSql('ALTER TABLE score_history ADD CONSTRAINT FK_463255DFA76ED395 FOREIGN KEY (user_id) REFERENCES user (ID) ON DELETE CASCADE');
             }
         }
-        $this->addSql('ALTER TABLE skill DROP FOREIGN KEY `FK_5E3DE47773A201E5`');
-        $this->addSql('ALTER TABLE skill ADD CONSTRAINT FK_5E3DE47773A201E5 FOREIGN KEY (createur_id) REFERENCES user (ID) ON DELETE CASCADE');
+        $skillCascadeFkExists = (bool) $this->connection->fetchOne("
+            SELECT 1
+            FROM information_schema.key_column_usage kcu
+            JOIN information_schema.referential_constraints rc
+              ON rc.constraint_schema = kcu.constraint_schema
+             AND rc.constraint_name = kcu.constraint_name
+             AND rc.table_name = kcu.table_name
+            WHERE kcu.table_schema = DATABASE()
+              AND kcu.table_name = 'skill'
+              AND kcu.column_name = 'createur_id'
+              AND kcu.referenced_table_name = 'user'
+              AND rc.delete_rule = 'CASCADE'
+            LIMIT 1
+        ");
+        if (! $skillCascadeFkExists) {
+            $existingSkillFk = $this->connection->fetchOne("
+                SELECT constraint_name
+                FROM information_schema.key_column_usage
+                WHERE table_schema = DATABASE()
+                  AND table_name = 'skill'
+                  AND column_name = 'createur_id'
+                  AND referenced_table_name = 'user'
+                LIMIT 1
+            ");
+            if (is_string($existingSkillFk) && $existingSkillFk !== '') {
+                $this->addSql(sprintf('ALTER TABLE skill DROP FOREIGN KEY `%s`', $existingSkillFk));
+            }
+            $this->addSql('ALTER TABLE skill ADD CONSTRAINT FK_5E3DE47773A201E5 FOREIGN KEY (createur_id) REFERENCES user (ID) ON DELETE CASCADE');
+        }
         $userFaceEncodingExists = (bool) $this->connection->fetchOne("SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'user' AND column_name = 'face_encoding'");
         if (! $userFaceEncodingExists) {
             $this->addSql('ALTER TABLE user ADD face_encoding JSON DEFAULT NULL');

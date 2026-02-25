@@ -27,17 +27,23 @@
     <div class="relative max-w-5xl mx-auto px-6">
         <div class="mb-8">
             {% if admin_view %}
-                <h1 class="font-serif text-3xl font-medium mb-2">Candidatures <span class="italic text-primary">reçues</span></h1>
+                <h1 class="font-serif text-3xl font-medium mb-2">Candidatures <span class="italic text-primary">reÃ§ues</span></h1>
                 <p class="text-muted-foreground">
                     {% if offre is defined and offre %}
                         Pour l'offre : <b>{{ offre.titreOffre }}</b>
                     {% else %}
-                        Gérez les candidatures.
+                        GÃ©rez les candidatures.
                     {% endif %}
                 </p>
             {% else %}
-                <h1 class="font-serif text-3xl font-medium mb-2">Mes <span class="italic text-primary">candidatures</span></h1>
-                <p class="text-muted-foreground">Suivez l'état de vos demandes.</p>
+                
+                <div class="mt-4">
+                    <a href="{{ path('front_jobs_my_candidatures_export_pdf') }}"
+                       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition">
+                        <i data-lucide="file-down" class="w-4 h-4"></i>
+                        Export PDF
+                    </a>
+                </div>
             {% endif %}
         </div>
 
@@ -53,11 +59,11 @@
             </div>
             <div class="glass-card rounded-xl p-4 text-center">
                 <p class="text-2xl font-bold text-accent">{{ stats.acceptees }}</p>
-                <p class="text-xs text-muted-foreground">Acceptées</p>
+                <p class="text-xs text-muted-foreground">AcceptÃ©es</p>
             </div>
             <div class="glass-card rounded-xl p-4 text-center">
                 <p class="text-2xl font-bold text-red-400">{{ stats.refusees }}</p>
-                <p class="text-xs text-muted-foreground">Refusées</p>
+                <p class="text-xs text-muted-foreground">RefusÃ©es</p>
             </div>
         </div>
 
@@ -83,12 +89,12 @@
                                 {% elseif isOk %}bg-accent/20 text-accent
                                 {% else %}bg-red-500/20 text-red-400{% endif %}">
                                 {% if isWait %}En attente
-                                {% elseif isOk %}Acceptée
-                                {% else %}Refusée{% endif %}
+                                {% elseif isOk %}AcceptÃ©e
+                                {% else %}RefusÃ©e{% endif %}
                             </span>
 
                             <span class="text-xs text-muted-foreground">
-                                {{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : '—' }}
+                                {{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : 'â€”' }}
                             </span>
                         </div>
 
@@ -96,11 +102,11 @@
 
                         <p class="text-sm text-muted-foreground mb-3">
                             {% if admin_view %}
-                                Candidat: {{ candidature.candidat ? (candidature.candidat.PRENOM ~ ' ' ~ candidature.candidat.NOM) : '—' }}
-                                {% if candidature.candidat and candidature.candidat.EMAIL %} • {{ candidature.candidat.EMAIL }}{% endif %}
-                                {% if candidature.candidat and candidature.candidat.NUMERO %} • {{ candidature.candidat.NUMERO }}{% endif %}
+                                Candidat: {{ candidature.candidat ? (candidature.candidat.PRENOM ~ ' ' ~ candidature.candidat.NOM) : 'â€”' }}
+                                {% if candidature.candidat and candidature.candidat.EMAIL %} â€¢ {{ candidature.candidat.EMAIL }}{% endif %}
+                                {% if candidature.candidat and candidature.candidat.NUMERO %} â€¢ {{ candidature.candidat.NUMERO }}{% endif %}
                             {% else %}
-                                {{ candidature.offre.createur ? candidature.offre.createur.email : '—' }} • {{ candidature.offre.lieu }}
+                                {{ candidature.offre.createur ? candidature.offre.createur.email : 'â€”' }} â€¢ {{ candidature.offre.lieu }}
                             {% endif %}
                         </p>
 
@@ -165,9 +171,9 @@
                 </h3>
                 <p class="text-muted-foreground mb-6">
                     {% if admin_view %}
-                        Cette offre n'a reçu aucune candidature pour le moment.
+                        Cette offre n'a reÃ§u aucune candidature pour le moment.
                     {% else %}
-                        Commencez à postuler aux offres qui vous intéressent.
+                        Commencez Ã  postuler aux offres qui vous intÃ©ressent.
                     {% endif %}
                 </p>
 

@@ -1,0 +1,54 @@
+{% if pageCount > 1 %}
+<nav class="mt-4" aria-label="Jobs pagination">
+    <ul class="flex flex-wrap items-center justify-center gap-2">
+        <li>
+            {% if previous is defined %}
+                <a
+                    rel="prev"
+                    href="{{ path(route, query|merge({ (pageParameterName): previous })) }}"
+                    class="inline-flex items-center rounded-xl border border-white/10 bg-background/60 px-4 py-2 text-sm text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+                >
+                    Previous
+                </a>
+            {% else %}
+                <span class="inline-flex cursor-not-allowed items-center rounded-xl border border-white/10 bg-background/30 px-4 py-2 text-sm text-muted-foreground/50">
+                    Previous
+                </span>
+            {% endif %}
+        </li>
+
+        {% for page in pagesInRange %}
+            <li>
+                {% if page != current %}
+                    <a
+                        href="{{ path(route, query|merge({ (pageParameterName): page })) }}"
+                        class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-background/60 text-sm text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+                    >
+                        {{ page }}
+                    </a>
+                {% else %}
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-white shadow-lg shadow-primary/30">
+                        {{ page }}
+                    </span>
+                {% endif %}
+            </li>
+        {% endfor %}
+
+        <li>
+            {% if next is defined %}
+                <a
+                    rel="next"
+                    href="{{ path(route, query|merge({ (pageParameterName): next })) }}"
+                    class="inline-flex items-center rounded-xl border border-white/10 bg-background/60 px-4 py-2 text-sm text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+                >
+                    Next
+                </a>
+            {% else %}
+                <span class="inline-flex cursor-not-allowed items-center rounded-xl border border-white/10 bg-background/30 px-4 py-2 text-sm text-muted-foreground/50">
+                    Next
+                </span>
+            {% endif %}
+        </li>
+    </ul>
+</nav>
+{% endif %}

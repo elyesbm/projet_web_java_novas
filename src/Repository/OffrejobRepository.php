@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Offrejob;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 class OffrejobRepository extends ServiceEntityRepository
@@ -23,6 +24,20 @@ class OffrejobRepository extends ServiceEntityRepository
         string $dir = 'desc'
     ): array
     {
+        return $this->searchAndSortQueryBuilder($q, $categorie, $lieu, $statut, $sort, $dir)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** Front: same filters/sort, but query builder for pagination */
+    public function searchAndSortQueryBuilder(
+        ?string $q,
+        ?string $categorie,
+        ?string $lieu,
+        ?string $statut,
+        string $sort = 'date',
+        string $dir = 'desc'
+    ): QueryBuilder {
         $qb = $this->createQueryBuilder('o');
 
         if ($q) {
@@ -46,7 +61,7 @@ class OffrejobRepository extends ServiceEntityRepository
         $sortCol = $map[$sort] ?? $map['date'];
         $dir = strtolower($dir) === 'asc' ? 'ASC' : 'DESC';
 
-        return $qb->orderBy($sortCol, $dir)->getQuery()->getResult();
+        return $qb->orderBy($sortCol, $dir);
     }
 
     /** Créateur: mes offres (recherche + filtres + tri) */

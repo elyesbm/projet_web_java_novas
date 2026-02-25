@@ -11,15 +11,18 @@ use App\Repository\OffrejobRepository;
 use App\Repository\CandidatureJobRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 
 class JobsController extends AbstractController
 {
     #[Route('/jobs', name: 'front_jobs_index', methods: ['GET'])]
-    public function index(Request $request, OffrejobRepository $repo): Response
+    public function index(Request $request, OffrejobRepository $repo, PaginatorInterface $paginator): Response
     {
         $q = trim((string) $request->query->get('q', ''));
         $categorie = $this->normalizeFilter($request->query->get('categorie'), $this->categorieOptions());
@@ -28,10 +31,17 @@ class JobsController extends AbstractController
         $sort = (string) $request->query->get('sort', 'date');
         $dir = (string) $request->query->get('dir', 'desc');
 
-        $offres = $repo->searchAndSort($q ?: null, $categorie, $lieu, $statut, $sort, $dir);
+        $allFilteredOffres = $repo->searchAndSort($q ?: null, $categorie, $lieu, $statut, $sort, $dir);
+        $qb = $repo->searchAndSortQueryBuilder($q ?: null, $categorie, $lieu, $statut, $sort, $dir);
+        $offres = $paginator->paginate(
+            $qb,
+            $request->query->getInt('page', 1),
+            6
+        );
 
         return $this->render('front/jobs/index.html.twig', [
             'offres' => $offres,
+            'offres_for_stats' => $allFilteredOffres,
             'q' => $q,
             'categorie' => $categorie,
             'lieu' => $lieu,
@@ -77,6 +87,28 @@ class JobsController extends AbstractController
             'dejaPostule' => $dejaPostule,
             'jobsSimilaires' => $jobsSimilaires,
         ]);
+    }
+
+    #[Route('/jobs/{id}/export-pdf', name: 'front_jobs_export_pdf', methods: ['GET'], requirements: ['id' => '\\d+'])]
+    public function exportPdf(Offrejob $offre, DompdfWrapperInterface $dompdf): Response
+    {
+        $html = $this->renderView('pdf/jobs/single_offer.html.twig', [
+            'offre' => $offre,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $pdf = $dompdf->getPdf($html, [
+            'defaultPaperSize' => 'a4',
+            'defaultPaperOrientation' => 'portrait',
+        ]);
+
+        $response = new Response($pdf);
+        $filename = sprintf('job-offer-%d.pdf', $offre->getId() ?? 0);
+        $disposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $filename);
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set('Content-Disposition', $disposition);
+
+        return $response;
     }
 
     #[Route('/jobs/{id}/postuler', name: 'front_jobs_apply', methods: ['POST'], requirements: ['id' => '\\d+'])]
@@ -164,6 +196,41 @@ class JobsController extends AbstractController
             'stats' => $stats,
             'admin_view' => false,
         ]);
+    }
+
+    #[Route('/jobs/mes-candidatures/export-pdf', name: 'front_jobs_my_candidatures_export_pdf', methods: ['GET'])]
+    public function exportMyCandidaturesPdf(
+        CandidatureJobRepository $repo,
+        UserRepository $userRepo,
+        DompdfWrapperInterface $dompdf
+    ): Response {
+        $user = $this->getUser();
+        if (!$user) {
+            $user = $userRepo->findOneBy([]);
+        }
+
+        $cands = $user
+            ? $repo->findBy(['candidat' => $user], ['date_candidature' => 'DESC'])
+            : [];
+
+        $html = $this->renderView('pdf/jobs/my_applications.html.twig', [
+            'candidatures' => $cands,
+            'user' => $user,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $pdf = $dompdf->getPdf($html, [
+            'defaultPaperSize' => 'a4',
+            'defaultPaperOrientation' => 'portrait',
+        ]);
+
+        $response = new Response($pdf);
+        $filename = 'my-applications.pdf';
+        $disposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $filename);
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set('Content-Disposition', $disposition);
+
+        return $response;
     }
 
     #[Route('/jobs/mes-offres', name: 'front_jobs_my_offres', methods: ['GET'])]

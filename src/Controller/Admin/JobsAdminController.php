@@ -7,9 +7,11 @@ use App\Entity\CandidatureJob;
 use App\Repository\OffrejobRepository;
 use App\Repository\CandidatureJobRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/admin/jobs')]
@@ -34,6 +36,31 @@ class JobsAdminController extends AbstractController
             'sort' => $sort,
             'dir' => $dir,
         ]);
+    }
+
+    #[Route('/export-pdf', name: 'app_admin_jobs_export_pdf', methods: ['GET'])]
+    public function exportAllPdf(OffrejobRepository $repo, DompdfWrapperInterface $dompdf): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        $offres = $repo->findBy([], ['date_creation_offre' => 'DESC']);
+
+        $html = $this->renderView('pdf/jobs/admin_offers.html.twig', [
+            'offres' => $offres,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $pdf = $dompdf->getPdf($html, [
+            'defaultPaperSize' => 'a4',
+            'defaultPaperOrientation' => 'portrait',
+        ]);
+
+        $response = new Response($pdf);
+        $disposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, 'admin-jobs.pdf');
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set('Content-Disposition', $disposition);
+
+        return $response;
     }
 
     // ✅ CREATE
