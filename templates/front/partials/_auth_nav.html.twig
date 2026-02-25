@@ -17,40 +17,6 @@
         </div>
 
         <div class="flex items-center gap-3">
-            {# ── 🔔 NOTIFICATION BELL ── #}
-            <div class="relative" id="notif-wrapper">
-                <button id="notif-bell" type="button" class="relative p-2 rounded-xl border border-white/15 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50" title="Notifications">
-                    <i data-lucide="bell" class="w-5 h-5"></i>
-                    {# Badge compteur #}
-                    <span id="notif-badge" class="hidden absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-red-500/40 animate-bounce-soft">
-                        0
-                    </span>
-                </button>
-
-                {# ── Dropdown Panel ── #}
-                <div id="notif-dropdown" class="hidden absolute right-0 top-[calc(100%+8px)] w-[380px] max-h-[480px] bg-background border border-border rounded-2xl shadow-2xl shadow-black/20 overflow-hidden z-[999]" style="background-color: oklch(0.96 0.015 75);">
-                    {# Header #}
-                    <div class="flex items-center justify-between px-5 py-3.5 border-b border-border bg-secondary/50">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="bell-ring" class="w-4 h-4 text-primary"></i>
-                            <span class="text-sm font-semibold text-foreground">Notifications</span>
-                            <span id="notif-header-count" class="text-xs text-muted-foreground"></span>
-                        </div>
-                        <button id="notif-mark-seen" type="button" class="text-xs text-primary hover:text-primary/80 font-medium transition-colors hover:underline">
-                            Tout marquer vu ✓
-                        </button>
-                    </div>
-
-                    {# List #}
-                    <div id="notif-list" class="overflow-y-auto max-h-[380px] divide-y divide-border/50">
-                        <div class="px-5 py-8 text-center text-sm text-muted-foreground">
-                            <i data-lucide="bell-off" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
-                            <p>Aucune nouvelle notification</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             {% if app.user %}
                 <a href="{{ path('app_user_profile') }}" class="hidden sm:inline-flex text-sm px-4 py-2 rounded-xl border border-white/15 {{ current_route starts with 'app_user_' ? 'text-primary border-primary/30 bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-white/5' }} transition-colors">
                     Mon compte
@@ -58,6 +24,40 @@
                 <a href="{{ path('app_logout') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
                     Deconnexion
                 </a>
+
+                {# ── 🔔 NOTIFICATION BELL ── #}
+                <div class="relative" id="notif-wrapper">
+                    <button id="notif-bell" type="button" class="relative p-2 rounded-xl border border-white/15 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50" title="Notifications">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        {# Badge compteur #}
+                        <span id="notif-badge" class="hidden absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-red-500/40 animate-bounce-soft">
+                            0
+                        </span>
+                    </button>
+
+                    {# ── Dropdown Panel ── #}
+                    <div id="notif-dropdown" class="hidden absolute right-0 top-[calc(100%+8px)] w-[380px] max-h-[480px] bg-background border border-border rounded-2xl shadow-2xl shadow-black/20 overflow-hidden z-[999]" style="background-color: oklch(0.96 0.015 75);">
+                        {# Header #}
+                        <div class="flex items-center justify-between px-5 py-3.5 border-b border-border bg-secondary/50">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="bell-ring" class="w-4 h-4 text-primary"></i>
+                                <span class="text-sm font-semibold text-foreground">Notifications</span>
+                                <span id="notif-header-count" class="text-xs text-muted-foreground"></span>
+                            </div>
+                            <button id="notif-mark-seen" type="button" class="text-xs text-primary hover:text-primary/80 font-medium transition-colors hover:underline">
+                                Tout marquer vu ✓
+                            </button>
+                        </div>
+
+                        {# List #}
+                        <div id="notif-list" class="overflow-y-auto max-h-[380px] divide-y divide-border/50">
+                            <div class="px-5 py-8 text-center text-sm text-muted-foreground">
+                                <i data-lucide="bell-off" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+                                <p>Aucune nouvelle notification</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             {% else %}
                 <a href="{{ path('app_login') }}" class="hidden sm:inline-flex text-sm px-4 py-2 rounded-xl border border-white/15 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors">
                     Se connecter
