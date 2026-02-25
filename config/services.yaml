@@ -14,11 +14,6 @@ parameters:
     app.sentiment.project_dir: '%kernel.project_dir%'
     app.translation.api_url: '%env(string:TRANSLATION_API_URL)%'
     app.translation.api_key: '%env(string:TRANSLATION_API_KEY)%'
-    app.imagen.gemini_api_key: '%env(default::GEMINI_API_KEY)%'
-    app.replicate.api_token: '%env(default::REPLICATE_API_TOKEN)%'
-    app.vertex_ai.project_id: '%env(default::VERTEX_AI_PROJECT_ID)%'
-    app.vertex_ai.location: '%env(default::VERTEX_AI_LOCATION)%'
-    app.vertex_ai.api_key: '%env(default::VERTEX_AI_API_KEY)%'
     app.hf_image.token: '%env(default::HF_TOKEN)%'
     app.hf_image.model: '%env(default::HF_IMAGE_MODEL)%'
     app.hf_image.base_url: '%env(default::HF_IMAGE_BASE_URL)%'
@@ -70,20 +65,6 @@ services:
             $inferenceUrl: '%app.sentiment.inference_url%'
             $scriptPath: '%app.sentiment.script_path%'
             $projectDir: '%app.sentiment.project_dir%'
-
-    App\Service\ImagenService:
-        arguments:
-            $apiKey: '%app.imagen.gemini_api_key%'
-
-    App\Service\ReplicateImageService:
-        arguments:
-            $apiToken: '%app.replicate.api_token%'
-
-    App\Service\VertexImagenService:
-        arguments:
-            $projectId: '%app.vertex_ai.project_id%'
-            $location: '%app.vertex_ai.location%'
-            $apiKey: '%app.vertex_ai.api_key%'
 
     App\Service\HuggingFaceImageService:
         arguments:

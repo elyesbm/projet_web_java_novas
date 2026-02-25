@@ -14,8 +14,6 @@ use App\Repository\PublicationRepository;
 use App\Repository\PublicationReactionRepository;
 use App\Repository\UserRepository;
 use App\Service\HuggingFaceImageService;
-use App\Service\ReplicateImageService;
-use App\Service\VertexImagenService;
 use App\Service\PublicationTranslationService;
 use App\Service\SentimentAnalysisService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -223,9 +221,7 @@ class PublicationController extends AbstractController
     #[Route('/generer-image', name: 'app_publication_generer_image', methods: ['POST'])]
     public function genererImage(
         Request $request,
-        HuggingFaceImageService $hfImageService,
-        VertexImagenService $vertexImagenService,
-        ReplicateImageService $replicateImageService
+        HuggingFaceImageService $hfImageService
     ): Response {
         $data = json_decode($request->getContent(), true);
         $prompt = trim((string) ($data['prompt'] ?? ''));
@@ -233,9 +229,8 @@ class PublicationController extends AbstractController
             return $this->json(['ok' => false, 'message' => 'Prompt requis.'], 400);
         }
 
-        $imageService = $this->resolveImageService($hfImageService, $vertexImagenService, $replicateImageService);
         try {
-            $images = $imageService->generateImages($prompt, 1);
+            $images = $hfImageService->generateImages($prompt, 1);
         } catch (\Throwable $e) {
             return $this->json(['ok' => false, 'message' => $e->getMessage()], 500);
         }
@@ -248,32 +243,11 @@ class PublicationController extends AbstractController
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
-        $prefix = $imageService instanceof HuggingFaceImageService ? 'hf_' : ($imageService instanceof VertexImagenService ? 'vertex_' : 'flux_');
-        $filename = $prefix . uniqid() . '_' . time() . '.png';
+        $filename = 'hf_' . uniqid() . '_' . time() . '.png';
         $path = $uploadDir . '/' . $filename;
         file_put_contents($path, base64_decode($images[0]['base64']));
 
         return $this->json(['ok' => true, 'filename' => $filename]);
-    }
-
-    /**
-     * Priorité : Hugging Face (text-to-image) si HF_TOKEN configuré, sinon Vertex AI (Imagen), sinon Replicate (FLUX).
-     */
-    private function resolveImageService(
-        HuggingFaceImageService $hf,
-        VertexImagenService $vertex,
-        ReplicateImageService $replicate
-    ): HuggingFaceImageService|VertexImagenService|ReplicateImageService {
-        $hfToken = $this->getParameter('app.hf_image.token');
-        if (!empty(trim((string) $hfToken))) {
-            return $hf;
-        }
-        $projectId = $this->getParameter('app.vertex_ai.project_id');
-        $apiKey = $this->getParameter('app.vertex_ai.api_key');
-        if (!empty(trim((string) $projectId)) && !empty(trim((string) $apiKey))) {
-            return $vertex;
-        }
-        return $replicate;
     }
 
     #[Route('/nouvelle', name: 'app_publication_nouvelle', methods: ['GET', 'POST'])]
