@@ -37,6 +37,20 @@ class PublicationType extends AbstractType
                 'config_name' => 'publication',
                 'required' => false,
                 'empty_data' => '',
+            ])
+            ->add('image_publication', TextType::class, [
+                'required' => false,
+                'mapped' => true,
+                'attr' => ['class' => 'hidden', 'id' => 'publication-image-generated'],
+            ])
+            ->add('youtube_video', TextType::class, [
+                'required' => false,
+                'mapped' => true,
+                'property_path' => 'youtubeVideoId', // valeur normalisée (ID seul) après soumission
+                'attr' => [
+                    'placeholder' => 'URL ou ID (ex: https://www.youtube.com/watch?v=dQw4w9WgXcQ)',
+                    'class' => 'w-full h-10 bg-secondary border border-white/10 rounded-xl px-4 text-sm focus:outline-none focus:border-primary',
+                ],
             ]);
 
         if ($options['with_anonyme']) {

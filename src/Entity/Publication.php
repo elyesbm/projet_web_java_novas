@@ -41,6 +41,14 @@ class Publication
     #[ORM\Column(type: 'text')]
     private ?string $image_auteur = null;
 
+    /** Image générée par Imagen (uploads/publication_images/) */
+    #[ORM\Column(name: 'image_publication', type: 'string', length: 255, nullable: true)]
+    private ?string $imagePublication = null;
+
+    /** ID de la vidéo YouTube (optionnel), ex: dQw4w9WgXcQ */
+    #[ORM\Column(name: 'youtube_video_id', type: 'string', length: 20, nullable: true)]
+    private ?string $youtubeVideoId = null;
+
     #[ORM\Column]
     private ?int $statut = null;
 
@@ -63,49 +71,73 @@ private ?int $contexte = null;
     {
         $this->commentaires = new ArrayCollection();
     }
+
     #[ORM\Column(type: 'integer')]
-private int $likes = 0;
+    private int $likes = 0;
 
-public function getLikes(): int
-{
-    return $this->likes;
-}
+    #[ORM\Column(name: 'report_count', type: 'integer')]
+    private int $reportCount = 0;
 
-public function setLikes(int $likes): static
-{
-    $this->likes = $likes;
-    return $this;
-}
-
-public function incrementLikes(): static
-{
-    $this->likes++;
-    return $this;
-}
-
-public function decrementLikes(): static
-{
-    if ($this->likes > 0) {
-        $this->likes--;
-    }
-    return $this;
-}
-#[ORM\Column(type: 'datetime', nullable: true)]
-private ?\DateTimeInterface $date_modification = null;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $date_modification = null;
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $deletedAt = null;
 
-public function getDateModification(): ?\DateTimeInterface
-{
-    return $this->date_modification;
-}
+    public function getLikes(): int
+    {
+        return $this->likes;
+    }
 
-public function setDateModification(?\DateTimeInterface $date): self
-{
-    $this->date_modification = $date;
-    return $this;
-}
+    public function setLikes(int $likes): static
+    {
+        $this->likes = max(0, $likes);
+        return $this;
+    }
+
+    public function incrementLikes(): static
+    {
+        $this->likes++;
+        return $this;
+    }
+
+    public function decrementLikes(): static
+    {
+        if ($this->likes > 0) {
+            $this->likes--;
+        }
+        return $this;
+    }
+
+    public function getReportCount(): int
+    {
+        return $this->reportCount;
+    }
+
+    public function setReportCount(int $reportCount): static
+    {
+        $this->reportCount = max(0, $reportCount);
+        return $this;
+    }
+
+    public function incrementReportCount(int $delta = 1): static
+    {
+        if ($delta > 0) {
+            $this->reportCount += $delta;
+        }
+        return $this;
+    }
+
+    public function getDateModification(): ?\DateTimeInterface
+    {
+        return $this->date_modification;
+    }
+
+    public function setDateModification(?\DateTimeInterface $date): self
+    {
+        $this->date_modification = $date;
+        return $this;
+    }
 
     public function getDeletedAt(): ?\DateTimeInterface
     {
@@ -125,6 +157,10 @@ public function setDateModification(?\DateTimeInterface $date): self
     public function setContenu(?string $contenu): static { $this->contenu = $contenu; return $this; }
     public function getImageAuteur(): ?string { return $this->image_auteur; }
     public function setImageAuteur(string $image_auteur): static { $this->image_auteur = $image_auteur; return $this; }
+    public function getImagePublication(): ?string { return $this->imagePublication; }
+    public function setImagePublication(?string $imagePublication): static { $this->imagePublication = $imagePublication; return $this; }
+    public function getYoutubeVideoId(): ?string { return $this->youtubeVideoId; }
+    public function setYoutubeVideoId(?string $youtubeVideoId): static { $this->youtubeVideoId = $youtubeVideoId; return $this; }
     public function getStatut(): ?int { return $this->statut; }
     public function setStatut(int $statut): static { $this->statut = $statut; return $this; }
     public function getDateCreation(): ?\DateTimeInterface { return $this->date_creation; }

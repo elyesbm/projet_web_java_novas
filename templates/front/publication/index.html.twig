@@ -138,7 +138,7 @@
                 {% set likeCount = like_counts[pub.id]|default(0) %}
                 {% set defaultTranslateLang = 'en' %}
 
-                <article class="glass-card rounded-3xl overflow-hidden hover:border-primary/30 transition-all" id="pub-{{ pub.id }}">
+                <article class="glass-card rounded-3xl overflow-visible hover:border-primary/30 transition-all" id="pub-{{ pub.id }}">
                     <!-- Header -->
                     <div class="p-6 pb-4">
                         <div class="flex items-start justify-between">
@@ -189,9 +189,39 @@
 
                     <!-- Content -->
                     <div class="px-6 pb-4">
-                        <h2 id="pub-title-{{ pub.id }}" class="font-serif text-xl md:text-2xl font-medium mb-3 text-primary">{{ pub.titre }}</h2>
+                        <h2 id="pub-title-{{ pub.id }}" class="font-serif text-xl md:text-2xl font-medium mb-1 text-primary">{{ pub.titre }}</h2>
+
+                        {# Note de sentiment (1–5 étoiles) si disponible #}
+                        {% set stars = sentiment_scores[pub.id] ?? null %}
+                        {% if stars is not null %}
+                            <div class="flex items-center gap-1 text-xs text-amber-300 mb-2" aria-label="Sentiment {{ stars }} sur 5">
+                                {% for i in 1..5 %}
+                                    {% if i <= stars %}
+                                        <span>★</span>
+                                    {% else %}
+                                        <span class="opacity-30">★</span>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="ml-1 text-[11px] text-muted-foreground">({{ stars }}/5)</span>
+                            </div>
+                        {% endif %}
+                        {% if pub.imagePublication %}
+                            <div class="mb-4 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center max-h-96">
+                                <img src="{{ asset('uploads/publication_images/' ~ pub.imagePublication) }}" alt="Image de la publication" class="w-full max-h-96 object-contain">
+                            </div>
+                        {% endif %}
+                        {% if pub.youtubeVideoId %}
+                            <div class="mb-4 rounded-xl overflow-hidden border border-white/10 aspect-video max-w-2xl">
+                                <iframe
+                                    src="https://www.youtube.com/embed/{{ pub.youtubeVideoId }}"
+                                    title="Vidéo YouTube"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen
+                                    class="w-full h-full"
+                                ></iframe>
+                            </div>
+                        {% endif %}
                         <div id="pub-content-{{ pub.id }}" class="text-foreground leading-relaxed prose prose-invert max-w-none">{{ pub.contenu|raw }}</div>
-                        <p id="translate-status-{{ pub.id }}" class="hidden mt-3 text-xs text-primary/90"></p>
                     </div>
 
                     <!-- Actions Bar -->
@@ -232,32 +262,6 @@
                                 <span class="w-1.5 h-1.5 rounded-full {{ pub.statut == 1 ? 'bg-green-400' : 'bg-red-400' }}"></span>
                                 {{ pub.statut == 1 ? 'actif' : 'inactif' }}
                             </span>
-                            <div class="flex items-center gap-2">
-                                <select
-                                    id="translate-lang-{{ pub.id }}"
-                                    class="h-8 px-2 rounded-lg bg-secondary border border-white/10 text-xs text-foreground focus:outline-none focus:border-primary"
-                                >
-                                    {% for code, label in translation_languages|default({'en': 'English'}) %}
-                                        <option value="{{ code }}" {{ code == defaultTranslateLang ? 'selected' : '' }}>{{ label }}</option>
-                                    {% endfor %}
-                                </select>
-                                <button
-                                    type="button"
-                                    id="translate-btn-{{ pub.id }}"
-                                    onclick="translatePublication({{ pub.id }})"
-                                    class="h-8 px-2.5 rounded-lg text-xs bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
-                                >
-                                    Traduire
-                                </button>
-                                <button
-                                    type="button"
-                                    id="translate-reset-{{ pub.id }}"
-                                    onclick="resetPublicationTranslation({{ pub.id }})"
-                                    class="hidden h-8 px-2.5 rounded-lg text-xs bg-secondary text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
-                                >
-                                    Original
-                                </button>
-                            </div>
 
                             {# ✅ Modifier/Supprimer UNIQUEMENT si auteur connecté #}
                             {% if pub.auteur and pub.auteur.id == current_user_id %}
@@ -279,10 +283,55 @@
                                 </form>
                             {% endif %}
 
+                            <!-- Partager -->
+                            {% set share_url = absolute_url(path('app_publications_index', { _fragment: 'pub-' ~ pub.id })) %}
+                            {% set share_title = pub.titre|e('url') %}
+                            {% set share_text = (pub.titre ~ ' - ' ~ share_url)|e('url') %}
+                            <div class="relative inline-block share-dropdown-wrap">
+                                <button type="button" onclick="toggleShareDropdown({{ pub.id }})"
+                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-colors"
+                                    title="Partager sur les réseaux sociaux" aria-expanded="false" aria-haspopup="true" id="share-btn-{{ pub.id }}">
+                                    <i data-lucide="share-2" class="w-4 h-4"></i>
+                                    <span>Partager</span>
+                                </button>
+                                <div id="share-dropdown-{{ pub.id }}" class="hidden absolute right-0 top-full mt-1 py-2 min-w-[180px] rounded-xl bg-secondary border border-white/10 shadow-xl z-[100]" style="box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ share_url|e('url') }}"
+                                       target="_blank" rel="noopener noreferrer"
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-white/10 transition-colors">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                        Facebook
+                                    </a>
+                                    <a href="https://twitter.com/intent/tweet?url={{ share_url|e('url') }}&text={{ share_title }}"
+                                       target="_blank" rel="noopener noreferrer"
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-white/10 transition-colors">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                        X (Twitter)
+                                    </a>
+                                    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ share_url|e('url') }}"
+                                       target="_blank" rel="noopener noreferrer"
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-white/10 transition-colors">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                                        LinkedIn
+                                    </a>
+                                    <a href="https://wa.me/?text={{ share_text }}"
+                                       target="_blank" rel="noopener noreferrer"
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-white/10 transition-colors">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                        WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+
                             <!-- Signaler -->
-                            <a href="{{ path('app_publication_signaler', {id: pub.id}) }}" class="text-muted-foreground hover:text-red-400 transition-colors" title="Signaler">
-                                <i data-lucide="flag" class="w-5 h-5"></i>
-                            </a>
+                            <button
+                                type="button"
+                                onclick="openSignalModal({{ pub.id }})"
+                                id="signal-btn-{{ pub.id }}"
+                                class="flex items-center {{ userReaction == 2 ? 'text-red-400' : 'text-muted-foreground' }} hover:text-red-400 transition-colors group"
+                                title="Signaler"
+                            >
+                                <i data-lucide="flag" class="w-5 h-5 group-hover:fill-red-400/20"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -427,12 +476,83 @@
             </div>
         </div>
     </div>
+
+    {# Modale choix cause du signalement #}
+    <div id="signal-modal" class="hidden fixed inset-0 z-[70]">
+        <button type="button" class="absolute inset-0 bg-black/60" onclick="closeSignalModal()" aria-label="Fermer"></button>
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="w-full max-w-md glass-card rounded-2xl border border-white/10 shadow-2xl">
+                <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold">Choisir la cause du signalement</h3>
+                    <button type="button" onclick="closeSignalModal()" class="w-8 h-8 rounded-lg bg-secondary hover:bg-white/10 transition-colors flex items-center justify-center" aria-label="Fermer">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <p class="text-sm text-muted-foreground">Sélectionnez la raison pour laquelle vous signalez cette publication.</p>
+                    <div class="space-y-2" id="signal-reasons-list">
+                        {% for code, label in report_causes|default({}) %}
+                            <label class="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-white/5 hover:border-primary/30 cursor-pointer transition-colors">
+                                <input type="radio" name="signal_reason" value="{{ code }}" class="rounded-full border-white/20 text-primary focus:ring-primary">
+                                <span class="text-sm">{{ label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <button type="button" onclick="closeSignalModal()" class="flex-1 px-4 py-2.5 rounded-xl bg-secondary border border-white/10 text-sm font-medium hover:bg-white/5 transition-colors">
+                            Annuler
+                        </button>
+                        <button type="button" id="signal-modal-submit" onclick="submitSignalWithReason()" class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                            <i data-lucide="flag" class="w-4 h-4"></i>
+                            Signaler
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script id="publication-likers-data" type="application/json">{{ likers_by_publication|default({})|json_encode|raw }}</script>
 <script id="auth-user-data" type="application/json">{{ auth_user|json_encode|raw }}</script>
 
 <script>
+    function toggleShareDropdown(pubId) {
+        const panel = document.getElementById('share-dropdown-' + pubId);
+        const btn = document.getElementById('share-btn-' + pubId);
+        const article = document.getElementById('pub-' + pubId);
+        if (!panel || !btn) return;
+        const isOpen = !panel.classList.contains('hidden');
+        document.querySelectorAll('[id^="share-dropdown-"]').forEach(function(el) {
+            el.classList.add('hidden');
+        });
+        document.querySelectorAll('[id^="share-btn-"]').forEach(function(el) {
+            el.setAttribute('aria-expanded', 'false');
+        });
+        document.querySelectorAll('article[id^="pub-"]').forEach(function(el) {
+            el.style.zIndex = '';
+            el.style.position = '';
+        });
+        if (isOpen) {
+            panel.classList.add('hidden');
+            btn.setAttribute('aria-expanded', 'false');
+            if (article) { article.style.zIndex = ''; article.style.position = ''; }
+        } else {
+            panel.classList.remove('hidden');
+            btn.setAttribute('aria-expanded', 'true');
+            if (article) { article.style.position = 'relative'; article.style.zIndex = '50'; }
+        }
+    }
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.share-dropdown-wrap')) return;
+        document.querySelectorAll('[id^="share-dropdown-"]').forEach(function(el) {
+            el.classList.add('hidden');
+        });
+        document.querySelectorAll('[id^="share-btn-"]').forEach(function(el) {
+            el.setAttribute('aria-expanded', 'false');
+        });
+    });
+
     function toggleComments(pubId) {
         const commentsSection = document.getElementById('comments-' + pubId);
         commentsSection.classList.toggle('hidden');
@@ -540,6 +660,7 @@
 const publicationLikers = JSON.parse(document.getElementById('publication-likers-data')?.textContent || '{}');
 const authUser = JSON.parse(document.getElementById('auth-user-data')?.textContent || 'null');
 let openedLikesPublicationId = null;
+let signalModalPubId = null;
 const originalPublicationContent = {};
 
 function getPublicationNodes(pubId) {
@@ -762,13 +883,29 @@ function reactPublication(pubId, action) {
     fetch(`/publications/${pubId}/${action}`, {
         method: 'POST',
         headers: {
-            'X-Requested-With': 'XMLHttpRequest'
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.ok) {
-            document.getElementById('likes-' + pubId).innerText = data.likes;
+    .then(function(response) {
+        return response.json().then(function(data) {
+            return { ok: response.ok, status: response.status, data: data };
+        }).catch(function() {
+            return { ok: false, status: response.status, data: { message: 'Réponse invalide du serveur.' } };
+        });
+    })
+    .then(function(result) {
+        var data = result.data;
+        if (result.ok && data.ok) {
+            if (data.deleted) {
+                var card = document.getElementById('pub-' + pubId);
+                if (card) card.remove();
+                if (openedLikesPublicationId === String(pubId)) closeLikesModal();
+                return;
+            }
+            var likesEl = document.getElementById('likes-' + pubId);
+            if (likesEl) likesEl.innerText = data.likes;
             updateReactionButtons(pubId, data.user_reaction);
             syncLikersCache(pubId, data.user_reaction);
 
@@ -777,24 +914,99 @@ function reactPublication(pubId, action) {
             }
             return;
         }
-        alert('Action impossible');
+        alert(data.message || 'Action impossible');
     })
-    .catch(() => {
-        alert('Erreur lors de la reaction');
+    .catch(function() {
+        alert('Erreur lors de la réaction. Vérifiez votre connexion.');
+    });
+}
+
+function openSignalModal(pubId) {
+    signalModalPubId = pubId;
+    var list = document.querySelectorAll('input[name="signal_reason"]');
+    list.forEach(function(r) { r.checked = false; });
+    document.getElementById('signal-modal').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    if (window.lucide) lucide.createIcons();
+}
+
+function closeSignalModal() {
+    signalModalPubId = null;
+    document.getElementById('signal-modal').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
+
+function submitSignalWithReason() {
+    if (!signalModalPubId) return;
+    var radio = document.querySelector('input[name="signal_reason"]:checked');
+    if (!radio) {
+        alert('Veuillez choisir une cause pour le signalement.');
+        return;
+    }
+    var reason = radio.value;
+    var pubId = signalModalPubId;
+    var btn = document.getElementById('signal-modal-submit');
+    if (btn) { btn.disabled = true; }
+    fetch('/publications/' + pubId + '/signal', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ reason: reason })
+    })
+    .then(function(response) {
+        return response.json().then(function(data) {
+            return { ok: response.ok, status: response.status, data: data };
+        }).catch(function() {
+            return { ok: false, status: response.status, data: { message: 'Réponse invalide du serveur.' } };
+        });
+    })
+    .then(function(result) {
+        var data = result.data;
+        if (result.ok && data.ok) {
+            closeSignalModal();
+            if (data.deleted) {
+                var card = document.getElementById('pub-' + pubId);
+                if (card) card.remove();
+                if (openedLikesPublicationId === String(pubId)) closeLikesModal();
+            } else {
+                var likesEl = document.getElementById('likes-' + pubId);
+                if (likesEl) likesEl.innerText = data.likes;
+                updateReactionButtons(pubId, data.user_reaction);
+                syncLikersCache(pubId, data.user_reaction);
+            }
+        } else {
+            alert(data.message || 'Action impossible');
+        }
+    })
+    .catch(function() {
+        alert('Erreur lors du signalement. Vérifiez votre connexion.');
+    })
+    .finally(function() {
+        if (btn) { btn.disabled = false; }
     });
 }
 
 function updateReactionButtons(pubId, userReaction) {
     const likeBtn = document.getElementById('like-btn-' + pubId);
-    if (!likeBtn) return;
+    if (likeBtn) {
+        likeBtn.classList.remove('text-primary', 'text-muted-foreground');
+        likeBtn.classList.add(userReaction === 1 ? 'text-primary' : 'text-muted-foreground');
+    }
 
-    likeBtn.classList.remove('text-primary', 'text-muted-foreground');
-    likeBtn.classList.add(userReaction === 1 ? 'text-primary' : 'text-muted-foreground');
+    const signalBtn = document.getElementById('signal-btn-' + pubId);
+    if (signalBtn) {
+        signalBtn.classList.remove('text-red-400', 'text-muted-foreground');
+        signalBtn.classList.add(userReaction === 2 ? 'text-red-400' : 'text-muted-foreground');
+    }
 }
 
-document.addEventListener('keydown', (event) => {
+document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
-        closeLikesModal();
+        if (signalModalPubId) closeSignalModal();
+        else closeLikesModal();
     }
 });
 </script>

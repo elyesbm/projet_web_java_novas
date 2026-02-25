@@ -75,7 +75,14 @@
 
             {{ form_start(form, { attr: { class: 'glass-card rounded-3xl p-8 space-y-6', novalidate: 'novalidate' } }) }}
 
-                {# erreurs globales #}
+                {# message haineux / erreur serveur #}
+                {% for msg in app.flashes('error') %}
+                    <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-200">
+                        {{ msg }}
+                    </div>
+                {% endfor %}
+
+                {# erreurs globales du formulaire #}
                 {% if form_errors(form) %}
                     <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-200">
                         {{ form_errors(form) }}
@@ -121,6 +128,40 @@
                     <div class="mt-2 text-xs text-red-400">{{ form_errors(form.titre) }}</div>
                 </div>
 
+                <!-- Image générée par IA -->
+                {{ form_widget(form.image_publication, { attr: { id: 'publication-image-generated', class: 'hidden' } }) }}
+                <div class="p-4 rounded-xl bg-secondary/50 border border-white/10">
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Image (optionnel) – Générer avec l'IA</label>
+                    <p class="text-xs text-muted-foreground mb-2">Génération d'image à partir du texte (Hugging Face, Vertex AI ou Replicate). FR ou EN.</p>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="image-prompt" placeholder="Ex: Robot tenant une planche rouge, style réaliste"
+                            class="flex-1 h-10 bg-secondary border border-white/10 rounded-lg px-3 text-sm focus:outline-none focus:border-primary">
+                        <button type="button" id="btn-generate-image"
+                            class="h-10 px-4 rounded-lg bg-primary/20 text-primary text-sm font-medium hover:bg-primary/30 transition-colors flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                            Générer
+                        </button>
+                    </div>
+                    <p id="image-generate-status" class="text-xs text-muted-foreground hidden"></p>
+                    <div id="image-preview-container" class="mt-3 hidden">
+                        <p class="text-xs text-muted-foreground mb-2">Image générée (sera enregistrée avec la publication) :</p>
+                        <img id="image-preview" src="" alt="Aperçu" class="max-w-full max-h-96 object-contain rounded-xl border border-white/10 bg-white/5">
+                    </div>
+                </div>
+
+                <!-- Vidéo YouTube (optionnel) -->
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Vidéo YouTube (optionnel)</label>
+                    {{ form_widget(form.youtube_video, {
+                        attr: {
+                            placeholder: "Collez l'URL ou l'ID (ex: https://www.youtube.com/watch?v=dQw4w9WgXcQ)",
+                            class: "w-full h-10 bg-secondary border border-white/10 rounded-xl px-4 text-sm focus:outline-none focus:border-primary placeholder:text-muted-foreground/50"
+                        }
+                    }) }}
+                    <p class="mt-1 text-xs text-muted-foreground">Lien YouTube ou ID de la vidéo. La vidéo sera affichée dans la publication.</p>
+                    <div class="mt-2 text-xs text-red-400">{{ form_errors(form.youtube_video) }}</div>
+                </div>
+
                 <!-- Contenu -->
                 <div>
                     <label class="block text-sm font-medium mb-2 text-muted-foreground">Contenu</label>
@@ -161,4 +202,51 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('btn-generate-image');
+    const promptInput = document.getElementById('image-prompt');
+    const statusEl = document.getElementById('image-generate-status');
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImg = document.getElementById('image-preview');
+    var hiddenInput = document.getElementById('publication-image-generated') || document.querySelector('input[name="publication[image_publication]"]');
+
+    if (!btn) return;
+
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const prompt = (promptInput && promptInput.value || '').trim();
+        if (!prompt) {
+            if (statusEl) { statusEl.textContent = 'Entrez une description pour générer une image.'; statusEl.classList.remove('hidden'); statusEl.classList.add('text-amber-400'); }
+            return;
+        }
+        btn.disabled = true;
+        if (statusEl) { statusEl.textContent = 'Génération en cours (10-30 s)...'; statusEl.classList.remove('hidden', 'text-amber-400', 'text-red-400'); statusEl.classList.add('text-primary'); }
+        if (previewContainer) previewContainer.classList.add('hidden');
+
+        fetch('{{ path("app_publication_generer_image") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ prompt: prompt })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.ok && data.filename) {
+                if (hiddenInput) hiddenInput.value = data.filename;
+                if (previewImg) previewImg.src = '/uploads/publication_images/' + data.filename;
+                if (previewContainer) previewContainer.classList.remove('hidden');
+                if (statusEl) { statusEl.textContent = 'Image générée. Elle sera enregistrée avec la publication.'; statusEl.classList.remove('text-red-400'); statusEl.classList.add('text-emerald-400'); }
+            } else {
+                if (statusEl) { statusEl.textContent = data.message || 'Erreur lors de la génération.'; statusEl.classList.add('text-red-400'); }
+            }
+        })
+        .catch(function(err) {
+            if (statusEl) { statusEl.textContent = 'Erreur: ' + (err.message || 'Connexion impossible'); statusEl.classList.add('text-red-400'); }
+        })
+        .finally(function() { btn.disabled = false; });
+    });
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+});
+</script>
 {% endblock %}

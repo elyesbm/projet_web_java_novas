@@ -4,9 +4,28 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    app.toxicity.rapidapi_key: '%env(default::RAPIDAPI_KEY)%'
+    app.toxicity.hf_token: '%env(default::HF_TOKEN)%'
+    app.toxicity.inference_url: '%env(default::HF_INFERENCE_URL)%'
+    app.toxicity.script_path: '%env(default::HF_TOXICITY_SCRIPT)%'
+    app.toxicity.project_dir: '%kernel.project_dir%'
+    app.sentiment.hf_token: '%env(default::HF_TOKEN)%'
+    app.sentiment.inference_url: '%env(default::HF_SENTIMENT_URL)%'
+    app.sentiment.script_path: '%env(default::HF_SENTIMENT_SCRIPT)%'
+    app.sentiment.project_dir: '%kernel.project_dir%'
     app.translation.api_url: '%env(string:TRANSLATION_API_URL)%'
     app.translation.api_key: '%env(string:TRANSLATION_API_KEY)%'
+    app.imagen.gemini_api_key: '%env(default::GEMINI_API_KEY)%'
+    app.replicate.api_token: '%env(default::REPLICATE_API_TOKEN)%'
+    app.vertex_ai.project_id: '%env(default::VERTEX_AI_PROJECT_ID)%'
+    app.vertex_ai.location: '%env(default::VERTEX_AI_LOCATION)%'
+    app.vertex_ai.api_key: '%env(default::VERTEX_AI_API_KEY)%'
+    app.hf_image.token: '%env(default::HF_TOKEN)%'
+    app.hf_image.model: '%env(default::HF_IMAGE_MODEL)%'
+    app.hf_image.base_url: '%env(default::HF_IMAGE_BASE_URL)%'
+    app.hf_image.script_path: '%env(default::HF_IMAGE_SCRIPT)%'
+    app.hf_image.provider: '%env(default::HF_IMAGE_PROVIDER)%'
+    app.hf_image.project_dir: '%kernel.project_dir%'
+    # Dialogflow (chat psy) désactivé – paramètres conservés uniquement si besoin futur
 
 services:
     # default configuration for services in *this* file
@@ -40,7 +59,42 @@ services:
         arguments:
     App\Service\ToxicityAnalysisService:
         arguments:
-            $rapidApiKey: '%app.toxicity.rapidapi_key%'
+            $hfToken: '%app.toxicity.hf_token%'
+            $inferenceUrl: '%app.toxicity.inference_url%'
+            $scriptPath: '%app.toxicity.script_path%'
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\SentimentAnalysisService:
+        arguments:
+            $hfToken: '%app.sentiment.hf_token%'
+            $inferenceUrl: '%app.sentiment.inference_url%'
+            $scriptPath: '%app.sentiment.script_path%'
+            $projectDir: '%app.sentiment.project_dir%'
+
+    App\Service\ImagenService:
+        arguments:
+            $apiKey: '%app.imagen.gemini_api_key%'
+
+    App\Service\ReplicateImageService:
+        arguments:
+            $apiToken: '%app.replicate.api_token%'
+
+    App\Service\VertexImagenService:
+        arguments:
+            $projectId: '%app.vertex_ai.project_id%'
+            $location: '%app.vertex_ai.location%'
+            $apiKey: '%app.vertex_ai.api_key%'
+
+    App\Service\HuggingFaceImageService:
+        arguments:
+            $hfToken: '%app.hf_image.token%'
+            $model: '%app.hf_image.model%'
+            $baseUrl: '%app.hf_image.base_url%'
+            $scriptPath: '%app.hf_image.script_path%'
+            $projectDir: '%app.hf_image.project_dir%'
+            $provider: '%app.hf_image.provider%'
+
+    # App\Service\DialogflowService est conservé comme code mais n'est plus configuré/ni utilisé (chat psy désactivé).
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

@@ -5,85 +5,72 @@ namespace App\Service;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
- * Analyse de toxicité via l'API Hugging Face (unitary/toxic-bert).
- * - Si HF_TOXICITY_SCRIPT est défini : appelle le script Python (client officiel huggingface_hub).
- * - Sinon : appel HTTP vers HF_INFERENCE_URL (ou URL par défaut).
+ * Analyse de sentiments via Hugging Face (nlptown/bert-base-multilingual-uncased-sentiment).
+ *
+ * - Si HF_SENTIMENT_SCRIPT est défini : appelle le script Python (client officiel huggingface_hub).
+ * - Sinon : appel HTTP direct vers HF_SENTIMENT_URL (ou URL par défaut).
+ *
+ * Le résultat principal est une note entière entre 1 et 5 (étoiles).
  */
-class ToxicityAnalysisService
+class SentimentAnalysisService
 {
-    private const DEFAULT_API_URL = 'https://router.huggingface.co/models/unitary/toxic-bert';
-    private const TOXICITY_THRESHOLD = 0.5;
-    private const TOXIC_LABELS = ['toxic', 'severe_toxic', 'threat', 'insult', 'obscene', 'identity_hate'];
+    private const DEFAULT_API_URL = 'https://router.huggingface.co/models/nlptown/bert-base-multilingual-uncased-sentiment';
 
     public function __construct(
         private HttpClientInterface $httpClient,
         private ?string $hfToken = null,
         private ?string $inferenceUrl = null,
         private ?string $scriptPath = null,
-        private string $projectDir = ''
+        private string $projectDir = '',
     ) {
     }
 
     /**
-     * Retourne true si le texte est considéré comme toxique.
-     * Si HF_TOKEN est vide : retourne false (désactivé).
+     * Retourne une note de 1 à 5 (ou null si désactivé / erreur).
      */
-    public function isToxic(string $text): bool
+    public function analyze(string $text): ?int
     {
         $trimmed = trim($text);
         if ($trimmed === '') {
-            return false;
+            return null;
         }
+
         if (empty(trim($this->hfToken ?? '')) && $this->resolveScriptPath() === null) {
-            return false;
+            return null;
         }
 
         try {
-            $scores = $this->analyze($trimmed);
-            return $this->isToxicFromScores($scores);
-        } catch (\Throwable $e) {
-            $msg = $e->getMessage();
-            throw new \RuntimeException(
-                'Vérification de toxicité indisponible. ' . ($msg ?: 'Réessayez plus tard.'),
-                0,
-                $e
-            );
+            $scores = $this->analyzeInternal($trimmed);
+            return $this->scoresToStars($scores);
+        } catch (\Throwable) {
+            // Pour l'UI, on ne bloque pas : on masque simplement la note.
+            return null;
         }
-    }
-
-    /** Source utilisée (URL HTTP ou script) pour debug / commande de test. */
-    public function getApiUrl(): string
-    {
-        if ($this->resolveScriptPath() !== null) {
-            return 'script: ' . trim($this->scriptPath ?? '');
-        }
-        return $this->resolveApiUrl();
     }
 
     /**
-     * Retourne les scores de toxicité (pour debug / affichage).
+     * Retourne les scores bruts (pour debug / éventuelle commande console).
      *
      * @return array<array{label: string, score: float}>
      */
-    public function getToxicityScores(string $text): array
+    public function getRawScores(string $text): array
     {
         $trimmed = trim($text);
         if ($trimmed === '' || (empty(trim($this->hfToken ?? '')) && $this->resolveScriptPath() === null)) {
             return [];
         }
+
         try {
-            return $this->analyze($trimmed);
+            return $this->analyzeInternal($trimmed);
         } catch (\Throwable) {
             return [];
         }
     }
 
     /**
-     * Script configuré → appel du script (API via SDK). Sinon → HTTP.
-     *
      * @return array<array{label: string, score: float}>
      */
-    private function analyze(string $text): array
+    private function analyzeInternal(string $text): array
     {
         $script = $this->resolveScriptPath();
         if ($script !== null) {
@@ -96,6 +83,7 @@ class ToxicityAnalysisService
                 return $this->callApi($text);
             }
         }
+
         return $this->callApi($text);
     }
 
@@ -126,9 +114,11 @@ class ToxicityAnalysisService
             $env,
             ['bypass_shell' => true]
         );
+
         if (!\is_resource($proc)) {
-            throw new \RuntimeException('Impossible de lancer le script HF.');
+            throw new \RuntimeException('Impossible de lancer le script HF de sentiment.');
         }
+
         fwrite($pipes[0], $text);
         fclose($pipes[0]);
         $stdout = stream_get_contents($pipes[1]);
@@ -136,20 +126,26 @@ class ToxicityAnalysisService
         fclose($pipes[1]);
         fclose($pipes[2]);
         $code = proc_close($proc);
+
         if ($code !== 0 && $stdout === '') {
-            throw new \RuntimeException('Script HF: ' . ($stderr ?: "exit $code"));
+            throw new \RuntimeException('Script HF sentiment: ' . ($stderr ?: "exit $code"));
         }
+
         $data = json_decode($stdout, true);
         if (!\is_array($data)) {
-            throw new \RuntimeException('Script HF: sortie JSON invalide.');
+            throw new \RuntimeException('Script HF sentiment: sortie JSON invalide.');
         }
         if (isset($data['error'])) {
-            throw new \RuntimeException('Script HF: ' . $data['error']);
+            throw new \RuntimeException('Script HF sentiment: ' . $data['error']);
         }
+
         $result = [];
         foreach ($data as $item) {
             if (isset($item['label'], $item['score'])) {
-                $result[] = ['label' => (string) $item['label'], 'score' => (float) $item['score']];
+                $result[] = [
+                    'label' => (string) $item['label'],
+                    'score' => (float) $item['score'],
+                ];
             }
         }
         return $result;
@@ -162,66 +158,89 @@ class ToxicityAnalysisService
     }
 
     /**
-     * Un seul appel HTTP vers l'URL configurée.
+     * Appel HTTP direct vers l'API HF.
      *
      * @return array<array{label: string, score: float}>
      */
     private function callApi(string $text): array
     {
         $url = $this->resolveApiUrl();
+        $token = trim($this->hfToken ?? '');
+        if ($token === '') {
+            throw new \RuntimeException('HF_TOKEN manquant pour l’analyse de sentiments.');
+        }
+
         $response = $this->httpClient->request('POST', $url, [
             'headers' => [
-                'Authorization' => 'Bearer ' . $this->hfToken,
+                'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
             ],
-            'json' => ['inputs' => $text],
-            'timeout' => 20,
+            'json' => [
+                'inputs' => $text,
+            ],
         ]);
 
         $status = $response->getStatusCode();
         $body = $response->getContent(false);
 
-        if ($status === 401) {
-            throw new \RuntimeException('Token Hugging Face invalide ou permissions manquantes.');
-        }
         if ($status < 200 || $status >= 300) {
-            throw new \RuntimeException('API Hugging Face: HTTP ' . $status . ' - ' . substr($body, 0, 150));
+            $decoded = json_decode($body, true);
+            $msg = is_array($decoded) ? ($decoded['error'] ?? $decoded['message'] ?? json_encode($decoded)) : $body;
+            throw new \RuntimeException('API Hugging Face (sentiment): HTTP ' . $status . ' - ' . $msg);
         }
 
         $data = json_decode($body, true);
-        if (!\is_array($data) || isset($data['error'])) {
-            return [];
+        if (!\is_array($data)) {
+            throw new \RuntimeException('API Hugging Face (sentiment): réponse JSON invalide.');
         }
 
-        // Format tableau [ { "label": "toxic", "score": 0.99 }, ... ]
-        if (isset($data[0]) && \is_array($data[0])) {
-            $result = [];
-            foreach ($data as $item) {
-                if (isset($item['label'], $item['score'])) {
-                    $result[] = ['label' => (string) $item['label'], 'score' => (float) $item['score']];
-                }
-            }
-            return $result;
-        }
-        // Format objet { "toxic": 0.99, ... }
         $result = [];
-        foreach ($data as $label => $score) {
-            if (\is_string($label) && \is_numeric($score)) {
-                $result[] = ['label' => $label, 'score' => (float) $score];
+        foreach ($data as $item) {
+            if (isset($item['label'], $item['score'])) {
+                $result[] = [
+                    'label' => (string) $item['label'],
+                    'score' => (float) $item['score'],
+                ];
             }
         }
+
         return $result;
     }
 
-    private function isToxicFromScores(array $scores): bool
+    /**
+     * @param array<array{label: string, score: float}> $scores
+     */
+    private function scoresToStars(array $scores): ?int
     {
+        $bestLabel = null;
+        $bestScore = null;
+
         foreach ($scores as $item) {
-            $label = strtolower((string) ($item['label'] ?? ''));
-            $score = (float) ($item['score'] ?? 0);
-            if ($score >= self::TOXICITY_THRESHOLD && \in_array($label, self::TOXIC_LABELS, true)) {
-                return true;
+            $score = $item['score'] ?? null;
+            if (!\is_float($score) && !\is_int($score)) {
+                continue;
+            }
+            if ($bestScore === null || $score > $bestScore) {
+                $bestScore = (float) $score;
+                $bestLabel = (string) ($item['label'] ?? '');
             }
         }
-        return false;
+
+        if ($bestLabel === null) {
+            return null;
+        }
+
+        $label = strtolower($bestLabel);
+
+        if (preg_match('/([1-5])\\s*star/', $label, $m)) {
+            return (int) $m[1];
+        }
+
+        if (preg_match('/\\b([1-5])\\b/', $label, $m)) {
+            return (int) $m[1];
+        }
+
+        return null;
     }
 }
+

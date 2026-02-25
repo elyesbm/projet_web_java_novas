@@ -13,7 +13,11 @@ use App\Service\ToxicityAnalysisService;
 use App\Repository\PublicationRepository;
 use App\Repository\PublicationReactionRepository;
 use App\Repository\UserRepository;
+use App\Service\HuggingFaceImageService;
+use App\Service\ReplicateImageService;
+use App\Service\VertexImagenService;
 use App\Service\PublicationTranslationService;
+use App\Service\SentimentAnalysisService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -31,6 +35,35 @@ class PublicationController extends AbstractController
         'it' => 'Italiano',
         'ar' => 'Arabic',
     ];
+
+    /** Causes de signalement (code => libellé) */
+    public const REPORT_CAUSES = [
+        'spam' => 'Spam ou publicité',
+        'inappropriate' => 'Contenu inapproprié',
+        'harassment' => 'Harcèlement ou intimidation',
+        'false_info' => 'Fausse information',
+        'violence' => 'Violence ou menaces',
+        'hate' => 'Discours haineux',
+        'other' => 'Autre',
+    ];
+
+    /**
+     * Extrait l'ID d'une vidéo YouTube depuis une URL ou retourne la chaîne si c'est déjà un ID (11 caractères).
+     */
+    private static function normalizeYoutubeVideoId(?string $input): ?string
+    {
+        if ($input === null || trim($input) === '') {
+            return null;
+        }
+        $input = trim($input);
+        if (preg_match('#(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([A-Za-z0-9_-]{10,12})#', $input, $m)) {
+            return $m[1];
+        }
+        if (preg_match('#^[A-Za-z0-9_-]{10,12}$#', $input)) {
+            return $input;
+        }
+        return null;
+    }
 
     /**
      * ✅ User courant OU fallback (1er user en base)
@@ -53,7 +86,8 @@ class PublicationController extends AbstractController
         CommentaireRepository $commentRepo,
         UserRepository $userRepo,
         PublicationReactionRepository $reactionRepo,
-        PaginatorInterface $paginator
+        PaginatorInterface $paginator,
+        SentimentAnalysisService $sentimentService
     ): Response
     {
         $contexteFilter = $request->query->get('contexte');
@@ -99,9 +133,10 @@ class PublicationController extends AbstractController
         $authenticatedUser = $this->getUser();
 
         $userReactions = [];
-        $dislikeCounts = [];
+        $signalCounts = [];
         $likeCounts = [];
         $publicationIds = [];
+        $sentimentScores = [];
         foreach ($publicationsPage as $pub) {
             $pubId = $pub->getId();
             if ($pubId === null) {
@@ -113,9 +148,9 @@ class PublicationController extends AbstractController
                 'publication' => $pub,
                 'value' => 1,
             ]);
-            $dislikeCounts[$pubId] = (int) $reactionRepo->count([
+            $signalCounts[$pubId] = (int) $reactionRepo->count([
                 'publication' => $pub,
-                'value' => -1,
+                'value' => 2,
             ]);
 
             $userReactions[$pubId] = 0;
@@ -126,6 +161,17 @@ class PublicationController extends AbstractController
                 ]);
                 if ($existingReaction) {
                     $userReactions[$pubId] = $existingReaction->getValue();
+                }
+            }
+
+            // Analyse de sentiments (1–5 étoiles) sur le contenu de la publication.
+            $content = $pub->getContenu();
+            if (\is_string($content)) {
+                // On retire le HTML éventuel, le modèle travaille sur du texte brut.
+                $plainText = trim(strip_tags($content));
+                $stars = $sentimentService->analyze($plainText);
+                if ($stars !== null) {
+                    $sentimentScores[$pubId] = $stars;
                 }
             }
         }
@@ -158,7 +204,7 @@ class PublicationController extends AbstractController
             'total_publications' => $totalPublications,
             'total_pages' => $totalPages,
             'user_reactions' => $userReactions,
-            'dislike_counts' => $dislikeCounts,
+            'signal_counts' => $signalCounts,
             'like_counts' => $likeCounts,
             'likers_by_publication' => $likersByPublication,
             'auth_user' => $authenticatedUser instanceof User ? [
@@ -168,29 +214,80 @@ class PublicationController extends AbstractController
                 'image' => $authenticatedUser->getIMAGE(),
             ] : null,
             'translation_languages' => self::TRANSLATION_LANGUAGES,
+            'sentiment_scores' => $sentimentScores,
+            'report_causes' => self::REPORT_CAUSES,
         ]);
     }
 
+
+    #[Route('/generer-image', name: 'app_publication_generer_image', methods: ['POST'])]
+    public function genererImage(
+        Request $request,
+        HuggingFaceImageService $hfImageService,
+        VertexImagenService $vertexImagenService,
+        ReplicateImageService $replicateImageService
+    ): Response {
+        $data = json_decode($request->getContent(), true);
+        $prompt = trim((string) ($data['prompt'] ?? ''));
+        if ($prompt === '') {
+            return $this->json(['ok' => false, 'message' => 'Prompt requis.'], 400);
+        }
+
+        $imageService = $this->resolveImageService($hfImageService, $vertexImagenService, $replicateImageService);
+        try {
+            $images = $imageService->generateImages($prompt, 1);
+        } catch (\Throwable $e) {
+            return $this->json(['ok' => false, 'message' => $e->getMessage()], 500);
+        }
+
+        if (empty($images)) {
+            return $this->json(['ok' => false, 'message' => 'Aucune image générée.'], 500);
+        }
+
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/publication_images';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        $prefix = $imageService instanceof HuggingFaceImageService ? 'hf_' : ($imageService instanceof VertexImagenService ? 'vertex_' : 'flux_');
+        $filename = $prefix . uniqid() . '_' . time() . '.png';
+        $path = $uploadDir . '/' . $filename;
+        file_put_contents($path, base64_decode($images[0]['base64']));
+
+        return $this->json(['ok' => true, 'filename' => $filename]);
+    }
+
+    /**
+     * Priorité : Hugging Face (text-to-image) si HF_TOKEN configuré, sinon Vertex AI (Imagen), sinon Replicate (FLUX).
+     */
+    private function resolveImageService(
+        HuggingFaceImageService $hf,
+        VertexImagenService $vertex,
+        ReplicateImageService $replicate
+    ): HuggingFaceImageService|VertexImagenService|ReplicateImageService {
+        $hfToken = $this->getParameter('app.hf_image.token');
+        if (!empty(trim((string) $hfToken))) {
+            return $hf;
+        }
+        $projectId = $this->getParameter('app.vertex_ai.project_id');
+        $apiKey = $this->getParameter('app.vertex_ai.api_key');
+        if (!empty(trim((string) $projectId)) && !empty(trim((string) $apiKey))) {
+            return $vertex;
+        }
+        return $replicate;
+    }
 
     #[Route('/nouvelle', name: 'app_publication_nouvelle', methods: ['GET', 'POST'])]
     public function nouvelle(
         Request $request,
         EntityManagerInterface $em,
-        UserRepository $userRepo
+        UserRepository $userRepo,
+        ToxicityAnalysisService $toxicityService
     ): Response {
         $user = $this->getCurrentUserOrFallback($userRepo);
 
         if (!$user) {
             $this->addFlash('error', 'Aucun utilisateur en base.');
             return $this->redirectToRoute('app_publications_index');
-            $textToCheck = ($pub->getTitre() ?? '') . ' ' . ($pub->getContenu() ?? '');
-            if ($toxicityService->isToxic($textToCheck)) {
-                $this->addFlash('error', 'Votre publication contient du contenu inapproprié. Merci de modifier votre texte.');
-                return $this->render('front/publication/nouvelle.html.twig', [
-                    'form' => $form->createView(),
-                ]);
-            }
-
         }
 
         $pub = new Publication();
@@ -199,8 +296,24 @@ class PublicationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $textToCheck = ($pub->getTitre() ?? '') . ' ' . ($pub->getContenu() ?? '');
+            try {
+                if ($toxicityService->isToxic($textToCheck)) {
+                    $this->addFlash('error', 'Votre message est haineux. Merci de modifier votre texte avant de publier.');
+                    return $this->render('front/publication/nouvelle.html.twig', [
+                        'form' => $form->createView(),
+                    ]);
+                }
+            } catch (\RuntimeException $e) {
+                $this->addFlash('error', $e->getMessage());
+                return $this->render('front/publication/nouvelle.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
+
             $anonyme = (bool) $form->get('anonyme')->getData();
 
+            $pub->setYoutubeVideoId(self::normalizeYoutubeVideoId($pub->getYoutubeVideoId()));
             $pub->setStatut(1);
             $pub->setDateCreation(new \DateTime('now', new \DateTimeZone('Europe/Paris')));
             $pub->setAuteur($user);
@@ -226,7 +339,8 @@ class PublicationController extends AbstractController
         int $id,
         PublicationRepository $repo,
         UserRepository $userRepo,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        ToxicityAnalysisService $toxicityService
     ): Response {
         $pub = $repo->find($id);
         if (!$pub) {
@@ -238,15 +352,6 @@ class PublicationController extends AbstractController
         if (!$user || !$pub->getAuteur() || $pub->getAuteur()->getId() !== $user->getId()) {
             $this->addFlash('error', 'Action non autorisée.');
             return $this->redirectToRoute('app_publications_index');
-            $textToCheck = ($pub->getTitre() ?? '') . ' ' . ($pub->getContenu() ?? '');
-            if ($toxicityService->isToxic($textToCheck)) {
-                $this->addFlash('error', 'Votre publication contient du contenu inapproprié. Merci de modifier votre texte.');
-                return $this->render('front/publication/modifier.html.twig', [
-                    'publication' => $pub,
-                    'form' => $form->createView(),
-                ]);
-            }
-
         }
 
         $form = $this->createForm(PublicationType::class, $pub, [
@@ -255,6 +360,24 @@ class PublicationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $textToCheck = ($pub->getTitre() ?? '') . ' ' . ($pub->getContenu() ?? '');
+            try {
+                if ($toxicityService->isToxic($textToCheck)) {
+                    $this->addFlash('error', 'Votre message est haineux. Merci de modifier votre texte avant de publier.');
+                    return $this->render('front/publication/modifier.html.twig', [
+                        'publication' => $pub,
+                        'form' => $form->createView(),
+                    ]);
+                }
+            } catch (\RuntimeException $e) {
+                $this->addFlash('error', $e->getMessage());
+                return $this->render('front/publication/modifier.html.twig', [
+                    'publication' => $pub,
+                    'form' => $form->createView(),
+                ]);
+            }
+
+            $pub->setYoutubeVideoId(self::normalizeYoutubeVideoId($pub->getYoutubeVideoId()));
             $pub->setDateModification(new \DateTime('now', new \DateTimeZone('Europe/Paris')));
             $em->flush();
             $this->addFlash('success', 'Publication modifiée.');
@@ -351,11 +474,53 @@ class PublicationController extends AbstractController
         return $this->redirectToRoute('app_publications_index');
     }
 
-    #[Route('/{id}/signaler', name: 'app_publication_signaler', methods: ['GET'])]
-    public function signaler(): Response
-    {
-        $this->addFlash('warning', 'Publication signalée.');
-        return $this->redirectToRoute('app_publications_index');
+    #[Route('/{id}/signal', name: 'app_publication_signal', methods: ['POST'])]
+    public function signal(
+        Request $request,
+        int $id,
+        PublicationRepository $repo,
+        PublicationReactionRepository $reactionRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(['ok' => false, 'message' => 'Connexion requise.'], 401);
+        }
+
+        $pub = $repo->find($id);
+        if (!$pub || $pub->getStatut() != 1) {
+            return $this->json(['ok' => false, 'message' => 'Publication introuvable ou inactive.'], 404);
+        }
+
+        $reason = null;
+        $payload = json_decode($request->getContent(), true) ?: $request->request->all();
+        if (\is_array($payload) && isset($payload['reason']) && \is_string($payload['reason'])) {
+            $reason = trim($payload['reason']);
+            if ($reason !== '' && !\array_key_exists($reason, self::REPORT_CAUSES)) {
+                return $this->json(['ok' => false, 'message' => 'Cause de signalement invalide.'], 400);
+            }
+            if ($reason === '') {
+                $reason = null;
+            }
+        }
+
+        try {
+            $result = $this->applyReaction($pub, $user, 2, $reactionRepo, $em, $reason);
+
+            // Si la publication atteint 2 signalements, elle est supprimée automatiquement (soft-delete)
+            if (($result['signals'] ?? 0) >= 2) {
+                $pub->setDeletedAt(new \DateTime('now', new \DateTimeZone('Europe/Paris')));
+                $em->flush();
+                $result['deleted'] = true;
+            }
+
+            return $this->json($result);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'ok' => false,
+                'message' => 'Erreur lors du signalement: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     #[Route('/{id}/translate', name: 'app_publication_translate', methods: ['POST'])]
@@ -435,7 +600,8 @@ class PublicationController extends AbstractController
         User $user,
         int $newValue,
         PublicationReactionRepository $reactionRepo,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        ?string $signalReason = null
     ): array {
         $reaction = $reactionRepo->findOneBy([
             'publication' => $pub,
@@ -450,7 +616,9 @@ class PublicationController extends AbstractController
                 ->setPublication($pub)
                 ->setUser($user)
                 ->setValue($newValue);
-
+            if ($newValue === 2) {
+                $reaction->setSignalReason($signalReason);
+            }
             $em->persist($reaction);
             $changed = true;
         } elseif ($previousValue === $newValue) {
@@ -459,6 +627,9 @@ class PublicationController extends AbstractController
             $changed = true;
         } elseif ($previousValue !== $newValue) {
             $reaction->setValue($newValue);
+            if ($newValue === 2) {
+                $reaction->setSignalReason($signalReason);
+            }
             $changed = true;
         }
 
@@ -470,9 +641,9 @@ class PublicationController extends AbstractController
             'publication' => $pub,
             'value' => 1,
         ]);
-        $dislikes = (int) $reactionRepo->count([
+        $signals = (int) $reactionRepo->count([
             'publication' => $pub,
-            'value' => -1,
+            'value' => 2,
         ]);
 
         if ($pub->getLikes() !== $likes) {
@@ -483,7 +654,7 @@ class PublicationController extends AbstractController
         return [
             'ok'    => true,
             'likes' => $likes,
-            'dislikes' => $dislikes,
+            'signals' => $signals,
             'user_reaction' => $reaction?->getValue() ?? 0,
         ];
     }

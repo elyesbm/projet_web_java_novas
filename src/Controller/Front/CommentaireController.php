@@ -2,7 +2,6 @@
 
 namespace App\Controller\Front;
 
-use App\Service\ToxicityAnalysisService;
 use App\Entity\Commentaire;
 use App\Form\CommentaireType;
 use App\Repository\CommentaireRepository;
@@ -70,25 +69,25 @@ class CommentaireController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-        $comment->setDateCreation(new \DateTime('now', new \DateTimeZone('Europe/Paris')));
-        $comment->setAuteur($user);
-        $comment->setPublication($pub);
-        $comment->setImage($user->getIMAGE() ?? '');
+            $comment->setDateCreation(new \DateTime('now', new \DateTimeZone('Europe/Paris')));
+            $comment->setAuteur($user);
+            $comment->setPublication($pub);
+            $comment->setImage($user->getIMAGE() ?? '');
 
-        $audioFile = $form->get('audio')->getData();
-        if ($audioFile) {
-            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/comment_audio';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
+            $audioFile = $form->get('audio')->getData();
+            if ($audioFile) {
+                $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/comment_audio';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                $ext = $audioFile->guessExtension() ?: 'webm';
+                $filename = sprintf('%s_%s.%s', uniqid('voice_', true), (new \DateTimeImmutable())->format('YmdHis'), $ext);
+                $audioFile->move($uploadDir, $filename);
+                $comment->setAudioFilename($filename);
+                if (trim((string) $comment->getContenu()) === '') {
+                    $comment->setContenu('[Message vocal]');
+                }
             }
-            $ext = $audioFile->guessExtension() ?: 'webm';
-            $filename = sprintf('%s_%s.%s', uniqid('voice_', true), (new \DateTimeImmutable())->format('YmdHis'), $ext);
-            $audioFile->move($uploadDir, $filename);
-            $comment->setAudioFilename($filename);
-            if (trim((string) $comment->getContenu()) === '') {
-                $comment->setContenu('[Message vocal]');
-            }
-        }
 
         $parentId = $form->get('parent_id')->getData();
         if ($parentId && is_numeric($parentId)) {
@@ -98,11 +97,11 @@ class CommentaireController extends AbstractController
             }
         }
 
-        $em->persist($comment);
-        $em->flush();
+            $em->persist($comment);
+            $em->flush();
 
-        $this->addFlash('comment_success_' . $id, 'Commentaire ajouté.');
-    } else {
+            $this->addFlash('comment_success_' . $id, 'Commentaire ajouté.');
+        } else {
         // ✅ message d’erreur détaillé (1er message)
         $firstError = 'Commentaire invalide.';
         foreach ($form->getErrors(true) as $error) {
@@ -111,8 +110,8 @@ class CommentaireController extends AbstractController
         }
 
         // ✅ flash ciblé UNIQUEMENT pour cette publication
-        $this->addFlash('comment_error_' . $id, $firstError);
-    }
+            $this->addFlash('comment_error_' . $id, $firstError);
+        }
 
     // ✅ retour sur la même publication + ouvrir commentaires
     $params = [
@@ -125,12 +124,10 @@ class CommentaireController extends AbstractController
         $params['contexte'] = (int) $returnContexte;
     }
 
-    return $this->redirectToRoute('app_publications_index', $params + [
-        '_fragment' => 'pub-' . $id,
-    ]);
-}
-
-
+        return $this->redirectToRoute('app_publications_index', $params + [
+            '_fragment' => 'pub-' . $id,
+        ]);
+    }
     #[Route('/{id}/supprimer', name: 'app_commentaire_supprimer', methods: ['POST'])]
     public function supprimer(
         Request $request,
