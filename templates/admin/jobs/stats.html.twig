@@ -1,0 +1,58 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Statistiques Jobs - NOVAS Admin{% endblock %}
+{% block page_title %}Statistiques Jobs{% endblock %}
+{% block page_subtitle %}Analyse des offres et candidatures{% endblock %}
+
+{% block body %}
+<div class="space-y-6">
+    <div class="flex items-center justify-end gap-2">
+        <a href="{{ path('app_admin_jobs_list') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Retour aux offres
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-soft">
+            <p class="text-sm text-slate-500">Total offres</p>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white mt-2">{{ summary.totalOffers }}</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-soft">
+            <p class="text-sm text-slate-500">Total candidatures</p>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white mt-2">{{ summary.totalApplications }}</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-soft">
+            <p class="text-sm text-slate-500">Candidatures (30 derniers jours)</p>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white mt-2">{{ summary.applicationsLast30Days }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-soft">
+            <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-4">Offres par categorie</h3>
+            <div class="relative h-[340px]">
+                {{ render_chart(offersByCategoryChart) }}
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-soft">
+            <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-4">Repartition des candidatures par statut</h3>
+            <div class="relative h-[340px]">
+                {{ render_chart(applicationsByStatusChart) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-soft">
+        <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-4">Candidatures par jour (30 derniers jours)</h3>
+        <div class="relative h-[360px]">
+            {{ render_chart(applicationsPerDayChart) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ importmap('app') }}
+{% endblock %}

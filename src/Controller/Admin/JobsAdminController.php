@@ -6,6 +6,7 @@ use App\Entity\Offrejob;
 use App\Entity\CandidatureJob;
 use App\Repository\OffrejobRepository;
 use App\Repository\CandidatureJobRepository;
+use App\Service\JobStatsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,6 +14,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 #[Route('/admin/jobs')]
 class JobsAdminController extends AbstractController
@@ -35,6 +38,94 @@ class JobsAdminController extends AbstractController
             'q' => $q,
             'sort' => $sort,
             'dir' => $dir,
+        ]);
+    }
+
+    #[Route('/stats', name: 'app_admin_jobs_stats', methods: ['GET'])]
+    public function stats(JobStatsService $jobStatsService, ChartBuilderInterface $chartBuilder): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        $offersPerCategory = $jobStatsService->getOffersPerCategory();
+        $applicationsPerDay = $jobStatsService->getApplicationsPerDayLastDays(30);
+        $applicationsByStatus = $jobStatsService->getApplicationsByStatus();
+        $summary = $jobStatsService->getSummary(30);
+
+        $offersByCategoryChart = $chartBuilder->createChart(Chart::TYPE_BAR);
+        $offersByCategoryChart->setData([
+            'labels' => $offersPerCategory['labels'],
+            'datasets' => [[
+                'label' => 'Offres par categorie',
+                'data' => $offersPerCategory['data'],
+                'backgroundColor' => ['#0ea5e9', '#22c55e', '#f59e0b', '#8b5cf6'],
+                'borderRadius' => 8,
+            ]],
+        ]);
+        $offersByCategoryChart->setOptions([
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+            'plugins' => ['legend' => ['display' => false]],
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => ['precision' => 0],
+                ],
+            ],
+        ]);
+
+        $applicationsPerDayChart = $chartBuilder->createChart(Chart::TYPE_LINE);
+        $applicationsPerDayChart->setData([
+            'labels' => $applicationsPerDay['labels'],
+            'datasets' => [[
+                'label' => 'Candidatures / jour',
+                'data' => $applicationsPerDay['data'],
+                'borderColor' => '#0ea5e9',
+                'backgroundColor' => 'rgba(14,165,233,0.18)',
+                'fill' => true,
+                'tension' => 0.35,
+                'pointRadius' => 2,
+            ]],
+        ]);
+        $applicationsPerDayChart->setOptions([
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+            'plugins' => ['legend' => ['display' => false]],
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => ['precision' => 0],
+                ],
+            ],
+        ]);
+
+        $applicationsByStatusChart = $chartBuilder->createChart(Chart::TYPE_PIE);
+        $applicationsByStatusChart->setData([
+            'labels' => $applicationsByStatus['labels'],
+            'datasets' => [[
+                'data' => $applicationsByStatus['data'],
+                'backgroundColor' => ['#f59e0b', '#22c55e', '#ef4444'],
+                'borderColor' => '#ffffff',
+                'borderWidth' => 2,
+            ]],
+        ]);
+        $applicationsByStatusChart->setOptions([
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+            'plugins' => [
+                'legend' => [
+                    'position' => 'bottom',
+                    'labels' => [
+                        'boxWidth' => 14,
+                    ],
+                ],
+            ],
+        ]);
+
+        return $this->render('admin/jobs/stats.html.twig', [
+            'offersByCategoryChart' => $offersByCategoryChart,
+            'applicationsPerDayChart' => $applicationsPerDayChart,
+            'applicationsByStatusChart' => $applicationsByStatusChart,
+            'summary' => $summary,
         ]);
     }
 

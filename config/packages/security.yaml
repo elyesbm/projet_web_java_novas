@@ -30,6 +30,8 @@ security:
     access_control:
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/(publications|commentaires), roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/user/profile, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/user/update-face, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/user, roles: ROLE_USER }
 
 when@test:
