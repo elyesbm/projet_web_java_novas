@@ -115,7 +115,7 @@
                         <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">{{ skill.descriptionSkill|default('—') }}</p>
                         <div class="flex gap-2">
                             <a href="{{ path('app_admin_skills_edit', { id: skill.id }) }}" class="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">Modifier</a>
-                            <form method="post" action="{{ path('app_admin_skills_delete', { id: skill.id }) }}" class="inline" onsubmit="return confirm('Supprimer cette compétence ?');">
+                            <form method="post" action="{{ path('app_admin_skills_delete', { id: skill.id }) }}" class="inline">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete_skill_' ~ skill.id) }}">
                                 <button type="submit" class="px-3 py-2 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             </form>
@@ -216,7 +216,7 @@
                             </td>
                             <td class="py-4 text-right">
                                 <a href="{{ path('app_admin_learning_path_edit', { id: lp.id }) }}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 text-sm hover:bg-slate-100 dark:hover:bg-slate-600">Modifier</a>
-                                <form method="post" action="{{ path('app_admin_learning_path_delete', { id: lp.id }) }}" class="inline ml-1" onsubmit="return confirm('Supprimer ce parcours ?');">
+                                <form method="post" action="{{ path('app_admin_learning_path_delete', { id: lp.id }) }}" class="inline ml-1">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_learning_path_' ~ lp.id) }}">
                                     <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 text-sm hover:bg-rose-50 dark:hover:bg-rose-900/20">Supprimer</button>
                                 </form>

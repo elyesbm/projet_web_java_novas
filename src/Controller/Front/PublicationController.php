@@ -4,11 +4,20 @@ namespace App\Controller\Front;
 
 use App\Entity\Commentaire;
 use App\Entity\Publication;
+use App\Entity\PublicationReaction;
+use App\Entity\User;
 use App\Form\CommentaireType;
 use App\Form\PublicationType;
+use App\Repository\CommentaireRepository;
+use App\Service\ToxicityAnalysisService;
 use App\Repository\PublicationRepository;
+use App\Repository\PublicationReactionRepository;
 use App\Repository\UserRepository;
+use App\Service\HuggingFaceImageService;
+use App\Service\PublicationTranslationService;
+use App\Service\SentimentAnalysisService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,6 +26,43 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/publications')]
 class PublicationController extends AbstractController
 {
+    private const TRANSLATION_LANGUAGES = [
+        'en' => 'English',
+        'es' => 'Espanol',
+        'de' => 'Deutsch',
+        'it' => 'Italiano',
+        'ar' => 'Arabic',
+    ];
+
+    /** Causes de signalement (code => libellé) */
+    public const REPORT_CAUSES = [
+        'spam' => 'Spam ou publicité',
+        'inappropriate' => 'Contenu inapproprié',
+        'harassment' => 'Harcèlement ou intimidation',
+        'false_info' => 'Fausse information',
+        'violence' => 'Violence ou menaces',
+        'hate' => 'Discours haineux',
+        'other' => 'Autre',
+    ];
+
+    /**
+     * Extrait l'ID d'une vidéo YouTube depuis une URL ou retourne la chaîne si c'est déjà un ID (11 caractères).
+     */
+    private static function normalizeYoutubeVideoId(?string $input): ?string
+    {
+        if ($input === null || trim($input) === '') {
+            return null;
+        }
+        $input = trim($input);
+        if (preg_match('#(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([A-Za-z0-9_-]{10,12})#', $input, $m)) {
+            return $m[1];
+        }
+        if (preg_match('#^[A-Za-z0-9_-]{10,12}$#', $input)) {
+            return $input;
+        }
+        return null;
+    }
+
     /**
      * ✅ User courant OU fallback (1er user en base)
      */
@@ -31,85 +77,185 @@ class PublicationController extends AbstractController
         return $user;
     }
 
-  #[Route('/', name: 'app_publications_index', methods: ['GET'])]
-public function index(Request $request, PublicationRepository $repo, UserRepository $userRepo): Response
-{
-    $contexteFilter = $request->query->get('contexte');
+    #[Route('/', name: 'app_publications_index', methods: ['GET'])]
+    public function index(
+        Request $request,
+        PublicationRepository $repo,
+        CommentaireRepository $commentRepo,
+        UserRepository $userRepo,
+        PublicationReactionRepository $reactionRepo,
+        PaginatorInterface $paginator,
+        SentimentAnalysisService $sentimentService
+    ): Response
+    {
+        $contexteFilter = $request->query->get('contexte');
+        $q = trim((string) $request->query->get('q', ''));
+        $sort = (string) $request->query->get('sort', 'created_desc');
 
-    // ✅ q: recherche (titre + contenu + nom/prénom auteur)
-    $q = trim((string) $request->query->get('q', ''));
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = 5;
 
-    // ✅ sort : created_desc / updated_desc
-    $sort = (string) $request->query->get('sort', 'created_desc');
+        $qb = $repo->createQueryBuilder('p')
+            ->leftJoin('p.auteur', 'a')
+            ->addSelect('a')
+            ->andWhere('p.statut = :statut')
+            ->setParameter('statut', 1);
 
-    // ✅ ordre (updated: fallback sur date_creation)
-    $orderBy = match ($sort) {
-        'updated_desc' => ['date_modification' => 'DESC', 'date_creation' => 'DESC'],
-        default        => ['date_creation' => 'DESC'],
-    };
+        if ($contexteFilter !== null && in_array((int) $contexteFilter, [1, 2], true)) {
+            $qb->andWhere('p.contexte = :contexte')
+                ->setParameter('contexte', (int) $contexteFilter);
+        }
 
-    // ✅ uniquement les pubs actives
-    $criteria = ['statut' => 1];
+        if ($q !== '') {
+            $qb->andWhere(
+                'LOWER(p.titre) LIKE :q
+                 OR LOWER(p.contenu) LIKE :q
+                 OR LOWER(a.NOM) LIKE :q
+                 OR LOWER(a.PRENOM) LIKE :q'
+            )->setParameter('q', '%' . strtolower($q) . '%');
+        }
 
-    if ($contexteFilter !== null && in_array((int) $contexteFilter, [1, 2], true)) {
-        $criteria['contexte'] = (int) $contexteFilter;
-    }
+        match ($sort) {
+            'updated_desc' => $qb->orderBy('p.date_modification', 'DESC')
+                ->addOrderBy('p.date_creation', 'DESC'),
+            default => $qb->orderBy('p.date_creation', 'DESC'),
+        };
 
-    // ✅ récupère depuis DB trié
-    $publications = $repo->findBy($criteria, $orderBy);
+        $publicationsPage = $paginator->paginate($qb, $page, $perPage);
 
-    // ✅ filtre en mémoire (titre + contenu + auteur nom/prénom)
-    if ($q !== '') {
-        $publications = array_values(array_filter($publications, function ($pub) use ($q) {
-            $titre = (string) ($pub->getTitre() ?? '');
-            $contenu = (string) ($pub->getContenu() ?? '');
+        $totalPublications = (int) $publicationsPage->getTotalItemCount();
+        $totalPages = max(1, (int) $publicationsPage->getPageCount());
+        $page = (int) $publicationsPage->getCurrentPageNumber();
 
-            $auteurNom = '';
-            $auteurPrenom = '';
-            if ($pub->getAuteur()) {
-                $auteurNom = (string) ($pub->getAuteur()->getNOM() ?? '');
-                $auteurPrenom = (string) ($pub->getAuteur()->getPRENOM() ?? '');
+        $currentUser = $this->getCurrentUserOrFallback($userRepo);
+        $authenticatedUser = $this->getUser();
+
+        $userReactions = [];
+        $signalCounts = [];
+        $likeCounts = [];
+        $publicationIds = [];
+        $sentimentScores = [];
+        foreach ($publicationsPage as $pub) {
+            $pubId = $pub->getId();
+            if ($pubId === null) {
+                continue;
+            }
+            $publicationIds[] = $pubId;
+
+            $likeCounts[$pubId] = (int) $reactionRepo->count([
+                'publication' => $pub,
+                'value' => 1,
+            ]);
+            $signalCounts[$pubId] = (int) $reactionRepo->count([
+                'publication' => $pub,
+                'value' => 2,
+            ]);
+
+            $userReactions[$pubId] = 0;
+            if ($authenticatedUser instanceof User) {
+                $existingReaction = $reactionRepo->findOneBy([
+                    'publication' => $pub,
+                    'user' => $authenticatedUser,
+                ]);
+                if ($existingReaction) {
+                    $userReactions[$pubId] = $existingReaction->getValue();
+                }
             }
 
-            return stripos($titre, $q) !== false
-                || stripos($contenu, $q) !== false
-                || stripos($auteurNom, $q) !== false
-                || stripos($auteurPrenom, $q) !== false;
-        }));
+            // Analyse de sentiments (1–5 étoiles) sur le contenu de la publication.
+            $content = $pub->getContenu();
+            if (\is_string($content)) {
+                // On retire le HTML éventuel, le modèle travaille sur du texte brut.
+                $plainText = trim(strip_tags($content));
+                $stars = $sentimentService->analyze($plainText);
+                if ($stars !== null) {
+                    $sentimentScores[$pubId] = $stars;
+                }
+            }
+        }
+        $likersByPublication = $reactionRepo->findLikersByPublicationIds($publicationIds);
+
+        $commentForms = [];
+        $commentRoots = [];
+        foreach ($publicationsPage as $pub) {
+            $commentRoots[$pub->getId()] = $commentRepo->findRootsByPublication($pub);
+            $commentForms[$pub->getId()] = $this->createForm(
+                CommentaireType::class,
+                new Commentaire(),
+                [
+                    'action' => $this->generateUrl('app_commentaire_ajouter', ['id' => $pub->getId()]) . '#pub-' . $pub->getId(),
+                    'method' => 'POST',
+                ]
+            )->createView();
+        }
+
+        return $this->render('front/publication/index.html.twig', [
+            'publications' => $publicationsPage,
+            'comment_forms' => $commentForms,
+            'comment_roots' => $commentRoots,
+            'current_user_id' => $currentUser ? $currentUser->getId() : null,
+            'contexte_filter' => $contexteFilter !== null ? (int) $contexteFilter : null,
+            'q' => $q,
+            'sort' => $sort,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_publications' => $totalPublications,
+            'total_pages' => $totalPages,
+            'user_reactions' => $userReactions,
+            'signal_counts' => $signalCounts,
+            'like_counts' => $likeCounts,
+            'likers_by_publication' => $likersByPublication,
+            'auth_user' => $authenticatedUser instanceof User ? [
+                'id' => $authenticatedUser->getId(),
+                'prenom' => $authenticatedUser->getPRENOM(),
+                'nom' => $authenticatedUser->getNOM(),
+                'image' => $authenticatedUser->getIMAGE(),
+            ] : null,
+            'translation_languages' => self::TRANSLATION_LANGUAGES,
+            'sentiment_scores' => $sentimentScores,
+            'report_causes' => self::REPORT_CAUSES,
+        ]);
     }
 
-    // ✅ user courant / fallback
-    $currentUser = $this->getCurrentUserOrFallback($userRepo);
 
-    // ✅ Forms commentaires par publication
-    $commentForms = [];
-    foreach ($publications as $pub) {
-        $commentForms[$pub->getId()] = $this->createForm(
-            CommentaireType::class,
-            new Commentaire(),
-            [
-        'action' => $this->generateUrl('app_commentaire_ajouter', ['id' => $pub->getId()]) . '#pub-' . $pub->getId(),
-                'method' => 'POST',
-            ]
-        )->createView();
+    #[Route('/generer-image', name: 'app_publication_generer_image', methods: ['POST'])]
+    public function genererImage(
+        Request $request,
+        HuggingFaceImageService $hfImageService
+    ): Response {
+        $data = json_decode($request->getContent(), true);
+        $prompt = trim((string) ($data['prompt'] ?? ''));
+        if ($prompt === '') {
+            return $this->json(['ok' => false, 'message' => 'Prompt requis.'], 400);
+        }
+
+        try {
+            $images = $hfImageService->generateImages($prompt, 1);
+        } catch (\Throwable $e) {
+            return $this->json(['ok' => false, 'message' => $e->getMessage()], 500);
+        }
+
+        if (empty($images)) {
+            return $this->json(['ok' => false, 'message' => 'Aucune image générée.'], 500);
+        }
+
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/publication_images';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        $filename = 'hf_' . uniqid() . '_' . time() . '.png';
+        $path = $uploadDir . '/' . $filename;
+        file_put_contents($path, base64_decode($images[0]['base64']));
+
+        return $this->json(['ok' => true, 'filename' => $filename]);
     }
-
-    return $this->render('front/publication/index.html.twig', [
-        'publications' => $publications,
-        'comment_forms' => $commentForms,
-        'current_user_id' => $currentUser ? $currentUser->getId() : null,
-        'contexte_filter' => $contexteFilter !== null ? (int) $contexteFilter : null,
-        'q' => $q,
-        'sort' => $sort,
-    ]);
-}
-
 
     #[Route('/nouvelle', name: 'app_publication_nouvelle', methods: ['GET', 'POST'])]
     public function nouvelle(
         Request $request,
         EntityManagerInterface $em,
-        UserRepository $userRepo
+        UserRepository $userRepo,
+        ToxicityAnalysisService $toxicityService
     ): Response {
         $user = $this->getCurrentUserOrFallback($userRepo);
 
@@ -119,12 +265,29 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
         }
 
         $pub = new Publication();
+        $pub->setContexte(1);
         $form = $this->createForm(PublicationType::class, $pub);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $textToCheck = ($pub->getTitre() ?? '') . ' ' . ($pub->getContenu() ?? '');
+            try {
+                if ($toxicityService->isToxic($textToCheck)) {
+                    $this->addFlash('error', 'Votre message est haineux. Merci de modifier votre texte avant de publier.');
+                    return $this->render('front/publication/nouvelle.html.twig', [
+                        'form' => $form->createView(),
+                    ]);
+                }
+            } catch (\RuntimeException $e) {
+                $this->addFlash('error', $e->getMessage());
+                return $this->render('front/publication/nouvelle.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
+
             $anonyme = (bool) $form->get('anonyme')->getData();
 
+            $pub->setYoutubeVideoId(self::normalizeYoutubeVideoId($pub->getYoutubeVideoId()));
             $pub->setStatut(1);
             $pub->setDateCreation(new \DateTime('now', new \DateTimeZone('Europe/Paris')));
             $pub->setAuteur($user);
@@ -150,7 +313,8 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
         int $id,
         PublicationRepository $repo,
         UserRepository $userRepo,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        ToxicityAnalysisService $toxicityService
     ): Response {
         $pub = $repo->find($id);
         if (!$pub) {
@@ -164,15 +328,31 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
             return $this->redirectToRoute('app_publications_index');
         }
 
-        if ($request->isMethod('POST')) {
-            $pub->setTitre($request->request->get('titre'));
-            $pub->setContenu($request->request->get('contenu'));
-                $pub->setDateModification(new \DateTime());
-            $contexte = (int) $request->request->get('contexte');
-            if ($contexte >= 1 && $contexte <= 3) {
-                $pub->setContexte($contexte);
+        $form = $this->createForm(PublicationType::class, $pub, [
+            'with_anonyme' => false,
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $textToCheck = ($pub->getTitre() ?? '') . ' ' . ($pub->getContenu() ?? '');
+            try {
+                if ($toxicityService->isToxic($textToCheck)) {
+                    $this->addFlash('error', 'Votre message est haineux. Merci de modifier votre texte avant de publier.');
+                    return $this->render('front/publication/modifier.html.twig', [
+                        'publication' => $pub,
+                        'form' => $form->createView(),
+                    ]);
+                }
+            } catch (\RuntimeException $e) {
+                $this->addFlash('error', $e->getMessage());
+                return $this->render('front/publication/modifier.html.twig', [
+                    'publication' => $pub,
+                    'form' => $form->createView(),
+                ]);
             }
 
+            $pub->setYoutubeVideoId(self::normalizeYoutubeVideoId($pub->getYoutubeVideoId()));
+            $pub->setDateModification(new \DateTime('now', new \DateTimeZone('Europe/Paris')));
             $em->flush();
             $this->addFlash('success', 'Publication modifiée.');
             return $this->redirectToRoute('app_publications_index');
@@ -180,6 +360,7 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
 
         return $this->render('front/publication/modifier.html.twig', [
             'publication' => $pub,
+            'form' => $form->createView(),
         ]);
     }
 
@@ -215,23 +396,167 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
         return $this->redirectToRoute('app_publications_index');
     }
 
-    #[Route('/{id}/signaler', name: 'app_publication_signaler', methods: ['GET'])]
-    public function signaler(): Response
-    {
-        $this->addFlash('warning', 'Publication signalée.');
+    #[Route('/supprimees', name: 'app_publications_supprimees', methods: ['GET'])]
+    public function supprimees(
+        UserRepository $userRepo,
+        PublicationRepository $repo
+    ): Response {
+        $user = $this->getCurrentUserOrFallback($userRepo);
+        if (!$user) {
+            $this->addFlash('error', 'Aucun utilisateur.');
+            return $this->redirectToRoute('app_publications_index');
+        }
+
+        $deleted = $repo->findDeletedByAuthor($user);
+
+        return $this->render('front/publication/supprimees.html.twig', [
+            'publications' => $deleted,
+        ]);
+    }
+
+    #[Route('/{id}/restaurer', name: 'app_publication_restaurer', methods: ['POST'])]
+    public function restaurer(
+        Request $request,
+        int $id,
+        PublicationRepository $repo,
+        UserRepository $userRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $em->getFilters()->disable('softdeleteable');
+        $pub = $repo->find($id);
+        $em->getFilters()->enable('softdeleteable');
+        if (!$pub || $pub->getDeletedAt() === null) {
+            $this->addFlash('error', 'Publication introuvable.');
+            return $this->redirectToRoute('app_publications_index');
+        }
+
+        $user = $this->getCurrentUserOrFallback($userRepo);
+        if (!$user || !$pub->getAuteur() || $pub->getAuteur()->getId() !== $user->getId()) {
+            $this->addFlash('error', 'Action non autorisée.');
+            return $this->redirectToRoute('app_publications_supprimees');
+        }
+
+        if (!$this->isCsrfTokenValid('restore_publication_' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('app_publications_supprimees');
+        }
+
+        $pub->setDeletedAt(null);
+        $em->flush();
+
+        $this->addFlash('success', 'Publication restaurée.');
         return $this->redirectToRoute('app_publications_index');
+    }
+
+    #[Route('/{id}/signal', name: 'app_publication_signal', methods: ['POST'])]
+    public function signal(
+        Request $request,
+        int $id,
+        PublicationRepository $repo,
+        PublicationReactionRepository $reactionRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(['ok' => false, 'message' => 'Connexion requise.'], 401);
+        }
+
+        $pub = $repo->find($id);
+        if (!$pub || $pub->getStatut() != 1) {
+            return $this->json(['ok' => false, 'message' => 'Publication introuvable ou inactive.'], 404);
+        }
+
+        $reason = null;
+        $payload = json_decode($request->getContent(), true) ?: $request->request->all();
+        if (\is_array($payload) && isset($payload['reason']) && \is_string($payload['reason'])) {
+            $reason = trim($payload['reason']);
+            if ($reason !== '' && !\array_key_exists($reason, self::REPORT_CAUSES)) {
+                return $this->json(['ok' => false, 'message' => 'Cause de signalement invalide.'], 400);
+            }
+            if ($reason === '') {
+                $reason = null;
+            }
+        }
+
+        try {
+            $result = $this->applyReaction($pub, $user, 2, $reactionRepo, $em, $reason);
+
+            // Si la publication atteint 2 signalements, elle est supprimée automatiquement (soft-delete)
+            if (($result['signals'] ?? 0) >= 2) {
+                $pub->setDeletedAt(new \DateTime('now', new \DateTimeZone('Europe/Paris')));
+                $em->flush();
+                $result['deleted'] = true;
+            }
+
+            return $this->json($result);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'ok' => false,
+                'message' => 'Erreur lors du signalement: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    #[Route('/{id}/translate', name: 'app_publication_translate', methods: ['POST'])]
+    public function translate(
+        int $id,
+        Request $request,
+        PublicationRepository $repo,
+        PublicationTranslationService $translationService
+    ): Response {
+        $payload = json_decode($request->getContent(), true);
+        if (!is_array($payload)) {
+            $payload = $request->request->all();
+        }
+
+        $target = strtolower(trim((string) ($payload['target'] ?? 'en')));
+        if (!array_key_exists($target, self::TRANSLATION_LANGUAGES)) {
+            return $this->json([
+                'ok' => false,
+                'message' => 'Langue non supportee.',
+            ], 400);
+        }
+
+        $pub = $repo->find($id);
+        if (!$pub || $pub->getStatut() !== 1) {
+            return $this->json([
+                'ok' => false,
+                'message' => 'Publication introuvable.',
+            ], 404);
+        }
+
+        try {
+            $translated = $translationService->translatePublication(
+                (string) ($pub->getTitre() ?? ''),
+                (string) ($pub->getContenu() ?? ''),
+                $target
+            );
+        } catch (\RuntimeException $e) {
+            return $this->json([
+                'ok' => false,
+                'message' => 'Traduction indisponible. Verifiez la configuration de l API.',
+            ], 502);
+        }
+
+        return $this->json([
+            'ok' => true,
+            'title' => $translated['title'],
+            'content' => $translated['content'],
+            'target' => $target,
+            'language_label' => self::TRANSLATION_LANGUAGES[$target],
+        ]);
     }
 
     #[Route('/{id}/like', name: 'app_publication_like', methods: ['POST'])]
     public function like(
         int $id,
         PublicationRepository $repo,
-        UserRepository $userRepo,
+        PublicationReactionRepository $reactionRepo,
         EntityManagerInterface $em
     ): Response {
-        $user = $this->getCurrentUserOrFallback($userRepo);
-        if (!$user) {
-            return $this->json(['ok' => false], 400);
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(['ok' => false, 'message' => 'Connexion requise.'], 401);
         }
 
         $pub = $repo->find($id);
@@ -239,13 +564,72 @@ public function index(Request $request, PublicationRepository $repo, UserReposit
             return $this->json(['ok' => false], 404);
         }
 
-        // ⚠️ volontairement simple (double-like géré plus tard)
-        $pub->incrementLikes();
-        $em->flush();
+        $result = $this->applyReaction($pub, $user, 1, $reactionRepo, $em);
 
-        return $this->json([
-            'ok'    => true,
-            'likes' => $pub->getLikes(),
+        return $this->json($result);
+    }
+
+    private function applyReaction(
+        Publication $pub,
+        User $user,
+        int $newValue,
+        PublicationReactionRepository $reactionRepo,
+        EntityManagerInterface $em,
+        ?string $signalReason = null
+    ): array {
+        $reaction = $reactionRepo->findOneBy([
+            'publication' => $pub,
+            'user' => $user,
         ]);
+
+        $previousValue = $reaction?->getValue();
+        $changed = false;
+
+        if ($reaction === null) {
+            $reaction = (new PublicationReaction())
+                ->setPublication($pub)
+                ->setUser($user)
+                ->setValue($newValue);
+            if ($newValue === 2) {
+                $reaction->setSignalReason($signalReason);
+            }
+            $em->persist($reaction);
+            $changed = true;
+        } elseif ($previousValue === $newValue) {
+            $em->remove($reaction);
+            $reaction = null;
+            $changed = true;
+        } elseif ($previousValue !== $newValue) {
+            $reaction->setValue($newValue);
+            if ($newValue === 2) {
+                $reaction->setSignalReason($signalReason);
+            }
+            $changed = true;
+        }
+
+        if ($changed) {
+            $em->flush();
+        }
+
+        $likes = (int) $reactionRepo->count([
+            'publication' => $pub,
+            'value' => 1,
+        ]);
+        $signals = (int) $reactionRepo->count([
+            'publication' => $pub,
+            'value' => 2,
+        ]);
+
+        if ($pub->getLikes() !== $likes) {
+            $pub->setLikes($likes);
+            $em->flush();
+        }
+
+        return [
+            'ok'    => true,
+            'likes' => $likes,
+            'signals' => $signals,
+            'user_reaction' => $reaction?->getValue() ?? 0,
+        ];
     }
 }
