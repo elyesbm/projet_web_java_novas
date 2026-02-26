@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Categories - Marketplace Admin</title>
+    <style>
+        @page { margin: 22px; }
+        body {
+            margin: 0;
+            font-family: Helvetica, Arial, sans-serif;
+            background: #f6f4ef;
+            color: #1f1c18;
+        }
+        .header {
+            background: #1a1917;
+            border: 1px solid #2f2b26;
+            color: #fff;
+            border-radius: 14px;
+            padding: 16px 18px;
+            margin-bottom: 14px;
+        }
+        .title {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+        }
+        .subtitle {
+            font-size: 12px;
+            color: #d0c6bb;
+            margin: 6px 0 0 0;
+        }
+        .summary {
+            margin-bottom: 14px;
+            display: table;
+            width: 100%;
+        }
+        .card {
+            display: table-cell;
+            width: 33.33%;
+            background: #fff;
+            border: 1px solid #eadfd3;
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+        .card-label {
+            font-size: 10px;
+            color: #7d7267;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+        }
+        .card-value {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+            color: #c75b39;
+        }
+        .table-wrap {
+            background: #fff;
+            border: 1px solid #eadfd3;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead th {
+            background: #1a1917;
+            color: #faf7f2;
+            text-align: left;
+            font-size: 10px;
+            padding: 11px 10px;
+            text-transform: uppercase;
+        }
+        tbody td {
+            font-size: 11px;
+            padding: 11px 10px;
+            border-bottom: 1px solid #f1e7db;
+            vertical-align: top;
+            line-height: 1.4;
+        }
+        tbody tr:nth-child(even) {
+            background: #fcfaf7;
+        }
+        .name {
+            font-weight: 700;
+        }
+        .footer {
+            margin-top: 10px;
+            font-size: 10px;
+            color: #8a7f72;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">Marketplace Admin - Categories</h1>
+        <p class="subtitle">Export des categories</p>
+    </div>
+
+    <div class="summary">
+        <div class="card">
+            <p class="card-label">Date export</p>
+            <p class="card-value">{{ generated_at|date('d/m/Y H:i') }}</p>
+        </div>
+        <div class="card">
+            <p class="card-label">Total categories</p>
+            <p class="card-value">{{ categories|length }}</p>
+        </div>
+        <div class="card">
+            <p class="card-label">Source</p>
+            <p class="card-value">Back Office</p>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 10%;">ID</th>
+                    <th style="width: 30%;">Nom</th>
+                    <th style="width: 45%;">Description</th>
+                    <th style="width: 15%;">Articles</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in categories %}
+                    <tr>
+                        <td>{{ cat.id }}</td>
+                        <td class="name">{{ cat.nomCategorie }}</td>
+                        <td>{{ cat.descriptionCategorie ?: 'Aucune description' }}</td>
+                        <td>{{ cat.articles|length }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4">Aucune categorie.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">NoVas Admin Marketplace - Document genere automatiquement</div>
+</body>
+</html>

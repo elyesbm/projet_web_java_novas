@@ -2,7 +2,9 @@
 
 namespace App\Repository;
 
+use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Publication;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +16,35 @@ class PublicationRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Publication::class);
+    }
+
+    /**
+     * Publications supprimées (soft delete) pour un auteur.
+     * Désactive temporairement le filtre SoftDeleteable.
+     *
+     * @return Publication[]
+     */
+    public function findDeletedByAuthor(User $author): array
+    {
+        $em = $this->getEntityManager();
+        $filter = $em->getFilters()->getFilter('softdeleteable');
+        if ($filter !== null) {
+            $em->getFilters()->disable('softdeleteable');
+        }
+
+        $result = $this->createQueryBuilder('p')
+            ->andWhere('p.auteur = :author')
+            ->andWhere('p.deletedAt IS NOT NULL')
+            ->setParameter('author', $author)
+            ->orderBy('p.deletedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        if ($filter !== null) {
+            $em->getFilters()->enable('softdeleteable');
+        }
+
+        return $result;
     }
 
     //    /**

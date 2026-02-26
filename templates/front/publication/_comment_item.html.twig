@@ -1,0 +1,67 @@
+{# Commentaire (ou réponse) : affichage récursif pour l'arbre #}
+<div class="comment-item flex gap-4 {% if depth > 0 %}pl-6 ml-2 border-l-2 border-white/10{% endif %}" data-comment-id="{{ comment.id }}">
+    {% if comment.auteur and comment.auteur.IMAGE %}
+        <img src="{{ asset('images/' ~ comment.auteur.IMAGE) }}" alt="{{ comment.auteur.PRENOM ~ ' ' ~ comment.auteur.NOM }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/5 flex-shrink-0">
+    {% else %}
+        <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/5 flex-shrink-0">
+            <i data-lucide="user" class="w-5 h-5 text-muted-foreground"></i>
+        </div>
+    {% endif %}
+
+    <div class="flex-1 min-w-0">
+        <div class="glass-card rounded-2xl rounded-tl-none p-4">
+            <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                    <h4 class="font-medium text-sm">{{ comment.auteur ? (comment.auteur.PRENOM ~ ' ' ~ comment.auteur.NOM) : 'Utilisateur' }}</h4>
+                    <span class="text-xs text-muted-foreground" title="{{ comment.dateCreation|date('d/m/Y H:i') }}">{{ comment.dateCreation|time_diff }}</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button type="button"
+                            class="reply-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-colors"
+                            data-comment-id="{{ comment.id }}"
+                            data-pub-id="{{ pub.id }}"
+                            title="Répondre">
+                        <i data-lucide="corner-down-right" class="w-4 h-4"></i>
+                        <span>Répondre</span>
+                    </button>
+                    {% if comment.auteur and comment.auteur.id == current_user_id %}
+                        <a href="{{ path('app_commentaire_modifier', { id: comment.id }) }}"
+                           class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-colors"
+                           title="Modifier le commentaire">
+                            <i data-lucide="pencil" class="w-4 h-4"></i>
+                            <span>Modifier</span>
+                        </a>
+                        <form action="{{ path('app_commentaire_supprimer', { id: comment.id }) }}" method="post" class="inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
+                            <button type="submit"
+                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                <span>Supprimer</span>
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if comment.contenu %}
+                <p class="text-sm text-foreground">{{ comment.contenu|raw }}</p>
+            {% endif %}
+            {% if comment.audioFilename %}
+                <div class="mt-3">
+                    <audio controls preload="metadata" class="w-full max-w-md h-9 rounded-lg" src="{{ asset('uploads/comment_audio/' ~ comment.audioFilename) }}">
+                        Votre navigateur ne supporte pas la lecture audio.
+                    </audio>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if comment.children|length > 0 %}
+            <div class="mt-3 space-y-3">
+                {% for child in comment.children %}
+                    {% include 'front/publication/_comment_item.html.twig' with { comment: child, pub: pub, current_user_id: current_user_id, depth: depth + 1 } only %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>

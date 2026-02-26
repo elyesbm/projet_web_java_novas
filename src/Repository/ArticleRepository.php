@@ -26,6 +26,56 @@ class ArticleRepository extends ServiceEntityRepository
      */
     public function search(?string $q, array $criteria = [], array $order = []): array
     {
+        return $this->buildSearchQueryBuilder($q, $criteria, $order)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function searchPaginated(?string $q, array $criteria = [], array $order = [], int $limit = 12, int $offset = 0): array
+    {
+        $limit = max(1, $limit);
+        $offset = max(0, $offset);
+
+        return $this->buildSearchQueryBuilder($q, $criteria, $order)
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countSearch(?string $q, array $criteria = []): int
+    {
+        $qb = $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)');
+
+        if (!empty($criteria['categorie'])) {
+            $qb->andWhere('a.categorie = :cat')->setParameter('cat', $criteria['categorie']);
+        }
+        if (!empty($criteria['type_article'])) {
+            $qb->andWhere('a.type_article = :type')->setParameter('type', $criteria['type_article']);
+        }
+        if (!empty($criteria['statut_article'])) {
+            $qb->andWhere('a.statut_article = :statut')->setParameter('statut', $criteria['statut_article']);
+        }
+
+        if ($q !== null && trim($q) !== '') {
+            $qTrim = trim($q);
+            $orX = $qb->expr()->orX();
+            if (is_numeric($qTrim)) {
+                $orX->add('a.id = :id');
+                $qb->setParameter('id', (int) $qTrim);
+            }
+            $orX->add('LOWER(a.titre_article) LIKE :like');
+            $orX->add('LOWER(a.statut_article) LIKE :like');
+            $qb->andWhere($orX)
+                ->setParameter('like', '%' . mb_strtolower($qTrim) . '%');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    private function buildSearchQueryBuilder(?string $q, array $criteria = [], array $order = [])
+    {
         $qb = $this->createQueryBuilder('a');
 
         if (!empty($criteria['categorie'])) {
@@ -62,6 +112,32 @@ class ArticleRepository extends ServiceEntityRepository
             ];
             $fieldExpr = $fieldMap[$field] ?? 'a.id';
             $qb->addOrderBy($fieldExpr, strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC');
+        }
+
+        return $qb;
+    }
+
+    /**
+     * @param int[] $categoryIds
+     * @param int[] $excludedArticleIds
+     * @return Article[]
+     */
+    public function findRecommendedByCategoryIds(array $categoryIds, array $excludedArticleIds = [], int $limit = 6): array
+    {
+        if (empty($categoryIds)) {
+            return [];
+        }
+
+        $qb = $this->createQueryBuilder('a')
+            ->andWhere('IDENTITY(a.categorie) IN (:categoryIds)')
+            ->setParameter('categoryIds', array_values(array_unique(array_map('intval', $categoryIds))))
+            ->orderBy('a.id', 'DESC')
+            ->setMaxResults(max(1, $limit));
+
+        if (!empty($excludedArticleIds)) {
+            $qb
+                ->andWhere('a.id NOT IN (:excludedIds)')
+                ->setParameter('excludedIds', array_values(array_unique(array_map('intval', $excludedArticleIds))));
         }
 
         return $qb->getQuery()->getResult();

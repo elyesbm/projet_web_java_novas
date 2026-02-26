@@ -4,28 +4,7 @@
 
 {% block body %}
 <div class="min-h-screen bg-background">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="{{ path('app_home') }}" class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center glow-primary">
-                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
-                </div>
-                <span class="text-xl font-bold tracking-tight">Edu<span class="text-primary">Vie</span></span>
-            </a>
-            
-            <div class="flex items-center gap-4">
-                <a href="{{ path('app_marketplace_index') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
-                    Produits
-                </a>
-                <a href="{{ path('app_marketplace_categories') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <i data-lucide="tags" class="w-4 h-4"></i>
-                    Categories
-                </a>
-            </div>
-        </div>
-    </nav>
+    {% include 'front/partials/_auth_nav.html.twig' %}
 
     <!-- Hero + Ajouter produit -->
     <section class="pt-32 pb-8 px-6 relative overflow-hidden">
@@ -35,10 +14,28 @@
                 <h1 class="font-serif text-3xl md:text-4xl font-medium mb-2">Produits</h1>
                 <p class="text-muted-foreground">Gérez les articles de la marketplace.</p>
             </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ path('app_marketplace_index') }}" class="flex items-center gap-2 px-4 py-2 text-sm bg-secondary border border-white/10 rounded-xl hover:bg-white/5 transition-colors">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                    Produits
+                </a>
+                <a href="{{ path('app_marketplace_categories') }}" class="flex items-center gap-2 px-4 py-2 text-sm bg-secondary border border-white/10 rounded-xl hover:bg-white/5 transition-colors">
+                    <i data-lucide="tags" class="w-4 h-4"></i>
+                    Categories
+                </a>
+                <button type="button" data-ai-analyze-open class="flex items-center gap-2 px-4 py-2 text-sm bg-secondary border border-white/10 rounded-xl hover:bg-white/5 transition-colors">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    Analyser avec IA
+                </button>
+                <a href="{{ path('app_marketplace_export_pdf') }}" class="flex items-center gap-2 px-4 py-2 text-sm bg-secondary border border-white/10 rounded-xl hover:bg-white/5 transition-colors">
+                    <i data-lucide="file-down" class="w-4 h-4"></i>
+                    Exporter PDF
+                </a>
                 <a href="{{ path('app_marketplace_ajouter_public') }}" class="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 w-fit">
-                <i data-lucide="plus" class="w-5 h-5"></i>
-                Ajouter un produit (article)
-            </a>
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    Ajouter un produit (article)
+                </a>
+            </div>
         </div>
     </section>
 
@@ -103,6 +100,38 @@
                 <div class="mb-4 p-4 rounded-xl bg-red-500/20 text-red-400 text-sm">{{ flash }}</div>
             {% endfor %}
 
+            {% if recommended_articles is defined and recommended_articles is not empty %}
+                <div class="mb-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-serif text-2xl md:text-3xl font-medium">Produits recommandés pour vous</h2>
+                        <span class="text-xs px-3 py-1 rounded-full bg-primary/20 text-primary">Personnalisé</span>
+                    </div>
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for article in recommended_articles %}
+                            <div class="group glass-card rounded-2xl overflow-hidden border border-primary/20 hover:border-primary/40 transition-all duration-300">
+                                <div class="relative h-44 overflow-hidden">
+                                    <img src="{{ asset('images/' ~ article.image) }}" alt="{{ article.titre }}" onerror="this.onerror=null;this.src='{{ asset('images/skills-learning.jpg') }}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                    <div class="absolute top-3 left-3">
+                                        <span class="px-2 py-1 rounded-lg text-xs font-medium {{ article.type == 'academic' ? 'bg-academic/90 text-white' : 'bg-personal/90 text-white' }}">
+                                            {{ article.type == 'academic' ? 'Academic' : 'Personal' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <div class="text-xs text-muted-foreground mb-2">{{ article.categorie.nom }}</div>
+                                    <h3 class="font-medium mb-2 line-clamp-2">{{ article.titre }}</h3>
+                                    <p class="font-serif text-xl font-bold text-primary mb-4">{{ article.prix }} DT</p>
+                                    <a href="{{ path('app_marketplace_detail', {id: article.id}) }}" class="w-full h-10 rounded-xl bg-primary/90 text-white flex items-center justify-center gap-2 text-sm hover:bg-primary transition-colors">
+                                        <i data-lucide="eye" class="w-4 h-4"></i>
+                                        Voir
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
             {% if articles is empty %}
                 <div class="glass-card rounded-2xl p-12 text-center">
                     <i data-lucide="package" class="w-16 h-16 text-muted-foreground mx-auto mb-4"></i>
@@ -144,7 +173,7 @@
                                 <div class="text-right text-sm text-muted-foreground">{{ article.date }}</div>
                             </div>
                             <h3 class="font-medium mb-2 line-clamp-2">{{ article.titre }}</h3>
-                            <p class="font-serif text-xl font-bold text-primary mb-4">{{ article.prix }} €</p>
+                            <p class="font-serif text-xl font-bold text-primary mb-4">{{ article.prix }} DT</p>
                             <div class="flex items-center gap-2 pt-3 border-t border-white/5">
                                 <a href="{{ path('app_marketplace_detail', {id: article.id}) }}" class="flex-1 h-10 rounded-xl bg-secondary border border-white/10 flex items-center justify-center gap-2 text-sm hover:bg-white/5 transition-colors" title="Voir">
                                     <i data-lucide="eye" class="w-4 h-4"></i>
@@ -165,8 +194,157 @@
                     </div>
                     {% endfor %}
                 </div>
+
+                {% if total_pages is defined %}
+                    <nav class="mt-10 flex items-center justify-center gap-3" aria-label="Pagination des produits">
+                        <a href="{{ path('app_marketplace_index', app.request.query.all|merge({'page': current_page > 1 ? current_page - 1 : 1})) }}"
+                           class="h-16 w-16 inline-flex items-center justify-center rounded-2xl border-2 border-white/20 bg-transparent text-foreground text-3xl leading-none transition-colors {{ current_page == 1 ? 'pointer-events-none opacity-40' : 'hover:border-primary/50 hover:text-primary' }}"
+                           aria-label="Page precedente">
+                            <span>&lsaquo;</span>
+                        </a>
+
+                        <div class="flex items-center gap-3">
+                            {% for p in 1..total_pages %}
+                                <a href="{{ path('app_marketplace_index', app.request.query.all|merge({'page': p})) }}"
+                                   class="h-16 w-16 inline-flex items-center justify-center rounded-2xl border-2 text-3xl font-semibold leading-none transition-colors {{ p == current_page ? 'border-primary bg-primary text-white' : 'border-white/20 bg-transparent text-foreground hover:border-primary/50 hover:text-primary' }}">
+                                    {{ p }}
+                                </a>
+                            {% endfor %}
+                        </div>
+
+                        <a href="{{ path('app_marketplace_index', app.request.query.all|merge({'page': current_page < total_pages ? current_page + 1 : total_pages})) }}"
+                           class="h-16 w-16 inline-flex items-center justify-center rounded-2xl border-2 border-white/20 bg-transparent text-foreground text-3xl leading-none transition-colors {{ current_page == total_pages ? 'pointer-events-none opacity-40' : 'hover:border-primary/50 hover:text-primary' }}"
+                           aria-label="Page suivante">
+                            <span>&rsaquo;</span>
+                        </a>
+                    </nav>
+                {% endif %}
             {% endif %}
         </div>
     </section>
 </div>
+
+<div id="ai-analyze-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-black/60 p-4">
+    <div class="w-full max-w-xl glass-card rounded-2xl border border-white/10 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-serif text-2xl">Analyser avec IA</h2>
+            <button type="button" data-ai-analyze-close class="w-9 h-9 rounded-lg bg-secondary border border-white/10">X</button>
+        </div>
+
+        <form id="ai-analyze-form" class="space-y-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('marketplace_ai_analyze') }}">
+            <div>
+                <label for="ai-product-name" class="block text-sm mb-2">Nom du produit</label>
+                <input id="ai-product-name" name="product_name" required class="h-12 w-full bg-secondary border border-white/10 rounded-xl px-3 focus:outline-none" />
+            </div>
+            <div>
+                <label for="ai-product-url" class="block text-sm mb-2">Lien du produit</label>
+                <input id="ai-product-url" name="product_url" type="url" required placeholder="https://..." class="h-12 w-full bg-secondary border border-white/10 rounded-xl px-3 focus:outline-none" />
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="submit" id="ai-analyze-submit" class="px-4 py-2 bg-primary text-white rounded-xl">Analyser</button>
+                <button type="button" id="ai-analyze-reset" class="px-4 py-2 bg-secondary border border-white/10 rounded-xl">Reinitialiser</button>
+                <button type="button" data-ai-analyze-close class="px-4 py-2 bg-secondary border border-white/10 rounded-xl">Fermer</button>
+            </div>
+        </form>
+
+        <div id="ai-analyze-error" class="hidden mt-4 p-3 rounded-xl bg-red-500/20 text-red-400 text-sm"></div>
+
+        <div id="ai-analyze-result" class="hidden mt-5 space-y-3">
+            <div class="p-3 rounded-xl bg-secondary border border-white/10"><strong>Prix recommande:</strong> <span id="ai-price"></span></div>
+            <div class="p-3 rounded-xl bg-secondary border border-white/10"><strong>Qualite des avis:</strong> <span id="ai-reviews"></span></div>
+            <div class="p-3 rounded-xl bg-secondary border border-white/10"><strong>Note de demande:</strong> <span id="ai-demand"></span>/10</div>
+            <div class="p-3 rounded-xl bg-secondary border border-white/10"><strong>Justification:</strong> <span id="ai-why"></span></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const modal = document.getElementById('ai-analyze-modal');
+            const form = document.getElementById('ai-analyze-form');
+            if (!modal || !form) return;
+
+            const errorBox = document.getElementById('ai-analyze-error');
+            const resultBox = document.getElementById('ai-analyze-result');
+            const submitBtn = document.getElementById('ai-analyze-submit');
+            const resetBtn = document.getElementById('ai-analyze-reset');
+            const price = document.getElementById('ai-price');
+            const reviews = document.getElementById('ai-reviews');
+            const demand = document.getElementById('ai-demand');
+            const why = document.getElementById('ai-why');
+
+            function openModal() {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+            function closeModal() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+            function setError(message) {
+                errorBox.textContent = message;
+                errorBox.classList.remove('hidden');
+            }
+            function clearMessages() {
+                errorBox.classList.add('hidden');
+                errorBox.textContent = '';
+                resultBox.classList.add('hidden');
+            }
+
+            document.querySelectorAll('[data-ai-analyze-open]').forEach((el) => el.addEventListener('click', openModal));
+            document.querySelectorAll('[data-ai-analyze-close]').forEach((el) => el.addEventListener('click', closeModal));
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function () {
+                    form.reset();
+                    clearMessages();
+                    price.textContent = '';
+                    reviews.textContent = '';
+                    demand.textContent = '';
+                    why.textContent = '';
+                });
+            }
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                clearMessages();
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Analyse...';
+
+                const formData = new FormData(form);
+                const payload = {
+                    _token: formData.get('_token'),
+                    product_name: formData.get('product_name'),
+                    product_url: formData.get('product_url')
+                };
+
+                try {
+                    const response = await fetch('{{ path('app_marketplace_ai_analyze') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Analyse impossible');
+                    }
+
+                    price.textContent = data.recommended_price || 'N/A';
+                    reviews.textContent = data.reviews_quality || 'Moyenne';
+                    demand.textContent = data.demand_score ?? '0';
+                    why.textContent = data.justification || '';
+                    resultBox.classList.remove('hidden');
+                } catch (err) {
+                    setError(err.message || 'Erreur inattendue.');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Analyser';
+                }
+            });
+        })();
+    </script>
 {% endblock %}

@@ -2,19 +2,32 @@
 
 {% block title %}Modifier la publication - NoVas{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* CKEditor : thème sombre pour la barre d'outils et le cadre */
+.cke_chrome { border-color: rgba(255,255,255,0.1) !important; background: #1a1917 !important; }
+.cke_top { background: #1a1917 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
+.cke_bottom { background: #2a2825 !important; border-top: 1px solid rgba(255,255,255,0.1) !important; color: #a8a29e !important; }
+.cke_toolbar, .cke_toolgroup { background: transparent !important; border: none !important; }
+.cke_button_label, .cke_combo_label, .cke_combo_text { color: #faf7f2 !important; }
+.cke_panel { background: #1a1917 !important; border-color: rgba(255,255,255,0.1) !important; }
+.cke_resizer { border-color: #a8a29e transparent transparent #a8a29e !important; }
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="min-h-screen bg-background relative overflow-hidden">
     <div class="absolute inset-0 gradient-orb"></div>
     <div class="absolute top-1/4 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]"></div>
-    
-    <!-- Navigation -->
+
     <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <a href="{{ path('app_publications_index') }}" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
                 <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 <span class="text-sm">Retour aux publications</span>
             </a>
-            
+
             <div class="flex items-center gap-2">
                 <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
                     <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
@@ -23,7 +36,6 @@
         </div>
     </nav>
 
-    <!-- Content -->
     <div class="pt-32 pb-24 px-6">
         <div class="max-w-3xl mx-auto">
             <div class="text-center mb-8">
@@ -33,59 +45,106 @@
                 <h1 class="font-serif text-3xl font-medium mb-2">Modifier la publication</h1>
                 <p class="text-muted-foreground">Modifiez le titre, le contenu ou le contexte</p>
             </div>
-            
-            <form method="post" action="{{ path('app_publication_modifier', { id: publication.id }) }}" class="glass-card rounded-3xl p-8 space-y-6">
-                <!-- Contexte -->
+
+            {{ form_start(form, { attr: { class: 'glass-card rounded-3xl p-8 space-y-6', novalidate: 'novalidate' } }) }}
+
+                {% for msg in app.flashes('error') %}
+                    <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-200">
+                        {{ msg }}
+                    </div>
+                {% endfor %}
+
+                {% if form_errors(form) %}
+                    <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-200">
+                        {{ form_errors(form) }}
+                    </div>
+                {% endif %}
+
                 <div>
                     <label class="block text-sm font-medium mb-3 text-muted-foreground">Contexte de votre publication</label>
                     <div class="grid grid-cols-2 gap-4">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="contexte" value="1" class="peer hidden" {{ (publication.contexte == 1 or publication.contexte != 2) ? 'checked' : '' }}>
-                            <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-academic peer-checked:bg-academic/20 transition-all text-center">
-                                <i data-lucide="graduation-cap" class="w-8 h-8 text-academic mx-auto mb-2"></i>
-                                <p class="font-medium text-sm">Academic</p>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="contexte" value="2" class="peer hidden" {{ publication.contexte == 2 ? 'checked' : '' }}>
-                            <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-personal peer-checked:bg-personal/20 transition-all text-center">
-                                <i data-lucide="heart" class="w-8 h-8 text-personal mx-auto mb-2"></i>
-                                <p class="font-medium text-sm">Personal</p>
-                            </div>
-                        </label>
+                        {% for choice in form.contexte %}
+                            {% if choice.vars.value == 1 or choice.vars.value == 2 %}
+                                <label class="cursor-pointer">
+                                    {{ form_widget(choice, { attr: { class: 'peer hidden' } }) }}
+                                    <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-primary peer-checked:bg-primary/10 transition-all text-center">
+                                        {% if choice.vars.value == 1 %}
+                                            <i data-lucide="graduation-cap" class="w-8 h-8 text-academic mx-auto mb-2"></i>
+                                            <p class="font-medium text-sm">Academic</p>
+                                        {% else %}
+                                            <i data-lucide="heart" class="w-8 h-8 text-personal mx-auto mb-2"></i>
+                                            <p class="font-medium text-sm">Personal</p>
+                                        {% endif %}
+                                    </div>
+                                </label>
+                            {% endif %}
+                        {% endfor %}
                     </div>
+                    <div class="mt-2 text-xs text-red-400">{{ form_errors(form.contexte) }}</div>
                 </div>
-                
-                <!-- Titre -->
+
                 <div>
                     <label class="block text-sm font-medium mb-2 text-muted-foreground">Titre</label>
-                    <input 
-                        type="text" 
-                        name="titre" 
-                        required 
-                        value="{{ publication.titre }}"
-                        placeholder="Resumez votre publication en une phrase accrocheuse..."
-                        class="w-full h-14 bg-secondary border border-white/10 rounded-xl px-4 text-lg font-medium focus:outline focus:border-primary transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
-                    >
+                    {{ form_widget(form.titre, {
+                        attr: {
+                            placeholder: "Resumer votre publication en une phrase accrocheuse...",
+                            class: "w-full h-14 bg-secondary border border-white/10 rounded-xl px-4 text-lg font-medium focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
+                        }
+                    }) }}
+                    <div class="mt-2 text-xs text-red-400">{{ form_errors(form.titre) }}</div>
                 </div>
-                
-                <!-- Contenu -->
+
+                {{ form_widget(form.image_publication, { attr: { id: 'publication-image-generated', class: 'hidden' } }) }}
+                <div class="p-4 rounded-xl bg-secondary/50 border border-white/10">
+                    {% if publication.imagePublication %}
+                        <div class="mb-3">
+                            <p class="text-xs text-muted-foreground mb-2">Image actuelle :</p>
+                            <img src="{{ asset('uploads/publication_images/' ~ publication.imagePublication) }}" alt="Image" class="max-w-full max-h-96 object-contain rounded-xl border border-white/10 bg-white/5">
+                        </div>
+                    {% endif %}
+                    <p class="text-xs text-muted-foreground mb-2">Génération d'image à partir du texte (Hugging Face, Vertex AI ou Replicate). FR ou EN.</p>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="image-prompt" placeholder="Ex: Robot tenant une planche rouge, style réaliste" class="flex-1 h-10 bg-secondary border border-white/10 rounded-lg px-3 text-sm focus:outline-none focus:border-primary">
+                        <button type="button" id="btn-generate-image" class="h-10 px-4 rounded-lg bg-primary/20 text-primary text-sm font-medium hover:bg-primary/30 transition-colors flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                            Générer
+                        </button>
+                    </div>
+                    <p id="image-generate-status" class="text-xs text-muted-foreground hidden"></p>
+                    <div id="image-preview-container" class="mt-3 hidden">
+                        <p class="text-xs text-muted-foreground mb-2">Nouvelle image (remplacera l'actuelle) :</p>
+                        <img id="image-preview" src="" alt="Aperçu" class="max-w-full max-h-96 object-contain rounded-xl border border-white/10 bg-white/5">
+                    </div>
+                </div>
+
+                <!-- Vidéo YouTube (optionnel) -->
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Vidéo YouTube (optionnel)</label>
+                    {{ form_widget(form.youtube_video, {
+                        attr: {
+                            placeholder: "URL ou ID (ex: https://www.youtube.com/watch?v=...)",
+                            class: "w-full h-10 bg-secondary border border-white/10 rounded-xl px-4 text-sm focus:outline-none focus:border-primary placeholder:text-muted-foreground/50"
+                        }
+                    }) }}
+                    <div class="mt-2 text-xs text-red-400">{{ form_errors(form.youtube_video) }}</div>
+                </div>
+
                 <div>
                     <label class="block text-sm font-medium mb-2 text-muted-foreground">Contenu</label>
-                    <textarea 
-                        name="contenu" 
-                        rows="8" 
-                        required
-                        placeholder="Decrivez votre question, experience ou partage en detail..."
-                        class="w-full bg-secondary border border-white/10 rounded-xl p-4 focus:outline focus:border-primary transition-all resize-none placeholder:text-muted-foreground/50"
-                    >{{ publication.contenu }}</textarea>
+                    {{ form_widget(form.contenu, {
+                        attr: {
+                            rows: 8,
+                            placeholder: "Decrivez votre question, experience ou partage en detail...",
+                            class: "w-full bg-secondary border border-white/10 rounded-xl p-4 focus:outline-none focus:border-primary transition-all resize-none placeholder:text-muted-foreground/50"
+                        }
+                    }) }}
                     <div class="flex justify-between mt-2">
                         <p class="text-xs text-muted-foreground">Soyez respectueux et constructif</p>
                         <p class="text-xs text-muted-foreground">0 / 2000 caracteres</p>
                     </div>
+                    <div class="mt-2 text-xs text-red-400">{{ form_errors(form.contenu) }}</div>
                 </div>
-                
-                <!-- Actions -->
+
                 <div class="flex gap-4 pt-4">
                     <a href="{{ path('app_publications_index') }}" class="flex-1 h-14 bg-secondary border border-white/10 rounded-xl font-medium flex items-center justify-center hover:bg-white/5 transition-colors">
                         Annuler
@@ -95,8 +154,51 @@
                         Enregistrer
                     </button>
                 </div>
-            </form>
+            {{ form_end(form) }}
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('btn-generate-image');
+    const promptInput = document.getElementById('image-prompt');
+    const statusEl = document.getElementById('image-generate-status');
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImg = document.getElementById('image-preview');
+    const hiddenInput = document.getElementById('publication-image-generated');
+    if (!btn || !hiddenInput) return;
+    btn.addEventListener('click', function() {
+        const prompt = (promptInput && promptInput.value || '').trim();
+        if (!prompt) { if (statusEl) { statusEl.textContent = 'Entrez une description.'; statusEl.classList.remove('hidden'); } return; }
+        btn.disabled = true;
+        if (statusEl) { statusEl.textContent = 'Génération en cours...'; statusEl.classList.remove('hidden'); }
+        if (previewContainer) previewContainer.classList.add('hidden');
+        fetch('{{ path("app_publication_generer_image") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ prompt: prompt })
+        }).then(function(r) {
+            return r.text().then(function(raw) {
+                var data = null;
+                try { data = JSON.parse(raw); } catch (e) {
+                    throw new Error('Reponse serveur non JSON (session expiree ou erreur interne).');
+                }
+                if (!r.ok) {
+                    throw new Error(data.message || data.error || ('HTTP ' + r.status));
+                }
+                return data;
+            });
+        }).then(function(data) {
+            if (data.ok && data.filename) {
+                hiddenInput.value = data.filename;
+                if (previewImg) previewImg.src = '/uploads/publication_images/' + data.filename;
+                if (previewContainer) previewContainer.classList.remove('hidden');
+                if (statusEl) statusEl.textContent = 'Image générée.';
+            } else { if (statusEl) statusEl.textContent = data.message || 'Erreur.'; }
+        }).catch(function() { if (statusEl) statusEl.textContent = 'Erreur de connexion.'; }).finally(function() { btn.disabled = false; });
+    });
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+});
+</script>
 {% endblock %}
+

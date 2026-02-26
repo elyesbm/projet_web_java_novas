@@ -13,6 +13,25 @@ parameters:
     tts_provider: 'voicerss'
     voicerss_verify_ssl: '1'
     voicerss_cafile: ''
+    app.toxicity.hf_token: '%env(default::HF_TOKEN)%'
+    app.toxicity.inference_url: '%env(default::HF_INFERENCE_URL)%'
+    app.toxicity.default_script_path: 'scripts/hf_toxicity.py'
+    app.toxicity.script_path: '%env(default:app.toxicity.default_script_path:HF_TOXICITY_SCRIPT)%'
+    app.toxicity.project_dir: '%kernel.project_dir%'
+    app.sentiment.hf_token: '%env(default::HF_TOKEN)%'
+    app.sentiment.inference_url: '%env(default::HF_SENTIMENT_URL)%'
+    app.sentiment.default_script_path: 'scripts/hf_sentiment.py'
+    app.sentiment.script_path: '%env(default:app.sentiment.default_script_path:HF_SENTIMENT_SCRIPT)%'
+    app.sentiment.project_dir: '%kernel.project_dir%'
+    app.translation.api_url: '%env(string:TRANSLATION_API_URL)%'
+    app.translation.api_key: '%env(string:TRANSLATION_API_KEY)%'
+    app.hf_image.token: '%env(default::HF_TOKEN)%'
+    app.hf_image.model: '%env(default::HF_IMAGE_MODEL)%'
+    app.hf_image.base_url: '%env(default::HF_IMAGE_BASE_URL)%'
+    app.hf_image.default_script_path: 'scripts/hf_image.py'
+    app.hf_image.script_path: '%env(default:app.hf_image.default_script_path:HF_IMAGE_SCRIPT)%'
+    app.hf_image.provider: '%env(default::HF_IMAGE_PROVIDER)%'
+    app.hf_image.project_dir: '%kernel.project_dir%'
 
 services:
     # default configuration for services in *this* file
@@ -28,6 +47,7 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+            - '../src/Polyfill/'
 
     App\EventListener\LoginSuccessListener:
         tags:
@@ -42,6 +62,29 @@ services:
         tags:
             - { name: kernel.event_subscriber }
 
+    App\Service\ToxicityAnalysisService:
+        arguments:
+            $hfToken: '%app.toxicity.hf_token%'
+            $inferenceUrl: '%app.toxicity.inference_url%'
+            $scriptPath: '%app.toxicity.script_path%'
+            $projectDir: '%app.toxicity.project_dir%'
+
+    App\Service\SentimentAnalysisService:
+        arguments:
+            $hfToken: '%app.sentiment.hf_token%'
+            $inferenceUrl: '%app.sentiment.inference_url%'
+            $scriptPath: '%app.sentiment.script_path%'
+            $projectDir: '%app.sentiment.project_dir%'
+
+    App\Service\HuggingFaceImageService:
+        arguments:
+            $hfToken: '%app.hf_image.token%'
+            $model: '%app.hf_image.model%'
+            $baseUrl: '%app.hf_image.base_url%'
+            $scriptPath: '%app.hf_image.script_path%'
+            $projectDir: '%app.hf_image.project_dir%'
+            $provider: '%app.hf_image.provider%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
@@ -49,3 +92,4 @@ services:
         arguments:
             $geminiApiKey: '%gemini_api_key%'
             $httpClient: '@http_client'
+

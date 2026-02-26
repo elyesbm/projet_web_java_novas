@@ -2,7 +2,9 @@
 
 namespace App\Controller\Admin;
 
+use App\Controller\Front\PublicationController as FrontPublicationController;
 use App\Repository\CommentaireRepository;
+use App\Repository\PublicationReactionRepository;
 use App\Repository\PublicationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,7 +19,8 @@ class PublicationAdminController extends AbstractController
     public function list(
         Request $request,
         PublicationRepository $publicationRepo,
-        CommentaireRepository $commentRepo
+        CommentaireRepository $commentRepo,
+        PublicationReactionRepository $reactionRepo
     ): Response {
         // ✅ recherche + tri
         $q = trim((string) $request->query->get('q', ''));
@@ -51,7 +54,7 @@ class PublicationAdminController extends AbstractController
             }));
         }
 
-        // ✅ stats (inchangées)
+        // ✅ stats
         $totalCommentaires = $commentRepo->count([]);
         $totalPublications = $publicationRepo->count([]);
 
@@ -60,15 +63,41 @@ class PublicationAdminController extends AbstractController
             $totalLikes += $publication->getLikes() ?? 0;
         }
 
+        // Signalements : basés sur publication_reaction (value = 2)
+        $publicationIds = array_values(array_filter(
+            array_map(static fn($pub) => $pub->getId(), $publications),
+            static fn($id) => $id !== null
+        ));
+        $totalSignalements = $reactionRepo->countSignals();
+        $signalCountsByPublication = [];
+        foreach ($publications as $publication) {
+            $pubId = $publication->getId();
+            if ($pubId !== null) {
+                $signalCountsByPublication[$pubId] = (int) $reactionRepo->count([
+                    'publication' => $publication,
+                    'value' => 2,
+                ]);
+            }
+        }
+        $publicationsSignalees = array_values(array_filter($publications, static fn($pub) => ($signalCountsByPublication[$pub->getId()] ?? 0) > 0));
+        $likersByPublication = $reactionRepo->findLikersByPublicationIds($publicationIds);
+        $signalersByPublication = $reactionRepo->findSignalersByPublicationIds($publicationIds);
+
         // ✅ commentaires (inchangé, si tu l’utilises encore dans le twig)
         $commentaires = $commentRepo->findBy([], ['date_creation' => 'DESC']);
 
         return $this->render('admin/publication/list.html.twig', [
             'publications' => $publications,
             'commentaires' => $commentaires,
+            'likersByPublication' => $likersByPublication,
+            'signalersByPublication' => $signalersByPublication,
+            'signalCountsByPublication' => $signalCountsByPublication,
             'totalPublications' => $totalPublications,
             'totalCommentaires' => $totalCommentaires,
             'totalLikes' => $totalLikes,
+            'totalSignalements' => $totalSignalements,
+            'publicationsSignalees' => $publicationsSignalees,
+            'report_causes' => FrontPublicationController::REPORT_CAUSES,
 
             // ✅ pour twig (recherche + tri)
             'q' => $q,
@@ -77,15 +106,25 @@ class PublicationAdminController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET'])]
-    public function edit(int $id, PublicationRepository $publicationRepo): Response
+    public function edit(
+        int $id,
+        PublicationRepository $publicationRepo,
+        PublicationReactionRepository $reactionRepo
+    ): Response
     {
         $publication = $publicationRepo->find($id);
         if (!$publication) {
             throw $this->createNotFoundException('Publication introuvable');
         }
 
+        $likers = $reactionRepo->findLikersByPublicationId($id);
+        $signalers = $reactionRepo->findSignalersByPublicationId($id);
+
         return $this->render('admin/publication/form.html.twig', [
             'publication' => $publication,
+            'likers' => $likers,
+            'signalers' => $signalers,
+            'report_causes' => FrontPublicationController::REPORT_CAUSES,
         ]);
     }
 

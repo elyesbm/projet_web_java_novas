@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260217211521 extends AbstractMigration
+final class Version20260221132211 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -31,7 +31,7 @@ final class Version20260217211521 extends AbstractMigration
         $this->addSql('CREATE TABLE publication (id_pub INT AUTO_INCREMENT NOT NULL, titre VARCHAR(255) NOT NULL, contenu LONGTEXT NOT NULL, image_auteur LONGTEXT NOT NULL, statut INT NOT NULL, date_creation DATETIME NOT NULL, contexte INT NOT NULL, likes INT NOT NULL, date_modification DATETIME DEFAULT NULL, id_auteur INT NOT NULL, INDEX IDX_AF3C6779236D04AD (id_auteur), PRIMARY KEY (id_pub)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('CREATE TABLE reservation (id_reservation INT AUTO_INCREMENT NOT NULL, nom_user VARCHAR(255) NOT NULL, email_user VARCHAR(255) NOT NULL, commentaire_reservation VARCHAR(255) DEFAULT NULL, statut_reservation INT NOT NULL, id_user INT NOT NULL, id_atelier INT NOT NULL, INDEX IDX_42C849556B3CA4B (id_user), INDEX IDX_42C849553F26B153 (id_atelier), PRIMARY KEY (id_reservation)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('CREATE TABLE skill (id_skill INT AUTO_INCREMENT NOT NULL, nom_skill VARCHAR(255) NOT NULL, description_skill VARCHAR(255) NOT NULL, categorie VARCHAR(255) NOT NULL, contexte_skill VARCHAR(255) NOT NULL, createur_id INT DEFAULT NULL, INDEX IDX_5E3DE47773A201E5 (createur_id), PRIMARY KEY (id_skill)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
-        $this->addSql('CREATE TABLE user (ID INT AUTO_INCREMENT NOT NULL, nom VARCHAR(255) NOT NULL, prenom VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, image LONGTEXT DEFAULT NULL, numero INT DEFAULT NULL, role VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL, PRIMARY KEY (ID)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
+        $this->addSql('CREATE TABLE user (ID INT AUTO_INCREMENT NOT NULL, nom VARCHAR(255) NOT NULL, prenom VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, image LONGTEXT DEFAULT NULL, numero INT DEFAULT NULL, role VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL, ACTIF TINYINT DEFAULT 1 NOT NULL, two_factor_secret VARCHAR(255) DEFAULT NULL, two_factor_enabled_at DATETIME DEFAULT NULL, backup_codes JSON DEFAULT NULL, PRIMARY KEY (ID)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('CREATE TABLE messenger_messages (id BIGINT AUTO_INCREMENT NOT NULL, body LONGTEXT NOT NULL, headers LONGTEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at DATETIME NOT NULL, available_at DATETIME NOT NULL, delivered_at DATETIME DEFAULT NULL, INDEX IDX_75EA56E0FB7336F0E3BD61CE16BA31DBBF396750 (queue_name, available_at, delivered_at, id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('ALTER TABLE article ADD CONSTRAINT FK_23A0E6621A5CE76 FOREIGN KEY (id_etudiant) REFERENCES user (ID) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE article ADD CONSTRAINT FK_23A0E66C9486A13 FOREIGN KEY (id_categorie) REFERENCES categorie (id_categorie) ON DELETE CASCADE');
