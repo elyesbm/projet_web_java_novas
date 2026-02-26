@@ -6,7 +6,8 @@ use App\Repository\CommandeRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
-#[ORM\Table(name: 'commande', uniqueConstraints: [new ORM\UniqueConstraint(name: 'uniq_commande_session_article', columns: ['stripe_session_id', 'id_article'])])]
+#[ORM\Table(name: 'commande')]
+#[ORM\UniqueConstraint(name: 'uniq_commande_session_article', columns: ['stripe_session_id', 'id_article'])]
 class Commande
 {
     #[ORM\Id]

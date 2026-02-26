@@ -230,7 +230,18 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify({ prompt: prompt })
         })
-        .then(function(r) { return r.json(); })
+        .then(function(r) {
+            return r.text().then(function(raw) {
+                var data = null;
+                try { data = JSON.parse(raw); } catch (e) {
+                    throw new Error('Reponse serveur non JSON (session expiree ou erreur interne).');
+                }
+                if (!r.ok) {
+                    throw new Error(data.message || data.error || ('HTTP ' + r.status));
+                }
+                return data;
+            });
+        })
         .then(function(data) {
             if (data.ok && data.filename) {
                 if (hiddenInput) hiddenInput.value = data.filename;
@@ -250,3 +261,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+

@@ -7,11 +7,122 @@
 {% block body %}
 <div class="space-y-6">
     
-    {# Stats dynamiques simples #}
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-gradient-to-br from-rose-500 to-pink-600 rounded-xl p-6 text-white">
-            <p class="text-3xl font-bold">{{ articles|length }}</p>
-            <p class="text-rose-100">Articles totaux</p>
+    {% set statsTotalArticles = articles_total|default(0) %}
+    {% set statsTotalCategories = categories|length %}
+    {% set statsPalette = ['#ff3d6e', '#ff6f91', '#e56b3d', '#2ec4b6', '#60a5fa', '#f59e0b', '#a78bfa'] %}
+    {% set donutStart = 0 %}
+    {% set donutSlices = [] %}
+    {% set categoryLegend = [] %}
+
+    {% for stat in category_article_stats|default([]) %}
+        {% set count = stat.article_count|default(0) %}
+        {% set pct = statsTotalArticles > 0 ? ((count / statsTotalArticles) * 100) : 0 %}
+        {% set donutEnd = donutStart + pct %}
+        {% set color = statsPalette[loop.index0 % statsPalette|length] %}
+        {% set donutSlices = donutSlices|merge([
+            color ~ ' ' ~ donutStart|number_format(2, '.', '') ~ '% ' ~ donutEnd|number_format(2, '.', '') ~ '%'
+        ]) %}
+        {% set categoryLegend = categoryLegend|merge([
+            {
+                nom: stat.nom|default('Sans categorie'),
+                count: count,
+                color: color
+            }
+        ]) %}
+        {% set donutStart = donutEnd %}
+    {% endfor %}
+
+    {% if donutSlices is empty %}
+        {% set donutSlices = ['#1e293b 0% 100%'] %}
+    {% endif %}
+
+    <div class="space-y-4">
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-3">
+            <div class="xl:col-span-3 rounded-xl p-4 text-white bg-gradient-to-br from-pink-500 to-rose-600 shadow-lg shadow-pink-500/20 min-h-[120px]">
+                <div class="text-2xl font-bold leading-none">{{ statsTotalArticles }}</div>
+                <div class="mt-1.5 text-lg font-semibold">Articles totaux</div>
+            </div>
+
+            <div class="xl:col-span-3 rounded-xl p-4 text-white bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20 min-h-[120px]">
+                <div class="text-2xl font-bold leading-none">{{ statsTotalCategories }}</div>
+                <div class="mt-1.5 text-lg font-semibold">Categories disponibles</div>
+            </div>
+
+            <div class="xl:col-span-6 rounded-xl p-4 text-white bg-gradient-to-br from-slate-800 via-slate-900 to-blue-950 shadow-lg shadow-slate-900/30 min-h-[120px]">
+                <div class="text-xs tracking-wide uppercase text-slate-200 mb-2.5">Articles par categorie</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+                    <div class="flex items-center justify-center">
+                        <div class="relative w-32 h-32 rounded-full" style="background: conic-gradient({{ donutSlices|join(', ') }});">
+                            <div class="absolute inset-2.5 rounded-full bg-slate-900/95 flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-slate-300 text-xs">Total</div>
+                                    <div class="text-2xl font-bold leading-none">{{ statsTotalArticles }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="space-y-2">
+                            {% for item in categoryLegend %}
+                                <div class="flex items-center justify-between gap-3 text-sm">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: {{ item.color }};"></span>
+                                        <span class="truncate text-slate-100">{{ item.nom }}</span>
+                                    </div>
+                                    <span class="font-semibold text-slate-100">{{ item.count }}</span>
+                                </div>
+                            {% else %}
+                                <div class="text-sm text-slate-300">Aucune categorie.</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-slate-700/70 space-y-1.5 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-200">Categorie la plus remplie</span>
+                                <span class="font-semibold text-pink-300">
+                                    {% if category_most_filled %}
+                                        {{ category_most_filled.nom }} ({{ category_most_filled.article_count }})
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-200">Categories vides</span>
+                                <span class="font-semibold text-slate-100">{{ category_empty_count|default(0) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-xl p-4 text-white bg-gradient-to-br from-indigo-800 via-indigo-900 to-slate-900 shadow-lg shadow-indigo-900/30">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                <div class="text-sm uppercase tracking-wide text-indigo-200">Articles les plus populaires</div>
+                <div class="text-sm text-indigo-100">Base: nombre de vues sur la page detail produit</div>
+            </div>
+
+            <div class="mt-1.5 text-lg font-semibold text-white">
+                {% if most_popular_article %}
+                    Produit le plus clique:
+                    <span class="text-pink-300">{{ most_popular_article.titre }}</span>
+                    <span class="text-indigo-200">({{ most_popular_article.vues }} vues)</span>
+                {% else %}
+                    Aucun article populaire pour le moment.
+                {% endif %}
+            </div>
+
+            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-2.5">
+                {% for popular in popular_articles|default([]) %}
+                    <div class="rounded-lg border border-white/15 bg-white/10 p-3">
+                        <div class="text-sm text-indigo-100 truncate">{{ popular.categorie }}</div>
+                        <div class="mt-1 text-base font-semibold text-white line-clamp-2">{{ popular.titre }}</div>
+                        <div class="mt-1.5 text-sm font-semibold text-pink-300">{{ popular.vues }} vues</div>
+                    </div>
+                {% else %}
+                    <div class="text-sm text-indigo-100">Aucune vue enregistree.</div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
@@ -26,41 +137,44 @@
 
         {# Articles Tab #}
         <div id="content-articles" class="p-6">
-            <form method="get" class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+            <form method="get" class="mb-6 space-y-4">
                 <input type="hidden" name="tab" value="articles">
-                <div class="flex-1 flex flex-col md:flex-row md:items-center md:gap-3">
-                    <div class="w-full md:flex-1 relative mb-3 md:mb-0">
-                        <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-3">
+                    <div class="xl:col-span-4 relative">
+                        <i data-lucide="search" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <input
                             type="text"
                             name="q"
                             value="{{ app.request.query.get('q') }}"
                             placeholder="ID ou titre..."
-                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-rose-500"
+                            class="w-full h-12 pl-12 pr-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-rose-500"
                         >
                     </div>
-                    <div class="w-full md:w-40">
-                        <select name="statut" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
+
+                    <div class="xl:col-span-2">
+                        <select name="statut" class="w-full h-12 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
                             {% set currentStatut = app.request.query.get('statut') %}
                             <option value="">Tous les statuts</option>
                             <option value="disponible" {{ currentStatut == 'disponible' ? 'selected' }}>Disponible</option>
-                            <option value="reserve" {{ currentStatut == 'reserve' ? 'selected' }}>Réservé</option>
+                            <option value="reserve" {{ currentStatut == 'reserve' ? 'selected' }}>Reserve</option>
                             <option value="vendu" {{ currentStatut == 'vendu' ? 'selected' }}>Vendu</option>
                         </select>
                     </div>
-                    <div class="w-full md:w-40">
-                        <select name="type" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
+
+                    <div class="xl:col-span-2">
+                        <select name="type" class="w-full h-12 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
                             {% set currentType = app.request.query.get('type') %}
                             <option value="">Tous les types</option>
                             <option value="academic" {{ currentType == 'academic' ? 'selected' }}>Academic</option>
-                            {# on garde la valeur "commercial" pour la base, mais on affiche "Personnel" #}
                             <option value="commercial" {{ currentType == 'commercial' ? 'selected' }}>Personnel</option>
                         </select>
                     </div>
-                    <div class="w-full md:w-48">
-                        <select name="categorie" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
+
+                    <div class="xl:col-span-2">
+                        <select name="categorie" class="w-full h-12 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
                             {% set currentCat = app.request.query.get('categorie') %}
-                            <option value="">Toutes catégories</option>
+                            <option value="">Toutes categories</option>
                             {% if categories is defined %}
                                 {% for cat in categories %}
                                     {% set catId = cat.idCategorie ?? cat.id %}
@@ -71,21 +185,34 @@
                             {% endif %}
                         </select>
                     </div>
-                    <div class="w-full md:w-44 mt-3 md:mt-0">
-                        <select name="sort" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
-                        {% set currentSort = app.request.query.get('sort', 'date_desc') %}
-                        <option value="date_desc" {{ currentSort == 'date_desc' ? 'selected' }}>Plus récents</option>
-                        <option value="date_asc" {{ currentSort == 'date_asc' ? 'selected' }}>Plus anciens</option>
-                        <option value="price_asc" {{ currentSort == 'price_asc' ? 'selected' }}>Prix croissant</option>
-                        <option value="price_desc" {{ currentSort == 'price_desc' ? 'selected' }}>Prix décroissant</option>
-                    </select>
+
+                    <div class="xl:col-span-2">
+                        <select name="sort" class="w-full h-12 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
+                            {% set currentSort = app.request.query.get('sort', 'date_desc') %}
+                            <option value="date_desc" {{ currentSort == 'date_desc' ? 'selected' }}>Plus recents</option>
+                            <option value="date_asc" {{ currentSort == 'date_asc' ? 'selected' }}>Plus anciens</option>
+                            <option value="price_asc" {{ currentSort == 'price_asc' ? 'selected' }}>Prix croissant</option>
+                            <option value="price_desc" {{ currentSort == 'price_desc' ? 'selected' }}>Prix decroissant</option>
+                        </select>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 text-sm font-semibold hover:bg-slate-900 dark:hover:bg-white transition-colors">
+
+                <div class="flex flex-wrap items-center gap-3">
+                    <button type="submit" class="h-12 px-6 rounded-2xl bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 text-sm font-semibold hover:bg-slate-900 dark:hover:bg-white transition-colors">
                         Filtrer
                     </button>
-                    <a href="{{ path('app_admin_marketplace_new') }}" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-lg shadow-rose-500/25">
+
+                    <button type="button" data-ai-analyze-open class="h-12 px-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-sm font-medium inline-flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        Analyser avec IA
+                    </button>
+
+                    <a href="{{ path('app_admin_marketplace_export_pdf') }}" class="h-12 px-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-sm font-medium inline-flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <i data-lucide="file-down" class="w-4 h-4"></i>
+                        Exporter PDF
+                    </a>
+
+                    <a href="{{ path('app_admin_marketplace_new') }}" class="h-12 px-7 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold inline-flex items-center gap-2 transition-colors shadow-lg shadow-rose-500/25">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         Ajouter un article
                     </a>
@@ -146,6 +273,17 @@
                     <p class="text-sm text-slate-500">Aucun article pour le moment.</p>
                 {% endfor %}
             </div>
+            {% if total_pages is defined and total_pages > 1 %}
+                <div class="mt-6 flex items-center justify-center gap-3">
+                    {% set prevPage = current_page > 1 ? current_page - 1 : 1 %}
+                    <a href="{{ path('app_admin_marketplace_list', app.request.query.all|merge({'tab':'articles','page': prevPage})) }}" class="h-12 w-12 inline-flex items-center justify-center rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xl {{ current_page == 1 ? 'pointer-events-none opacity-40' : 'hover:border-rose-400 hover:text-rose-600' }}">&lsaquo;</a>
+                    {% for p in 1..total_pages %}
+                        <a href="{{ path('app_admin_marketplace_list', app.request.query.all|merge({'tab':'articles','page': p})) }}" class="h-12 w-12 inline-flex items-center justify-center rounded-2xl border text-xl font-semibold {{ p == current_page ? 'border-rose-500 bg-rose-500 text-white' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-rose-400 hover:text-rose-600' }}">{{ p }}</a>
+                    {% endfor %}
+                    {% set nextPage = current_page < total_pages ? current_page + 1 : total_pages %}
+                    <a href="{{ path('app_admin_marketplace_list', app.request.query.all|merge({'tab':'articles','page': nextPage})) }}" class="h-12 w-12 inline-flex items-center justify-center rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xl {{ current_page == total_pages ? 'pointer-events-none opacity-40' : 'hover:border-rose-400 hover:text-rose-600' }}">&rsaquo;</a>
+                </div>
+            {% endif %}
         </div>
 
         {# Categories Tab #}
@@ -220,11 +358,57 @@
                     <p class="text-sm text-slate-500">Aucune catégorie pour le moment.</p>
                 {% endfor %}
             </div>
+            {% if total_pages_cat is defined and total_pages_cat > 1 %}
+                <div class="mt-6 flex items-center justify-center gap-3">
+                    {% set prevPageCat = current_page_cat > 1 ? current_page_cat - 1 : 1 %}
+                    <a href="{{ path('app_admin_marketplace_list', app.request.query.all|merge({'tab':'categories','page_cat': prevPageCat})) }}" class="h-12 w-12 inline-flex items-center justify-center rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xl {{ current_page_cat == 1 ? 'pointer-events-none opacity-40' : 'hover:border-rose-400 hover:text-rose-600' }}">&lsaquo;</a>
+                    {% for p in 1..total_pages_cat %}
+                        <a href="{{ path('app_admin_marketplace_list', app.request.query.all|merge({'tab':'categories','page_cat': p})) }}" class="h-12 w-12 inline-flex items-center justify-center rounded-2xl border text-xl font-semibold {{ p == current_page_cat ? 'border-rose-500 bg-rose-500 text-white' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-rose-400 hover:text-rose-600' }}">{{ p }}</a>
+                    {% endfor %}
+                    {% set nextPageCat = current_page_cat < total_pages_cat ? current_page_cat + 1 : total_pages_cat %}
+                    <a href="{{ path('app_admin_marketplace_list', app.request.query.all|merge({'tab':'categories','page_cat': nextPageCat})) }}" class="h-12 w-12 inline-flex items-center justify-center rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xl {{ current_page_cat == total_pages_cat ? 'pointer-events-none opacity-40' : 'hover:border-rose-400 hover:text-rose-600' }}">&rsaquo;</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div id="ai-analyze-modal" class="fixed inset-0 z-[80] hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-6 shadow-2xl">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold text-slate-900 dark:text-white">Analyser avec IA</h2>
+            <button type="button" data-ai-analyze-close class="w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700">X</button>
+        </div>
+
+        <form id="ai-analyze-form" class="space-y-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('marketplace_ai_analyze') }}">
+            <div>
+                <label for="ai-product-name" class="block text-sm mb-2 text-slate-700 dark:text-slate-200">Nom du produit</label>
+                <input id="ai-product-name" name="product_name" required class="h-11 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+            </div>
+            <div>
+                <label for="ai-product-url" class="block text-sm mb-2 text-slate-700 dark:text-slate-200">Lien du produit</label>
+                <input id="ai-product-url" name="product_url" type="url" required placeholder="https://..." class="h-11 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="submit" id="ai-analyze-submit" class="h-11 px-5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold">Analyser</button>
+                <button type="button" data-ai-analyze-close class="h-11 px-5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm">Fermer</button>
+            </div>
+        </form>
+
+        <div id="ai-analyze-error" class="hidden mt-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-sm"></div>
+
+        <div id="ai-analyze-result" class="hidden mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"><strong>Prix recommande:</strong> <span id="ai-price"></span></div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"><strong>Qualite des avis:</strong> <span id="ai-reviews"></span></div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"><strong>Note de demande:</strong> <span id="ai-demand"></span>/10</div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 md:col-span-2"><strong>Justification:</strong> <span id="ai-why"></span></div>
         </div>
     </div>
 </div>
 
 {% block javascripts %}
+{{ parent() }}
 <script>
     function switchTab(tab) {
         document.getElementById('content-articles').classList.toggle('hidden', tab !== 'articles');
@@ -233,13 +417,101 @@
         document.getElementById('tab-categories').className = 'py-4 text-sm font-semibold ' + (tab === 'categories' ? 'text-rose-600 border-b-2 border-rose-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300');
     }
 
-    // Activer l'onglet catégories si paramètre tab=categories dans l'URL
     (function () {
         const params = new URLSearchParams(window.location.search);
         if (params.get('tab') === 'categories') {
             switchTab('categories');
         }
     })();
+
+    (function () {
+        const modal = document.getElementById('ai-analyze-modal');
+        const form = document.getElementById('ai-analyze-form');
+        if (!modal || !form) return;
+
+        const errorBox = document.getElementById('ai-analyze-error');
+        const resultBox = document.getElementById('ai-analyze-result');
+        const submitBtn = document.getElementById('ai-analyze-submit');
+        const price = document.getElementById('ai-price');
+        const reviews = document.getElementById('ai-reviews');
+        const demand = document.getElementById('ai-demand');
+        const why = document.getElementById('ai-why');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function clearMessages() {
+            errorBox.classList.add('hidden');
+            errorBox.textContent = '';
+            resultBox.classList.add('hidden');
+        }
+
+        function setError(message) {
+            errorBox.textContent = message || 'Erreur inattendue.';
+            errorBox.classList.remove('hidden');
+        }
+
+        document.querySelectorAll('[data-ai-analyze-open]').forEach((el) => {
+            el.addEventListener('click', openModal);
+        });
+
+        document.querySelectorAll('[data-ai-analyze-close]').forEach((el) => {
+            el.addEventListener('click', closeModal);
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            clearMessages();
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Analyse...';
+
+            const formData = new FormData(form);
+            const payload = {
+                _token: formData.get('_token'),
+                product_name: formData.get('product_name'),
+                product_url: formData.get('product_url')
+            };
+
+            try {
+                const response = await fetch('{{ path('app_marketplace_ai_analyze') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.error || 'Analyse impossible');
+                }
+
+                price.textContent = data.recommended_price || 'N/A';
+                reviews.textContent = data.reviews_quality || 'Moyenne';
+                demand.textContent = data.demand_score ?? '0';
+                why.textContent = data.justification || '';
+                resultBox.classList.remove('hidden');
+            } catch (err) {
+                setError(err.message || 'Erreur inattendue.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Analyser';
+            }
+        });
+    })();
 </script>
 {% endblock %}
 {% endblock %}
+

@@ -103,7 +103,7 @@ class HuggingFaceImageService
             'HF_IMAGE_PROVIDER' => $provider,
         ]);
         $proc = proc_open(
-            [PHP_OS_FAMILY === 'Windows' ? 'python' : 'python3', $scriptPath],
+            [PHP_OS_FAMILY === 'Windows' ? 'py' : 'python3', ...(PHP_OS_FAMILY === 'Windows' ? ['-3', $scriptPath] : [$scriptPath])],
             [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
             $pipes,
             null,
@@ -179,3 +179,6 @@ class HuggingFaceImageService
         return [['base64' => base64_encode($body)]];
     }
 }
+
+
+
