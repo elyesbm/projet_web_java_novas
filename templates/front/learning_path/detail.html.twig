@@ -9,22 +9,14 @@
 {% set objectifs = parcours.descriptionSkill ? parcours.descriptionSkill|split('.')|filter(o => o|trim != '') : [] %}
 {% if objectifs is empty %}{% set objectifs = ['Maîtriser les concepts du parcours.', 'Progresser à votre rythme.'] %}{% endif %}
 {% set progression_skill = { debut: 0, fin: parcours.niveauPath == 1 ? 50 : (parcours.niveauPath == 2 ? 80 : 100), actuel: 0 } %}
+{% set roadmap_steps = [
+    { titre: 'Découverte', desc: 'Comprendre les objectifs et les notions clés.', icon: 'compass' },
+    { titre: 'Apprentissage guidé', desc: 'Suivre les ressources et activités proposées.', icon: 'book-open' },
+    { titre: 'Mise en pratique', desc: 'Réaliser un exercice ou mini‑projet.', icon: 'pencil' },
+    { titre: 'Validation', desc: 'Évaluer vos acquis et consolider.', icon: 'badge-check' }
+] %}
 <div class="min-h-screen bg-background">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="{{ path('app_learning_paths_index') }}" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                <span class="text-sm">Retour aux parcours</span>
-            </a>
-            
-            <div class="flex items-center gap-2">
-                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
-                </div>
-            </div>
-        </div>
-    </nav>
+    {% include 'front/partials/_auth_nav.html.twig' %}
 
     <!-- Hero -->
     <section class="pt-32 pb-12 px-6 relative overflow-hidden">
@@ -93,10 +85,10 @@
                             <div class="flex-1 px-4">
                                 <div class="h-2 bg-secondary rounded-full overflow-hidden relative">
                                     <div class="absolute inset-0 bg-gradient-to-r from-muted-foreground via-primary to-accent"></div>
-                                    <div class="absolute top-0 bottom-0 w-1 bg-white" style="left: {{ progression_skill.actuel }}%"></div>
+                                    <div id="skill-progress-marker" class="absolute top-0 bottom-0 w-1 bg-white" style="left: {{ progression_skill.actuel }}%"></div>
                                 </div>
                                 <div class="flex justify-between mt-2">
-                                    <span class="text-xs text-muted-foreground">Actuel: {{ progression_skill.actuel }}%</span>
+                                    <span id="skill-progress-label" class="text-xs text-muted-foreground">Actuel: {{ progression_skill.actuel }}%</span>
                                     <span class="text-xs text-accent">Objectif: {{ progression_skill.fin }}%</span>
                                 </div>
                             </div>
@@ -143,6 +135,76 @@
         </div>
     </section>
 
+    <!-- Roadmap -->
+    <section class="px-6 py-12 border-t border-white/5">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between gap-4 mb-8">
+                <h2 class="font-serif text-2xl font-medium">Roadmap de l'étudiant</h2>
+                <div class="px-4 py-2 rounded-xl bg-secondary text-sm text-muted-foreground">Suivi sur NoVas</div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    {% for step in roadmap_steps %}
+                    <div class="flex items-start gap-4 p-5 glass-card rounded-2xl">
+                        <div class="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="{{ step.icon }}" class="w-6 h-6 text-primary"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-medium">{{ step.titre }}</h3>
+                            <p class="text-sm text-muted-foreground">{{ step.desc }}</p>
+                            {% if loop.index == 2 %}
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <a href="{{ parcours.url|default('#') }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary text-xs text-muted-foreground hover:text-foreground transition-colors" data-track-progress="article">
+                                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                                    Article guide
+                                </a>
+                                <a href="{{ parcours.url|default('#') }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary text-xs text-muted-foreground hover:text-foreground transition-colors" data-track-progress="document">
+                                    <i data-lucide="file" class="w-3.5 h-3.5"></i>
+                                    Document PDF
+                                </a>
+                            </div>
+                            {% endif %}
+                            {% if loop.index == 3 %}
+                            <div class="mt-3">
+                                <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                                    Déposer mon document
+                                    <input type="file" class="hidden" data-track-upload="practice">
+                                </label>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="font-medium mb-3">Suivi de progression</h3>
+                    <p class="text-sm text-muted-foreground mb-6">Votre progression est enregistrée automatiquement sur NoVas.</p>
+                    <div class="space-y-3" data-roadmap>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-muted-foreground">Étape actuelle</span>
+                            <span id="roadmap-step-label" class="font-medium">Découverte</span>
+                        </div>
+                        <div class="h-2 bg-secondary rounded-full overflow-hidden">
+                            <div id="roadmap-progress-bar" class="h-full w-0 bg-primary"></div>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-muted-foreground">
+                            <span id="roadmap-progress-value">0%</span>
+                            <span>100%</span>
+                        </div>
+                        <p id="roadmap-points" class="mt-4 text-sm text-muted-foreground">Points: 0</p>
+                        <p id="roadmap-success" class="mt-3 text-sm text-emerald-400 hidden">Félicitations ! Votre mise en pratique est validée.</p>
+                    </div>
+                    <div class="mt-6 p-4 bg-secondary/50 rounded-xl text-sm text-muted-foreground">
+                        Astuce: cochez vos étapes au fur et à mesure pour un meilleur suivi.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Contenu du parcours -->
     <section class="px-6 py-12 border-t border-white/5">
         <div class="max-w-4xl mx-auto">
@@ -161,7 +223,7 @@
                     <p class="text-sm text-muted-foreground mb-3">{{ parcours.descriptionSkill }}</p>
                     {% endif %}
                     {% if parcours.url %}
-                    <a href="{{ parcours.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary text-sm font-medium transition-colors">
+                    <a href="{{ parcours.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary text-sm font-medium transition-colors" {% if parcours.typeEtape == 'video' %}data-track-video="1"{% endif %}>
                         <i data-lucide="external-link" class="w-4 h-4"></i>
                         {{ parcours.typeEtape == 'video' ? 'Voir la vidéo' : 'Accéder à la ressource' }}
                     </a>
@@ -187,5 +249,133 @@
             </div>
         </div>
     </section>
+
+    <!-- Popup félicitations -->
+    <div id="success-popup" class="fixed inset-0 z-[60] hidden items-center justify-center">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="relative w-full max-w-md mx-6 glass-card rounded-3xl p-8 text-center">
+            <div class="mx-auto mb-4 w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
+                <i data-lucide="sparkles" class="w-7 h-7 text-emerald-400"></i>
+            </div>
+            <h3 class="font-serif text-2xl font-medium mb-2">Félicitations !</h3>
+            <p class="text-sm text-muted-foreground mb-6">Votre mise en pratique est validée et votre progression est complétée.</p>
+            <button type="button" id="success-popup-close" class="w-full h-12 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all">
+                Continuer
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const parcoursId = '{{ parcours.id }}';
+            const storageKey = 'novas_progress_' + parcoursId;
+            const stepSize = 25;
+            const steps = [
+                'DÃ©couverte',
+                'Apprentissage guidÃ©',
+                'Mise en pratique',
+                'Validation'
+            ];
+
+            const progressBar = document.getElementById('roadmap-progress-bar');
+            const progressValue = document.getElementById('roadmap-progress-value');
+            const stepLabel = document.getElementById('roadmap-step-label');
+            const pointsLabel = document.getElementById('roadmap-points');
+            const skillMarker = document.getElementById('skill-progress-marker');
+            const skillLabel = document.getElementById('skill-progress-label');
+            const videoLink = document.querySelector('[data-track-video=\"1\"]');
+            const trackedLinks = document.querySelectorAll('[data-track-progress]');
+            const uploadInput = document.querySelector('[data-track-upload=\"practice\"]');
+            const successMessage = document.getElementById('roadmap-success');
+            const successPopup = document.getElementById('success-popup');
+            const successPopupClose = document.getElementById('success-popup-close');
+
+            function clamp(value, min, max) {
+                return Math.max(min, Math.min(max, value));
+            }
+
+            function getPoints() {
+                const raw = localStorage.getItem(storageKey);
+                const value = parseInt(raw || '0', 10);
+                return clamp(isNaN(value) ? 0 : value, 0, 100);
+            }
+
+            function setPoints(value) {
+                const next = clamp(value, 0, 100);
+                localStorage.setItem(storageKey, String(next));
+                return next;
+            }
+
+            function updateUI(points) {
+                if (progressBar) {
+                    progressBar.style.width = points + '%';
+                }
+                if (progressValue) {
+                    progressValue.textContent = points + '%';
+                }
+                if (pointsLabel) {
+                    pointsLabel.textContent = 'Points: ' + points;
+                }
+                if (skillMarker) {
+                    skillMarker.style.left = points + '%';
+                }
+                if (skillLabel) {
+                    skillLabel.textContent = 'Actuel: ' + points + '%';
+                }
+                if (stepLabel) {
+                    const index = clamp(Math.floor(points / stepSize), 0, steps.length - 1);
+                    stepLabel.textContent = steps[index];
+                }
+                if (successMessage) {
+                    successMessage.classList.toggle('hidden', points < 100);
+                }
+                if (successPopup && points >= 100) {
+                    successPopup.classList.remove('hidden');
+                    successPopup.classList.add('flex');
+                }
+            }
+
+            const initialPoints = getPoints();
+            updateUI(initialPoints);
+
+            if (videoLink) {
+                videoLink.addEventListener('click', function () {
+                    const updated = setPoints(getPoints() + stepSize);
+                    updateUI(updated);
+                });
+            }
+
+            if (trackedLinks.length > 0) {
+                trackedLinks.forEach(function (link) {
+                    link.addEventListener('click', function () {
+                        const updated = setPoints(getPoints() + stepSize);
+                        updateUI(updated);
+                    });
+                });
+            }
+
+            if (uploadInput) {
+                uploadInput.addEventListener('change', function () {
+                    if (!uploadInput.files || uploadInput.files.length === 0) return;
+                    const updated = setPoints(100);
+                    updateUI(updated);
+                });
+            }
+
+            if (successPopupClose) {
+                successPopupClose.addEventListener('click', function () {
+                    if (!successPopup) return;
+                    successPopup.classList.add('hidden');
+                    successPopup.classList.remove('flex');
+                });
+            }
+        });
+    </script>
 </div>
 {% endblock %}
+
+
+
+
+
+

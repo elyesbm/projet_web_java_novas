@@ -7,7 +7,9 @@ use App\Form\SkillType;
 use App\Repository\SkillRepository;
 use App\Repository\UserRepository;
 use App\Service\ScoreHistoryService;
+use App\Service\SkillAITutorService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,11 +19,54 @@ use Symfony\Component\Routing\Attribute\Route;
 class SkillController extends AbstractController
 {
     public function __construct(
-        private SkillRepository        $skillRepository,
-        private UserRepository         $userRepository,
+        private SkillRepository      $skillRepository,
+        private UserRepository       $userRepository,
         private EntityManagerInterface $entityManager,
-        private ScoreHistoryService    $scoreHistoryService,
+        private ScoreHistoryService  $scoreHistoryService,
+        private SkillAITutorService $aiTutorService,
+        private PaginatorInterface  $paginator,
     ) {
+    }
+
+    #[Route('/tuteur-ia', name: 'app_skills_tuteur_ia', methods: ['GET'])]
+    public function tuteurIa(): Response
+    {
+        $availableSkills = $this->skillRepository->findBy([], ['nom_skill' => 'ASC']);
+        $user = $this->getUser();
+
+        return $this->render('front/skill/tuteur_ia.html.twig', [
+            'availableSkills' => $availableSkills,
+            'aiTutorConfigured' => $this->aiTutorService->isConfigured(),
+        ]);
+    }
+
+    #[Route('/tuteur-ia/chat', name: 'app_skills_tuteur_ia_chat', methods: ['POST'])]
+    public function tuteurIaChat(Request $request): Response
+    {
+        $content = json_decode($request->getContent(), true);
+        if (!\is_array($content)) {
+            return $this->json(['reply' => 'Requête invalide.'], Response::HTTP_BAD_REQUEST);
+        }
+        if (!$this->isCsrfTokenValid('skill_tuteur_ia', (string) ($content['_token'] ?? ''))) {
+            return $this->json(['reply' => 'Token de sécurité invalide.'], Response::HTTP_FORBIDDEN);
+        }
+        $userMessage = isset($content['message']) && \is_string($content['message'])
+            ? trim($content['message'])
+            : '';
+        $messages = isset($content['messages']) && \is_array($content['messages'])
+            ? array_slice($content['messages'], -20)
+            : [];
+
+        if ($userMessage === '') {
+            return $this->json(['reply' => 'Veuillez écrire un message.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $availableSkills = $this->skillRepository->findBy([], ['nom_skill' => 'ASC']);
+        $user = $this->getUser();
+
+        $reply = $this->aiTutorService->chat($userMessage, $messages, $availableSkills, $user);
+
+        return $this->json(['reply' => $reply]);
     }
 
     #[Route('/', name: 'app_skills_index')]
@@ -31,7 +76,9 @@ class SkillController extends AbstractController
         $type = $request->query->get('type');
         $categorie = $request->query->get('categorie');
 
-        $skills = $this->skillRepository->searchAndFilter($q, $type, $categorie);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $queryBuilder = $this->skillRepository->searchAndFilterQueryBuilder($q, $type, $categorie);
+        $skills = $this->paginator->paginate($queryBuilder, $page, 6);
         $categories = ['Communication', 'Programmation', 'Management', 'Data Science', 'Bien-être', 'Développement Web', 'Design', 'Marketing'];
 
         return $this->render('front/skill/index.html.twig', [

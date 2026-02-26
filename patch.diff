@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: templates/front/skill/mes_skills.html.twig
+@@
+-                                <button type="button" class="h-9 px-3 rounded-lg bg-secondary border border-white/10 text-xs text-muted-foreground hover:text-foreground transition-colors" data-skill-reset>
+-                                    Réinitialiser
+-                                </button>
++                                <button type="button" class="h-9 px-3 rounded-lg bg-secondary border border-white/10 text-xs text-muted-foreground hover:text-foreground transition-colors" data-skill-reset>
++                                    Réinitialiser
++                                </button>
++                                <button type="button" class="h-9 px-3 rounded-lg bg-accent/20 text-accent text-xs font-medium hover:bg-accent/30 transition-colors" data-skill-quiz>
++                                    Quiz rapide
++                                </button>
+*** End Patch

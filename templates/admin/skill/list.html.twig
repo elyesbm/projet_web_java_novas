@@ -7,8 +7,8 @@
 {% block body %}
 <div class="space-y-6">
     
-    {# Stats #}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {# Stats + Graphique tendances #}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg shadow-cyan-500/25">
             <div class="flex items-center justify-between mb-4">
                 <div class="p-3 rounded-xl bg-white/20 backdrop-blur-sm"><i data-lucide="zap" class="w-6 h-6"></i></div>
@@ -26,6 +26,47 @@
         </div>
     </div>
 
+    {# Courbe : Tendances marché & Nombre d'offres par compétence #}
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {# Répartition par tendance (donut) #}
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <i data-lucide="pie-chart" class="w-5 h-5 text-cyan-600"></i>
+                Talents par tendance
+            </h3>
+            <div class="flex flex-wrap gap-4 mb-4">
+                <span class="inline-flex items-center gap-2 text-sm">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span> En hausse <strong>{{ tendanceCounts.en_hausse }}</strong>
+                </span>
+                <span class="inline-flex items-center gap-2 text-sm">
+                    <span class="w-3 h-3 rounded-full bg-slate-400"></span> Stable <strong>{{ tendanceCounts.stable }}</strong>
+                </span>
+                <span class="inline-flex items-center gap-2 text-sm">
+                    <span class="w-3 h-3 rounded-full bg-rose-500"></span> En baisse <strong>{{ tendanceCounts.en_baisse }}</strong>
+                </span>
+                {% if tendanceCounts.sans_tendance > 0 %}
+                <span class="inline-flex items-center gap-2 text-sm text-slate-500">
+                    <span class="w-3 h-3 rounded-full bg-slate-300"></span> Sans donnée <strong>{{ tendanceCounts.sans_tendance }}</strong>
+                </span>
+                {% endif %}
+            </div>
+            <div class="h-48 flex items-center justify-center">
+                <canvas id="chart-tendances" width="200" height="200"></canvas>
+            </div>
+        </div>
+        {# Courbe nombre d'offres par compétence #}
+        <div class="xl:col-span-2 bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-6">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <i data-lucide="trending-up" class="w-5 h-5 text-cyan-600"></i>
+                Nombre d'offres par compétence
+            </h3>
+            <div class="h-64">
+                <canvas id="chart-offres"></canvas>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Compétences avec statistiques marché (max. 30). Rafraîchir les stats pour mettre à jour.</p>
+        </div>
+    </div>
+
     {# Onglets Compétences | Parcours #}
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700">
         <div class="border-b border-slate-200 dark:border-slate-700 px-6 flex items-center justify-between">
@@ -34,17 +75,29 @@
                 <button type="button" data-tab="paths" class="tab-admin py-4 text-sm font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 border-b-2 border-transparent -mb-px">Parcours</button>
             </div>
             <div id="btn-new-skills" class="flex items-center gap-2">
+                <form method="post" action="{{ path('app_admin_skills_refresh_all_stats') }}" class="inline" onsubmit="return confirm('Rafraîchir les statistiques marché pour toutes les compétences ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('refresh_all_skills_stats') }}">
+                    <button type="submit" class="flex items-center gap-2 px-4 py-2 rounded-xl border border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-sm transition-colors">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        Rafraîchir stats marché
+                    </button>
+                </form>
                 <a href="{{ path('app_admin_skills_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-sm transition-colors shadow-lg shadow-cyan-500/25">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     Nouveau
                 </a>
             </div>
             <div id="btn-new-paths" class="flex items-center gap-2 hidden">
+                <a href="{{ path('app_admin_learning_path_generate') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm transition-colors shadow-lg shadow-violet-500/25">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    Générer avec IA
+                </a>
                 <a href="{{ path('app_admin_learning_path_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm transition-colors shadow-lg shadow-indigo-500/25">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     Nouveau parcours
                 </a>
             </div>
+
         </div>
 
         {# Contenu onglet Compétences #}
@@ -111,11 +164,16 @@
                             <span class="px-2 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">{{ typeSkill }}</span>
                         </div>
                         <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">{{ skill.nomSkill }}</h3>
-                        <p class="text-sm text-slate-500 mb-3">{{ skill.categorie }}</p>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">{{ skill.descriptionSkill|default('—') }}</p>
-                        <div class="flex gap-2">
+                        <p class="text-sm text-slate-500 mb-2">{{ skill.categorie }}</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-2 line-clamp-2">{{ skill.descriptionSkill|default('—') }}</p>
+                        {% include 'partials/_skill_market_stats.html.twig' with { skill: skill } %}
+                        <div class="flex flex-wrap gap-2 mt-4">
                             <a href="{{ path('app_admin_skills_edit', { id: skill.id }) }}" class="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">Modifier</a>
-                            <form method="post" action="{{ path('app_admin_skills_delete', { id: skill.id }) }}" class="inline">
+                            <form method="post" action="{{ path('app_admin_skills_refresh_stats', { id: skill.id }) }}" class="inline" title="Rafraîchir les statistiques marché">
+                                <input type="hidden" name="_token" value="{{ csrf_token('refresh_stats_skill_' ~ skill.id) }}">
+                                <button type="submit" class="px-3 py-2 rounded-lg border border-emerald-200 dark:border-emerald-800 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </form>
+                            <form method="post" action="{{ path('app_admin_skills_delete', { id: skill.id }) }}" class="inline" onsubmit="return confirm('Supprimer cette compétence ?');">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete_skill_' ~ skill.id) }}">
                                 <button type="submit" class="px-3 py-2 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             </form>
@@ -166,10 +224,17 @@
 
             <div class="flex items-center justify-between mb-6">
                 <p class="text-sm text-slate-500">{{ learningPaths|length }} parcours</p>
-                <a href="{{ path('app_admin_learning_path_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    Nouveau parcours
-                </a>
+                <div class="flex items-center gap-2">
+                    <a href="{{ path('app_admin_learning_path_generate') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm transition-colors shadow-lg shadow-violet-500/25">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        Générer avec IA
+                    </a>
+                    <a href="{{ path('app_admin_learning_path_new') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Nouveau parcours
+                    </a>
+                </div>
+
             </div>
             {% set has_path_filters = search_q_path or (search_niveau_path ?? '') != '' or (search_statut_path ?? '') != '' %}
             {% if learningPaths is empty %}
@@ -269,5 +334,88 @@ document.querySelectorAll('.tab-admin').forEach(btn => {
         document.getElementById('btn-new-paths').classList.toggle('hidden', tab !== 'paths');
     });
 });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    const tendanceCounts = {{ tendanceCounts|json_encode|raw }};
+    const skillsForChart = {{ chartSkillsData|json_encode|raw }};
+
+    // Donut : répartition par tendance
+    const ctxTendances = document.getElementById('chart-tendances');
+    if (ctxTendances && (tendanceCounts.en_hausse + tendanceCounts.stable + tendanceCounts.en_baisse + tendanceCounts.sans_tendance > 0)) {
+        new Chart(ctxTendances, {
+            type: 'doughnut',
+            data: {
+                labels: ['En hausse', 'Stable', 'En baisse', 'Sans donnée'],
+                datasets: [{
+                    data: [tendanceCounts.en_hausse, tendanceCounts.stable, tendanceCounts.en_baisse, tendanceCounts.sans_tendance],
+                    backgroundColor: ['#10b981', '#94a3b8', '#f43f5e', '#cbd5e1'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+    } else {
+        ctxTendances.parentElement.innerHTML = '<p class="text-sm text-slate-500">Rafraîchir les stats marché pour afficher les tendances.</p>';
+    }
+
+    // Courbe (line) / Barres : nombre d'offres par compétence
+    const ctxOffres = document.getElementById('chart-offres');
+    if (ctxOffres && skillsForChart.length > 0) {
+        const labels = skillsForChart.map(s => s.nom.length > 12 ? s.nom.substring(0, 11) + '…' : s.nom);
+        const data = skillsForChart.map(s => s.offres);
+        const colors = skillsForChart.map(s => {
+            if (s.tendance === 'en_hausse') return 'rgba(16, 185, 129, 0.8)';
+            if (s.tendance === 'en_baisse') return 'rgba(244, 63, 94, 0.8)';
+            return 'rgba(148, 163, 184, 0.8)';
+        });
+        new Chart(ctxOffres, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Nombre d'offres",
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: colors.map(c => c.replace('0.8', '1')),
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function(ctx) {
+                                const i = ctx.dataIndex;
+                                const t = skillsForChart[i] && skillsForChart[i].tendance;
+                                if (!t) return '';
+                                if (t === 'en_hausse') return 'Tendance: En hausse';
+                                if (t === 'en_baisse') return 'Tendance: En baisse';
+                                return 'Tendance: Stable';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { beginAtZero: true, title: { display: true, text: "Nombre d'offres" } },
+                    y: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 15 } }
+                }
+            }
+        });
+    } else {
+        ctxOffres.parentElement.innerHTML = '<p class="text-sm text-slate-500 flex items-center justify-center h-full">Aucune donnée. Rafraîchir les stats marché pour les compétences.</p>';
+    }
+})();
 </script>
 {% endblock %}

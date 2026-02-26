@@ -1,0 +1,25 @@
+{# Affiche les statistiques marché d'un skill (offres, score, tendance) #}
+{% if skill.nombreOffresAssociees is not null or skill.scoreDemande is not null %}
+<div class="flex flex-wrap gap-2 mt-3">
+    {% if skill.nombreOffresAssociees is not null %}
+    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" title="Nombre d'offres d'emploi associées">
+        <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+        {{ skill.nombreOffresAssociees }} offre{{ skill.nombreOffresAssociees > 1 ? 's' : '' }}
+    </span>
+    {% endif %}
+    {% if skill.scoreDemande is not null %}
+    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/20 text-amber-600 dark:text-amber-400" title="Score de demande sur le marché (1-5)">
+        <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+        {{ skill.scoreDemande }}/5 demande
+    </span>
+    {% endif %}
+    {% if skill.tendanceMarche is not null %}
+    {% set tendance_label = skill.tendanceMarche == 'en_hausse' ? 'En hausse' : (skill.tendanceMarche == 'en_baisse' ? 'En baisse' : 'Stable') %}
+    {% set tendance_color = skill.tendanceMarche == 'en_hausse' ? 'bg-emerald-500/20 text-emerald-600' : (skill.tendanceMarche == 'en_baisse' ? 'bg-rose-500/20 text-rose-600' : 'bg-slate-500/20 text-slate-600') %}
+    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium {{ tendance_color }}" title="Tendance du marché">
+        <i data-lucide="{{ skill.tendanceMarche == 'en_hausse' ? 'arrow-up-right' : (skill.tendanceMarche == 'en_baisse' ? 'arrow-down-right' : 'minus') }}" class="w-3.5 h-3.5"></i>
+        {{ tendance_label }}
+    </span>
+    {% endif %}
+</div>
+{% endif %}

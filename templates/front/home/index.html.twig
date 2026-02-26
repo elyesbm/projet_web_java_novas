@@ -3,6 +3,17 @@
 {% block title %}NoVas - Votre Parcours Etudiant{% endblock %}
 
 {% block body %}
+<!-- Flash messages -->
+{% for message in app.flashes('error') %}
+    <div class="fixed top-20 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-xl bg-rose-500/90 text-white text-sm font-medium shadow-lg animate-fade-in">
+        {{ message }}
+    </div>
+{% endfor %}
+{% for message in app.flashes('success') %}
+    <div class="fixed top-20 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-xl bg-emerald-500/90 text-white text-sm font-medium shadow-lg animate-fade-in">
+        {{ message }}
+    </div>
+{% endfor %}
 <!-- Navigation -->
 {% include 'front/partials/_main_nav.html.twig' %}
 
