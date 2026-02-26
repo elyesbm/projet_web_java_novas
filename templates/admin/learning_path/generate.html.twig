@@ -1,0 +1,292 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Générer des parcours IA - NOVAS Admin{% endblock %}
+{% block page_title %}✨ Génération IA de parcours{% endblock %}
+{% block page_subtitle %}Créez automatiquement des étapes de learning path avec l'intelligence artificielle{% endblock %}
+
+{% block body %}
+<div class="max-w-5xl mx-auto space-y-6">
+
+    {# Header card #}
+    <div class="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 rounded-2xl p-8 text-white shadow-lg shadow-violet-500/25">
+        <div class="flex items-center gap-5">
+            <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
+                <i data-lucide="sparkles" class="w-8 h-8"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold">Générateur IA de parcours</h2>
+                <p class="text-violet-100 mt-1">
+                    Décrivez ce que vous souhaitez, l'IA génère les étapes structurées prêtes à enregistrer.
+                </p>
+            </div>
+        </div>
+        {% if not ai_configured %}
+        <div class="mt-4 p-3 rounded-xl bg-red-500/20 border border-red-400/30 text-sm text-red-100">
+            <i data-lucide="alert-triangle" class="w-4 h-4 inline mr-1"></i>
+            Aucune clé API IA configurée. Ajoutez <code class="bg-white/10 px-1 rounded">GEMINI_API_KEY</code>,
+            <code class="bg-white/10 px-1 rounded">XAI_API_KEY</code> ou
+            <code class="bg-white/10 px-1 rounded">OPENROUTER_API_KEY</code> dans votre <code class="bg-white/10 px-1 rounded">.env.local</code>.
+        </div>
+        {% endif %}
+    </div>
+
+    {# Flash messages #}
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+        <div class="flex items-center gap-3 p-4 rounded-xl border
+            {{ type == 'success' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300' : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300' }}">
+            <i data-lucide="{{ type == 'success' ? 'check-circle' : 'x-circle' }}" class="w-5 h-5 shrink-0"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# ══════════════════════════════════════
+       ÉTAPE 1 : Formulaire de génération
+    ══════════════════════════════════════ #}
+    {% if step == 'form' %}
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 p-8">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 flex items-center justify-center text-sm font-bold">1</span>
+            Paramètres de génération
+        </h3>
+
+        <form method="post" action="{{ path('app_admin_learning_path_generate_preview') }}" id="form-ai-generate" class="space-y-6">
+            <input type="hidden" name="_token" value="{{ csrf_token('ai_generate_lp') }}">
+
+            {# Skill selector #}
+            <div class="space-y-2">
+                <label for="skill_id" class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    Compétence associée <span class="text-red-500">*</span>
+                </label>
+                <select name="skill_id" id="skill_id" required
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors">
+                    <option value="">— Choisir une compétence —</option>
+                    {% for skill in skills %}
+                    <option value="{{ skill.id }}"
+                        {% if selected_skill_id == skill.id %}selected{% endif %}
+                        data-desc="{{ skill.descriptionSkill|default('') }}"
+                        data-cat="{{ skill.categorie }}">
+                        {{ skill.nomSkill }} ({{ skill.categorie }})
+                    </option>
+                    {% endfor %}
+                </select>
+                <p class="text-xs text-slate-500" id="skill-description-hint"></p>
+            </div>
+
+            {# Prompt #}
+            <div class="space-y-2">
+                <label for="prompt" class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    Instructions / Prompt <span class="text-slate-400 font-normal">(optionnel)</span>
+                </label>
+                <textarea name="prompt" id="prompt" rows="4"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors resize-none"
+                    placeholder="Ex : Crée un parcours Python pour débutants en 6 étapes progressives, avec des vidéos YouTube pour chaque étape et des exercices pratiques de code...">{{ prompt|default('') }}</textarea>
+                <p class="text-xs text-slate-500">Laissez vide pour laisser l'IA décider du contenu optimal pour ce skill.</p>
+            </div>
+
+            {# Niveau + Nb étapes #}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label for="niveau" class="block text-sm font-semibold text-slate-700 dark:text-slate-300">Niveau cible</label>
+                    <select name="niveau" id="niveau"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors">
+                        <option value="1" {% if (niveau|default(1)) == 1 %}selected{% endif %}>🟡 Débutant</option>
+                        <option value="2" {% if (niveau|default(1)) == 2 %}selected{% endif %}>🔵 Intermédiaire</option>
+                        <option value="3" {% if (niveau|default(1)) == 3 %}selected{% endif %}>🟢 Avancé</option>
+                    </select>
+                </div>
+                <div class="space-y-2">
+                    <label for="nb_etapes" class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Nombre d'étapes <span class="text-slate-400 font-normal">(3 à 10)</span>
+                    </label>
+                    <select name="nb_etapes" id="nb_etapes"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors">
+                        {% for n in 3..10 %}
+                        <option value="{{ n }}" {% if (nb_etapes|default(5)) == n %}selected{% endif %}>{{ n }} étapes</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {# Actions #}
+            <div class="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
+                <a href="{{ path('app_admin_skills_list') }}?tab=paths"
+                   class="px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium transition-colors flex items-center gap-2">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    Retour
+                </a>
+                <button type="submit" id="btn-generate"
+                    {% if not ai_configured %}disabled{% endif %}
+                    class="px-8 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold shadow-lg shadow-violet-500/25 transition-all flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-5 h-5" id="btn-icon"></i>
+                    <span id="btn-text">Générer avec l'IA</span>
+                    <svg id="btn-spinner" class="hidden animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {# ══════════════════════════════════════
+       ÉTAPE 2 : Prévisualisation + édition
+    ══════════════════════════════════════ #}
+    {% elseif step == 'preview' %}
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 overflow-hidden">
+        {# Preview header #}
+        <div class="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-wrap gap-4">
+            <div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center text-sm font-bold">2</span>
+                    Prévisualisation — {{ generated_steps|length }} étapes générées
+                </h3>
+                <p class="text-sm text-slate-500 mt-1">
+                    Skill : <strong class="text-slate-700 dark:text-slate-300">{{ selected_skill.nomSkill }}</strong>
+                    &nbsp;·&nbsp; Niveau : {{ niveau == 1 ? '🟡 Débutant' : (niveau == 2 ? '🔵 Intermédiaire' : '🟢 Avancé') }}
+                </p>
+            </div>
+            <a href="{{ path('app_admin_learning_path_generate') }}"
+               class="flex items-center gap-2 px-4 py-2 rounded-xl border border-violet-200 dark:border-violet-800 text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 text-sm font-medium transition-colors">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                Régénérer
+            </a>
+        </div>
+
+        {# Editable steps table #}
+        <form method="post" action="{{ path('app_admin_learning_path_generate_save') }}" id="form-save-steps">
+            <input type="hidden" name="_token" value="{{ csrf_token('ai_save_lp') }}">
+            <input type="hidden" name="skill_id" value="{{ selected_skill.id }}">
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
+                            <th class="px-4 py-3 text-left font-semibold w-6">#</th>
+                            <th class="px-4 py-3 text-left font-semibold min-w-[180px]">Titre</th>
+                            <th class="px-4 py-3 text-left font-semibold min-w-[220px]">Description</th>
+                            <th class="px-4 py-3 text-left font-semibold w-24">Durée (h)</th>
+                            <th class="px-4 py-3 text-left font-semibold w-32">Type</th>
+                            <th class="px-4 py-3 text-left font-semibold min-w-[180px]">URL</th>
+                            <th class="px-4 py-3 text-left font-semibold w-28">Niveau</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                        {% for i, step in generated_steps %}
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group" data-row="{{ i }}">
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 text-xs font-bold">{{ i + 1 }}</span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <input type="text" name="titres[]" value="{{ step.titre_path }}" required
+                                    class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors">
+                            </td>
+                            <td class="px-4 py-3">
+                                <textarea name="descriptions[]" rows="2"
+                                    class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors resize-none">{{ step.description_skill }}</textarea>
+                            </td>
+                            <td class="px-4 py-3">
+                                <input type="number" name="durees[]" value="{{ step.duree_estimee }}" min="1" max="40" required
+                                    class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm text-center focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors">
+                            </td>
+                            <td class="px-4 py-3">
+                                <select name="types[]"
+                                    class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors">
+                                    <option value="post"     {% if step.type_etape == 'post' %}selected{% endif %}>📝 Article</option>
+                                    <option value="video"    {% if step.type_etape == 'video' %}selected{% endif %}>🎥 Vidéo</option>
+                                    <option value="exercice" {% if step.type_etape == 'exercice' %}selected{% endif %}>💻 Exercice</option>
+                                    <option value="quiz"     {% if step.type_etape == 'quiz' %}selected{% endif %}>🧩 Quiz</option>
+                                </select>
+                            </td>
+                            <td class="px-4 py-3">
+                                <input type="url" name="urls[]" value="{{ step.url }}"
+                                    placeholder="https://..."
+                                    class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors">
+                            </td>
+                            <td class="px-4 py-3">
+                                <select name="niveaux[]"
+                                    class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors">
+                                    <option value="1" {% if step.niveau_path == 1 %}selected{% endif %}>🟡 Débutant</option>
+                                    <option value="2" {% if step.niveau_path == 2 %}selected{% endif %}>🔵 Intermédiaire</option>
+                                    <option value="3" {% if step.niveau_path == 3 %}selected{% endif %}>🟢 Avancé</option>
+                                </select>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {# Actions #}
+            <div class="px-6 py-5 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between flex-wrap gap-4 bg-slate-50 dark:bg-slate-800/50">
+                <p class="text-sm text-slate-500 flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4 text-blue-400"></i>
+                    Vous pouvez modifier chaque étape avant de sauvegarder.
+                </p>
+                <div class="flex items-center gap-3">
+                    <a href="{{ path('app_admin_learning_path_generate') }}"
+                       class="px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        Régénérer
+                    </a>
+                    <button type="submit"
+                        class="px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2">
+                        <i data-lucide="save" class="w-5 h-5"></i>
+                        Sauvegarder {{ generated_steps|length }} parcours
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // ── Skill description hint ──
+    const skillSelect = document.getElementById('skill_id');
+    const hint = document.getElementById('skill-description-hint');
+    if (skillSelect && hint) {
+        function updateHint() {
+            const opt = skillSelect.options[skillSelect.selectedIndex];
+            const desc = opt?.dataset?.desc || '';
+            const cat  = opt?.dataset?.cat  || '';
+            hint.textContent = desc ? `${cat} — ${desc}` : '';
+        }
+        skillSelect.addEventListener('change', updateHint);
+        updateHint();
+    }
+
+    // ── Loading spinner on form submit ──
+    const form    = document.getElementById('form-ai-generate');
+    const btnIcon = document.getElementById('btn-icon');
+    const btnText = document.getElementById('btn-text');
+    const spinner = document.getElementById('btn-spinner');
+    const btn     = document.getElementById('btn-generate');
+
+    if (form && btn) {
+        form.addEventListener('submit', function (e) {
+            const skillId = document.getElementById('skill_id')?.value;
+            if (!skillId) {
+                e.preventDefault();
+                if (typeof showToast !== 'undefined') {
+                    showToast('Veuillez sélectionner une compétence.', 'error');
+                } else {
+                    alert('Veuillez sélectionner une compétence.');
+                }
+                return;
+            }
+            btn.disabled  = true;
+            btnIcon?.classList.add('hidden');
+            spinner?.classList.remove('hidden');
+            if (btnText) btnText.textContent = 'Génération en cours…';
+        });
+    }
+});
+</script>
+{% endblock %}
