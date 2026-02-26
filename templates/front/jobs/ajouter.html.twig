@@ -72,7 +72,7 @@
 
         <div>
           <label class="block text-sm font-medium mb-2">Titre de l'offre</label>
-          <input type="text" name="titre_offre" placeholder="Ex: Cours de maths niveau L1"
+          <input id="offer-title-input" type="text" name="titre_offre" placeholder="Ex: Cours de maths niveau L1"
                  value="{{ form.titre_offre|default('') }}"
                  class="w-full px-4 py-3 rounded-xl bg-background/50 border border-white/10 focus:border-primary/50 focus:outline-none transition-colors">
         </div>
@@ -86,9 +86,14 @@
             <button id="btn-check-offer-text" type="button" class="px-4 py-2 rounded-xl border border-primary/40 text-primary hover:bg-primary/10 transition text-sm">
               Verifier le texte
             </button>
+            <button id="btn-ai-optimize-offer" type="button" class="px-4 py-2 rounded-xl border border-accent/40 text-accent hover:bg-accent/10 transition text-sm">
+              Optimiser avec IA
+            </button>
             <span class="text-xs text-muted-foreground">Correction orthographique et qualite du texte</span>
           </div>
           <div id="offer-text-check-result" class="hidden mt-3 p-4 rounded-xl border border-white/10 bg-background/50 text-sm"></div>
+          <div id="offer-ai-optimize-result" class="hidden mt-3 p-4 rounded-xl border border-white/10 bg-background/50 text-sm"></div>
+          <div id="offer-ai-tags" class="hidden mt-3 flex flex-wrap gap-2"></div>
         </div>
 
         <div>
@@ -170,7 +175,11 @@
     (function () {
       const textarea = document.getElementById('offer-text-to-check');
       const button = document.getElementById('btn-check-offer-text');
+      const aiButton = document.getElementById('btn-ai-optimize-offer');
       const resultBox = document.getElementById('offer-text-check-result');
+      const aiResultBox = document.getElementById('offer-ai-optimize-result');
+      const aiTagsContainer = document.getElementById('offer-ai-tags');
+      const titleInput = document.getElementById('offer-title-input');
       const lieuInputs = document.querySelectorAll('input[name="lieu"]');
       const presentielFields = document.getElementById('presentiel-fields');
       const adresseInput = document.getElementById('job-adresse-input');
@@ -182,7 +191,7 @@
       let map = null;
       let marker = null;
 
-      if (!textarea || !button || !resultBox) {
+      if (!textarea || !button || !resultBox || !titleInput) {
         return;
       }
 
@@ -420,6 +429,63 @@
         resultBox.textContent = message;
       };
 
+      const renderAiError = (message) => {
+        if (!aiResultBox) {
+          return;
+        }
+
+        aiResultBox.className = 'mt-3 p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-sm text-red-200';
+        aiResultBox.textContent = message;
+      };
+
+      const renderAiSuccess = (payload) => {
+        if (!aiResultBox) {
+          return;
+        }
+
+        aiResultBox.className = 'mt-3 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-sm text-emerald-200';
+        aiResultBox.textContent = 'Optimisation IA appliquee au formulaire.';
+
+        if (!aiTagsContainer) {
+          return;
+        }
+
+        const tags = Array.isArray(payload.tags) ? payload.tags.filter((tag) => typeof tag === 'string' && tag.trim() !== '') : [];
+        if (tags.length === 0) {
+          aiTagsContainer.classList.add('hidden');
+          aiTagsContainer.innerHTML = '';
+          return;
+        }
+
+        const badges = tags.map((tag) => {
+          const clean = escapeHtml(tag.trim());
+          return `<span class="px-3 py-1 rounded-full text-xs border border-accent/40 text-accent bg-accent/10">${clean}</span>`;
+        });
+
+        aiTagsContainer.classList.remove('hidden');
+        aiTagsContainer.innerHTML = badges.join('');
+      };
+
+      const applySuggestedCategory = (category) => {
+        const normalized = String(category || '').toLowerCase().trim();
+        const map = {
+          tutorat: 'TUTORAT',
+          creation: 'CREATION',
+          aide: 'AIDE',
+          aide_academique: 'AIDE'
+        };
+        const expectedValue = map[normalized];
+        if (!expectedValue) {
+          return;
+        }
+
+        const radio = document.querySelector(`input[name="categorie_offre"][value="${expectedValue}"]`);
+        if (radio) {
+          radio.checked = true;
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      };
+
       lieuInputs.forEach((input) => {
         input.addEventListener('change', togglePresentielFields);
       });
@@ -466,6 +532,60 @@
           button.textContent = originalText;
         }
       });
+
+      if (aiButton) {
+        aiButton.addEventListener('click', async () => {
+          const title = titleInput.value.trim();
+          const description = textarea.value.trim();
+
+          if (!title || title.length < 3) {
+            renderAiError('Veuillez saisir un titre valide (min 3 caracteres).');
+            return;
+          }
+
+          if (!description || description.length < 10) {
+            renderAiError('Veuillez saisir une description valide (min 10 caracteres).');
+            return;
+          }
+
+          const initialLabel = aiButton.textContent;
+          aiButton.disabled = true;
+          aiButton.textContent = 'Optimisation IA...';
+
+          try {
+            const response = await fetch('{{ path('app_api_ai_offer_optimize') }}', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                title: title,
+                description: description
+              })
+            });
+
+            const data = await response.json().catch(() => ({ error: 'Reponse IA invalide.' }));
+            if (!response.ok) {
+              throw new Error(data.error || 'Erreur pendant l optimisation IA.');
+            }
+
+            if (typeof data.optimizedTitle === 'string' && data.optimizedTitle.trim() !== '') {
+              titleInput.value = data.optimizedTitle.trim();
+            }
+            if (typeof data.optimizedDescription === 'string' && data.optimizedDescription.trim() !== '') {
+              textarea.value = data.optimizedDescription.trim();
+            }
+            applySuggestedCategory(data.suggestedCategory);
+            renderAiSuccess(data);
+          } catch (error) {
+            renderAiError(error.message || 'Le service IA est indisponible.');
+          } finally {
+            aiButton.disabled = false;
+            aiButton.textContent = initialLabel;
+          }
+        });
+      }
     })();
   </script>
 {% endblock %}

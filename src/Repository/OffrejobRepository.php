@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Offrejob;
+use App\Enum\ModerationStatus;
 use App\Enum\OffreStatut;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -22,10 +23,11 @@ class OffrejobRepository extends ServiceEntityRepository
         ?string $lieu,
         ?string $statut,
         string $sort = 'date',
-        string $dir = 'desc'
+        string $dir = 'desc',
+        bool $approvedOnly = false
     ): array
     {
-        return $this->searchAndSortQueryBuilder($q, $categorie, $lieu, $statut, $sort, $dir)
+        return $this->searchAndSortQueryBuilder($q, $categorie, $lieu, $statut, $sort, $dir, $approvedOnly)
             ->getQuery()
             ->getResult();
     }
@@ -37,9 +39,15 @@ class OffrejobRepository extends ServiceEntityRepository
         ?string $lieu,
         ?string $statut,
         string $sort = 'date',
-        string $dir = 'desc'
+        string $dir = 'desc',
+        bool $approvedOnly = false
     ): QueryBuilder {
         $qb = $this->createQueryBuilder('o');
+
+        if ($approvedOnly) {
+            $qb->andWhere('o.moderationStatus = :moderation_approved')
+               ->setParameter('moderation_approved', ModerationStatus::APPROVED);
+        }
 
         if ($q) {
             $qb->andWhere('LOWER(o.titre_offre) LIKE :q
@@ -116,6 +124,19 @@ class OffrejobRepository extends ServiceEntityRepository
             ->andWhere('o.date_expiration < :now')
             ->setParameter('opened', OffreStatut::OUVERTE->value)
             ->setParameter('now', $now)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return Offrejob[]
+     */
+    public function findPendingModeration(): array
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.moderationStatus = :pending')
+            ->setParameter('pending', ModerationStatus::PENDING)
+            ->orderBy('o.date_creation_offre', 'DESC')
             ->getQuery()
             ->getResult();
     }

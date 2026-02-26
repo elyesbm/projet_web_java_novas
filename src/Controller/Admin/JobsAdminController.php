@@ -2,10 +2,13 @@
 
 namespace App\Controller\Admin;
 
+use App\Exception\AiApiException;
 use App\Entity\Offrejob;
+use App\Enum\ModerationStatus;
 use App\Enum\OffreStatut;
 use App\Repository\CandidatureJobRepository;
 use App\Repository\OffrejobRepository;
+use App\Service\AiModerationService;
 use App\Service\JobStatsService;
 use App\Service\OffreQuotaManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -154,7 +157,7 @@ class JobsAdminController extends AbstractController
     }
 
     #[Route('/new', name: 'app_admin_jobs_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em): Response
+    public function new(Request $request, EntityManagerInterface $em, AiModerationService $moderationService): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
@@ -203,6 +206,24 @@ class JobsAdminController extends AbstractController
                 return $this->redirectToRoute('app_admin_jobs_new');
             }
 
+            $moderationText = sprintf(
+                "Titre:\n%s\n\nDescription:\n%s",
+                (string) $request->request->get('titre_offre'),
+                (string) $request->request->get('description_offre')
+            );
+
+            try {
+                $moderation = $moderationService->moderateText($moderationText);
+            } catch (AiApiException|\RuntimeException) {
+                $this->addFlash('danger', 'La moderation automatique est indisponible. Reessayez dans quelques instants.');
+                return $this->redirectToRoute('app_admin_jobs_new');
+            }
+
+            if (($moderation['action'] ?? 'FLAG') === 'BLOCK') {
+                $this->addFlash('danger', 'Offre bloquee par moderation: ' . implode(', ', $moderation['reasons'] ?? []));
+                return $this->redirectToRoute('app_admin_jobs_new');
+            }
+
             $offre->setTitreOffre((string) $request->request->get('titre_offre'));
             $offre->setDescriptionOffre((string) $request->request->get('description_offre'));
             $offre->setCategorieOffre($categorie);
@@ -216,6 +237,14 @@ class JobsAdminController extends AbstractController
             $offre->setDateCreationOffre(new \DateTime());
             $offre->setDateExpiration($dateExpiration);
             $offre->setCreateur($this->getUser());
+            $offre->setModerationStatus(
+                ($moderation['action'] ?? 'ALLOW') === 'ALLOW'
+                    ? ModerationStatus::APPROVED
+                    : ModerationStatus::PENDING
+            );
+            if (($moderation['action'] ?? 'ALLOW') === 'FLAG') {
+                $this->addFlash('warning', 'Offre en attente de moderation.');
+            }
 
             $em->persist($offre);
             $em->flush();
@@ -231,7 +260,7 @@ class JobsAdminController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_admin_jobs_edit', methods: ['GET', 'POST'], requirements: ['id' => '\\d+'])]
-    public function edit(Offrejob $offre, Request $request, EntityManagerInterface $em): Response
+    public function edit(Offrejob $offre, Request $request, EntityManagerInterface $em, AiModerationService $moderationService): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
@@ -284,6 +313,26 @@ class JobsAdminController extends AbstractController
                 return $this->redirectToRoute('app_admin_jobs_edit', ['id' => $offre->getId()]);
             }
 
+            $moderationText = sprintf(
+                "Titre:\n%s\n\nDescription:\n%s",
+                (string) $request->request->get('titre_offre'),
+                (string) $request->request->get('description_offre')
+            );
+
+            try {
+                $moderation = $moderationService->moderateText($moderationText);
+            } catch (AiApiException|\RuntimeException) {
+                $this->addFlash('danger', 'La moderation automatique est indisponible. Reessayez dans quelques instants.');
+                return $this->redirectToRoute('app_admin_jobs_edit', ['id' => $offre->getId()]);
+            }
+
+            if (($moderation['action'] ?? 'FLAG') === 'BLOCK') {
+                $offre->setModerationStatus(ModerationStatus::REJECTED);
+                $em->flush();
+                $this->addFlash('danger', 'Offre bloquee par moderation: ' . implode(', ', $moderation['reasons'] ?? []));
+                return $this->redirectToRoute('app_admin_jobs_edit', ['id' => $offre->getId()]);
+            }
+
             $offre->setTitreOffre((string) $request->request->get('titre_offre'));
             $offre->setDescriptionOffre((string) $request->request->get('description_offre'));
             $offre->setCategorieOffre($categorie);
@@ -300,6 +349,14 @@ class JobsAdminController extends AbstractController
                 $statut = OffreStatut::FERMEE->value;
             }
             $offre->setStatutOffre($statut);
+            $offre->setModerationStatus(
+                ($moderation['action'] ?? 'ALLOW') === 'ALLOW'
+                    ? ModerationStatus::APPROVED
+                    : ModerationStatus::PENDING
+            );
+            if (($moderation['action'] ?? 'ALLOW') === 'FLAG') {
+                $this->addFlash('warning', 'Offre en attente de moderation apres modification.');
+            }
 
             $em->flush();
 

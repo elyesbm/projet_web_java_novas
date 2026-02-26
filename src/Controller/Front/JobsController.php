@@ -2,14 +2,17 @@
 
 namespace App\Controller\Front;
 
+use App\Exception\AiApiException;
 use App\Entity\Offrejob;
 use App\Entity\CandidatureJob;
 use App\Enum\OffreCategorie;
 use App\Enum\OffreLieu;
+use App\Enum\ModerationStatus;
 use App\Enum\OffreStatut;
 use App\Repository\OffrejobRepository;
 use App\Repository\CandidatureJobRepository;
 use App\Repository\UserRepository;
+use App\Service\AiModerationService;
 use App\Service\OffreQuotaManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -38,8 +41,8 @@ class JobsController extends AbstractController
         $sort = (string) $request->query->get('job_sort', 'date');
         $dir = (string) $request->query->get('job_dir', 'desc');
 
-        $allFilteredOffres = $repo->searchAndSort($q ?: null, $categorie, $lieu, $statut, $sort, $dir);
-        $qb = $repo->searchAndSortQueryBuilder($q ?: null, $categorie, $lieu, $statut, $sort, $dir);
+        $allFilteredOffres = $repo->searchAndSort($q ?: null, $categorie, $lieu, $statut, $sort, $dir, true);
+        $qb = $repo->searchAndSortQueryBuilder($q ?: null, $categorie, $lieu, $statut, $sort, $dir, true);
         $offres = $paginator->paginate(
             $qb,
             $request->query->getInt('page', 1),
@@ -75,9 +78,14 @@ class JobsController extends AbstractController
 
         $user = $this->getUser();
 
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
         $isCreateur = false;
         if ($user && method_exists($user, 'getId') && $offre->getCreateur()?->getId() === $user->getId()) {
             $isCreateur = true;
+        }
+
+        if (!$offre->isModerationApproved() && !$isCreateur && !$isAdmin) {
+            throw $this->createNotFoundException();
         }
 
         $dejaPostule = false;
@@ -86,7 +94,11 @@ class JobsController extends AbstractController
         }
 
         $jobsSimilaires = $offreRepo->findBy(
-            ['categorie_offre' => $offre->getCategorieOffre()],
+            [
+                'categorie_offre' => $offre->getCategorieOffre(),
+                'moderationStatus' => ModerationStatus::APPROVED,
+                'statut_offre' => OffreStatut::OUVERTE,
+            ],
             ['date_creation_offre' => 'DESC'],
             4
         );
@@ -131,7 +143,8 @@ class JobsController extends AbstractController
         EntityManagerInterface $em,
         CandidatureJobRepository $candRepo,
         UserRepository $userRepo,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        AiModerationService $moderationService
     ): Response {
         if (! $this->isCsrfTokenValid('jobs_apply_' . $offre->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Jeton CSRF invalide.');
@@ -165,9 +178,27 @@ class JobsController extends AbstractController
             return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
         }
 
+        if (!$offre->isModerationApproved()) {
+            $this->addFlash('warning', 'Cette offre est en cours de moderation.');
+            return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
+        }
+
         $msg = trim((string) $request->request->get('message_candidature', ''));
         if ($msg === '') {
             $this->addFlash('warning', 'Message obligatoire.');
+            return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
+        }
+
+        try {
+            $moderation = $moderationService->moderateText($msg);
+        } catch (AiApiException|\RuntimeException $e) {
+            $this->addFlash('danger', 'La moderation automatique est indisponible. Reessayez dans quelques instants.');
+            return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
+        }
+
+        if (($moderation['action'] ?? 'FLAG') === 'BLOCK') {
+            $reasons = implode(', ', $moderation['reasons'] ?? []);
+            $this->addFlash('danger', 'Votre message a ete bloque par la moderation automatique. ' . $reasons);
             return $this->redirectToRoute('front_jobs_detail', ['id' => $offre->getId()]);
         }
 
@@ -182,6 +213,12 @@ class JobsController extends AbstractController
         $c->setCandidat($user);
         $c->setMessageCandidature($msg);
         $c->setStatutCandidature('EN_ATTENTE');
+        if (($moderation['action'] ?? 'ALLOW') === 'ALLOW') {
+            $c->setModerationStatus(ModerationStatus::APPROVED);
+        } else {
+            $c->setModerationStatus(ModerationStatus::PENDING);
+            $this->addFlash('warning', 'Votre candidature est en attente de moderation avant validation.');
+        }
         $c->setDateCandidature(new \DateTime());
         $c->setCvFile($cvFile);
 
@@ -324,7 +361,8 @@ class JobsController extends AbstractController
     public function add(
         Request $request,
         EntityManagerInterface $em,
-        UserRepository $userRepo
+        UserRepository $userRepo,
+        AiModerationService $moderationService
     ): Response {
         $form = [
             'categorie_offre' => 'TUTORAT',
@@ -396,6 +434,38 @@ class JobsController extends AbstractController
             ]);
         }
 
+        $moderationText = sprintf(
+            "Titre:\n%s\n\nDescription:\n%s",
+            $form['titre_offre'],
+            $form['description_offre']
+        );
+
+        try {
+            $moderation = $moderationService->moderateText($moderationText);
+        } catch (AiApiException|\RuntimeException $e) {
+            $errors['moderation'] = 'La moderation automatique est indisponible. Reessayez dans quelques instants.';
+            return $this->render('front/jobs/ajouter.html.twig', [
+                'mode' => 'create',
+                'offre' => null,
+                'form' => $form,
+                'errors' => $errors,
+                'categorie_options' => $this->categorieOptions(),
+                'lieu_options' => $this->lieuOptions(),
+            ]);
+        }
+
+        if (($moderation['action'] ?? 'FLAG') === 'BLOCK') {
+            $errors['moderation'] = 'Votre offre a ete bloquee par la moderation automatique: ' . implode(', ', $moderation['reasons'] ?? []);
+            return $this->render('front/jobs/ajouter.html.twig', [
+                'mode' => 'create',
+                'offre' => null,
+                'form' => $form,
+                'errors' => $errors,
+                'categorie_options' => $this->categorieOptions(),
+                'lieu_options' => $this->lieuOptions(),
+            ]);
+        }
+
         $o = new Offrejob();
         $o->setTitreOffre($form['titre_offre']);
         $o->setDescriptionOffre($form['description_offre']);
@@ -410,6 +480,12 @@ class JobsController extends AbstractController
         $o->setDateCreationOffre(new \DateTime());
         $o->setDateExpiration($this->parseDateExpiration($form['date_expiration']) ?? new \DateTimeImmutable('+30 days'));
         $o->setCreateur($user);
+        if (($moderation['action'] ?? 'ALLOW') === 'ALLOW') {
+            $o->setModerationStatus(ModerationStatus::APPROVED);
+        } else {
+            $o->setModerationStatus(ModerationStatus::PENDING);
+            $this->addFlash('warning', 'Votre offre est en attente de moderation avant publication.');
+        }
 
         $em->persist($o);
         $em->flush();
@@ -423,7 +499,8 @@ class JobsController extends AbstractController
         Offrejob $offre,
         Request $request,
         EntityManagerInterface $em,
-        UserRepository $userRepo
+        UserRepository $userRepo,
+        AiModerationService $moderationService
     ): Response {
         $user = $this->getUser();
         if (!$user) {
@@ -485,6 +562,40 @@ class JobsController extends AbstractController
                 ]);
             }
 
+            $moderationText = sprintf(
+                "Titre:\n%s\n\nDescription:\n%s",
+                $form['titre_offre'],
+                $form['description_offre']
+            );
+
+            try {
+                $moderation = $moderationService->moderateText($moderationText);
+            } catch (AiApiException|\RuntimeException $e) {
+                $errors['moderation'] = 'La moderation automatique est indisponible. Reessayez dans quelques instants.';
+                return $this->render('front/jobs/ajouter.html.twig', [
+                    'mode' => 'edit',
+                    'offre' => $offre,
+                    'form' => $form,
+                    'errors' => $errors,
+                    'categorie_options' => $this->categorieOptions(),
+                    'lieu_options' => $this->lieuOptions(),
+                ]);
+            }
+
+            if (($moderation['action'] ?? 'FLAG') === 'BLOCK') {
+                $offre->setModerationStatus(ModerationStatus::REJECTED);
+                $em->flush();
+                $errors['moderation'] = 'Votre offre a ete bloquee par la moderation automatique: ' . implode(', ', $moderation['reasons'] ?? []);
+                return $this->render('front/jobs/ajouter.html.twig', [
+                    'mode' => 'edit',
+                    'offre' => $offre,
+                    'form' => $form,
+                    'errors' => $errors,
+                    'categorie_options' => $this->categorieOptions(),
+                    'lieu_options' => $this->lieuOptions(),
+                ]);
+            }
+
             $offre->setTitreOffre($form['titre_offre']);
             $offre->setDescriptionOffre($form['description_offre']);
             $offre->setCategorieOffre($form['categorie_offre']);
@@ -503,6 +614,14 @@ class JobsController extends AbstractController
                 $status = OffreStatut::FERMEE->value;
             }
             $offre->setStatutOffre($status);
+            $offre->setModerationStatus(
+                ($moderation['action'] ?? 'ALLOW') === 'ALLOW'
+                    ? ModerationStatus::APPROVED
+                    : ModerationStatus::PENDING
+            );
+            if (($moderation['action'] ?? 'ALLOW') === 'FLAG') {
+                $this->addFlash('warning', 'Cette offre est en attente de moderation apres modification.');
+            }
 
             $em->flush();
 

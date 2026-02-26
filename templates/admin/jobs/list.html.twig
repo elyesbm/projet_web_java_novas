@@ -63,6 +63,14 @@
             </div>
 
             <div class="flex items-center gap-2">
+                <a href="{{ path('app_admin_moderation_jobs') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm transition-colors">
+                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                    Moderation offres
+                </a>
+                <a href="{{ path('app_admin_moderation_applications') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm transition-colors">
+                    <i data-lucide="shield-x" class="w-4 h-4"></i>
+                    Moderation candidatures
+                </a>
                 <a href="{{ path('app_admin_jobs_stats') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm transition-colors">
                     <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
                     Statistiques

@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Enum\OffreCategorie;
 use App\Enum\OffreLieu;
+use App\Enum\ModerationStatus;
 use App\Enum\OffreStatut;
 use App\Repository\OffrejobRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -59,6 +60,14 @@ class Offrejob
     #[ORM\Column(name: 'date_expiration', type: Types::DATETIME_IMMUTABLE)]
     #[Assert\GreaterThan('now', message: 'La date d expiration doit etre dans le futur.')]
     private ?\DateTimeImmutable $date_expiration = null;
+
+    #[ORM\Column(
+        name: 'moderation_status',
+        type: Types::ENUM,
+        enumType: ModerationStatus::class,
+        options: ['values' => ['approved', 'pending', 'rejected'], 'default' => 'approved']
+    )]
+    private ModerationStatus $moderationStatus = ModerationStatus::APPROVED;
 
     #[ORM\Column(name: 'adresse', length: 255, nullable: true)]
     private ?string $adresse = null;
@@ -157,6 +166,34 @@ class Offrejob
     public function isExpired(): bool
     {
         return $this->date_expiration !== null && $this->date_expiration <= new \DateTimeImmutable();
+    }
+    public function getModerationStatus(): string
+    {
+        return $this->moderationStatus->value;
+    }
+    public function getModerationStatusEnum(): ModerationStatus
+    {
+        return $this->moderationStatus;
+    }
+    public function setModerationStatus(ModerationStatus|string $moderationStatus): static
+    {
+        $this->moderationStatus = $moderationStatus instanceof ModerationStatus
+            ? $moderationStatus
+            : ModerationStatus::from($moderationStatus);
+
+        return $this;
+    }
+    public function isModerationApproved(): bool
+    {
+        return $this->moderationStatus === ModerationStatus::APPROVED;
+    }
+    public function isModerationPending(): bool
+    {
+        return $this->moderationStatus === ModerationStatus::PENDING;
+    }
+    public function isModerationRejected(): bool
+    {
+        return $this->moderationStatus === ModerationStatus::REJECTED;
     }
     public function getAdresse(): ?string
     {

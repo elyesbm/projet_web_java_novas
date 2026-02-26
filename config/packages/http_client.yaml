@@ -1,0 +1,11 @@
+framework:
+    http_client:
+        scoped_clients:
+            ai.http_client:
+                base_uri: 'https://generativelanguage.googleapis.com'
+                headers:
+                    Accept: 'application/json'
+                    Content-Type: 'application/json'
+                    User-Agent: 'NoVasAI/1.0 (Symfony)'
+                timeout: 30
+                max_redirects: 0

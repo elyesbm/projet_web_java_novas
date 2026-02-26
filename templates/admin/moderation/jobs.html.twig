@@ -1,0 +1,70 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Moderation Offres - NOVAS Admin{% endblock %}
+{% block page_title %}Moderation Jobs{% endblock %}
+{% block page_subtitle %}Offres en attente de validation{% endblock %}
+
+{% block body %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <p class="text-sm text-slate-500">{{ offres|length }} offre(s) en attente</p>
+        <a href="{{ path('app_admin_moderation_applications') }}" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm">
+            Voir les candidatures a moderer
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50 dark:bg-slate-900/40">
+                    <tr class="text-left text-slate-600 dark:text-slate-300">
+                        <th class="px-4 py-3">Offre</th>
+                        <th class="px-4 py-3">Createur</th>
+                        <th class="px-4 py-3">Statut offre</th>
+                        <th class="px-4 py-3">Date</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for offre in offres %}
+                        <tr class="border-t border-slate-100 dark:border-slate-700">
+                            <td class="px-4 py-3">
+                                <p class="font-medium text-slate-900 dark:text-white">{{ offre.titreOffre }}</p>
+                                <p class="text-xs text-slate-500 mt-1">{{ offre.categorieOffre }} - {{ offre.lieu }}</p>
+                            </td>
+                            <td class="px-4 py-3">{{ offre.createur ? offre.createur.email : '-' }}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 rounded-full text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                                    {{ offre.statutOffre }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">{{ offre.dateCreationOffre ? offre.dateCreationOffre|date('d/m/Y H:i') : '-' }}</td>
+                            <td class="px-4 py-3">
+                                <div class="flex justify-end gap-2">
+                                    <form method="post" action="{{ path('app_admin_moderation_jobs_approve', {'id': offre.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('moderate_job_approve_' ~ offre.id) }}">
+                                        <button type="submit" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white">
+                                            Approuver
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{{ path('app_admin_moderation_jobs_reject', {'id': offre.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('moderate_job_reject_' ~ offre.id) }}">
+                                        <button type="submit" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white">
+                                            Rejeter
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="px-4 py-6 text-center text-slate-500">Aucune offre en attente.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

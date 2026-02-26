@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Enum\CandidatureStatus;
+use App\Enum\ModerationStatus;
 use App\Repository\CandidatureJobRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -60,6 +61,14 @@ class CandidatureJob
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(
+        name: 'moderation_status',
+        type: Types::ENUM,
+        enumType: ModerationStatus::class,
+        options: ['values' => ['approved', 'pending', 'rejected'], 'default' => 'approved']
+    )]
+    private ModerationStatus $moderationStatus = ModerationStatus::APPROVED;
+
     public function getId(): ?int { return $this->id; }
     public function getMessageCandidature(): ?string { return $this->message_candidature; }
     public function setMessageCandidature(string $message_candidature): static { $this->message_candidature = $message_candidature; return $this; }
@@ -115,5 +124,39 @@ class CandidatureJob
     {
         $this->updatedAt = $updatedAt;
         return $this;
+    }
+
+    public function getModerationStatus(): string
+    {
+        return $this->moderationStatus->value;
+    }
+
+    public function getModerationStatusEnum(): ModerationStatus
+    {
+        return $this->moderationStatus;
+    }
+
+    public function setModerationStatus(ModerationStatus|string $moderationStatus): static
+    {
+        $this->moderationStatus = $moderationStatus instanceof ModerationStatus
+            ? $moderationStatus
+            : ModerationStatus::from($moderationStatus);
+
+        return $this;
+    }
+
+    public function isModerationApproved(): bool
+    {
+        return $this->moderationStatus === ModerationStatus::APPROVED;
+    }
+
+    public function isModerationPending(): bool
+    {
+        return $this->moderationStatus === ModerationStatus::PENDING;
+    }
+
+    public function isModerationRejected(): bool
+    {
+        return $this->moderationStatus === ModerationStatus::REJECTED;
     }
 }
