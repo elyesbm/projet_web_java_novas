@@ -5,16 +5,13 @@ namespace App\Service;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
- * Analyse de sentiments via Hugging Face (nlptown/bert-base-multilingual-uncased-sentiment).
- *
- * - Si HF_SENTIMENT_SCRIPT est défini : appelle le script Python (client officiel huggingface_hub).
- * - Sinon : appel HTTP direct vers HF_SENTIMENT_URL (ou URL par défaut).
- *
- * Le résultat principal est une note entière entre 1 et 5 (étoiles).
+ * Sentiment analysis using Hugging Face model.
+ * - If HF_SENTIMENT_SCRIPT is configured, use Python helper script.
+ * - Otherwise, call HTTP inference endpoint.
  */
 class SentimentAnalysisService
 {
-    private const DEFAULT_API_URL = 'https://router.huggingface.co/models/nlptown/bert-base-multilingual-uncased-sentiment';
+    private const DEFAULT_API_URL = 'https://router.huggingface.co/hf-inference/models/nlptown/bert-base-multilingual-uncased-sentiment';
 
     public function __construct(
         private HttpClientInterface $httpClient,
@@ -26,7 +23,7 @@ class SentimentAnalysisService
     }
 
     /**
-     * Retourne une note de 1 à 5 (ou null si désactivé / erreur).
+     * Returns a score between 1 and 5 stars, or null if unavailable.
      */
     public function analyze(string $text): ?int
     {
@@ -43,14 +40,11 @@ class SentimentAnalysisService
             $scores = $this->analyzeInternal($trimmed);
             return $this->scoresToStars($scores);
         } catch (\Throwable) {
-            // Pour l'UI, on ne bloque pas : on masque simplement la note.
             return null;
         }
     }
 
     /**
-     * Retourne les scores bruts (pour debug / éventuelle commande console).
-     *
      * @return array<array{label: string, score: float}>
      */
     public function getRawScores(string $text): array
@@ -80,6 +74,7 @@ class SentimentAnalysisService
                 if (empty(trim($this->hfToken ?? ''))) {
                     throw $e;
                 }
+
                 return $this->callApi($text);
             }
         }
@@ -93,10 +88,12 @@ class SentimentAnalysisService
         if ($raw === '') {
             return null;
         }
+
         $path = $raw;
         if ($this->projectDir !== '' && !str_starts_with($path, '/') && !preg_match('#^[A-Za-z]:\\\\#', $path)) {
             $path = rtrim($this->projectDir, '/\\') . \DIRECTORY_SEPARATOR . ltrim($path, '/\\');
         }
+
         return is_file($path) ? $path : null;
     }
 
@@ -116,50 +113,56 @@ class SentimentAnalysisService
         );
 
         if (!\is_resource($proc)) {
-            throw new \RuntimeException('Impossible de lancer le script HF de sentiment.');
+            throw new \RuntimeException('Unable to start sentiment helper script.');
         }
 
         fwrite($pipes[0], $text);
         fclose($pipes[0]);
+
         $stdout = stream_get_contents($pipes[1]);
         $stderr = stream_get_contents($pipes[2]);
         fclose($pipes[1]);
         fclose($pipes[2]);
-        $code = proc_close($proc);
 
+        $code = proc_close($proc);
         if ($code !== 0 && $stdout === '') {
-            throw new \RuntimeException('Script HF sentiment: ' . ($stderr ?: "exit $code"));
+            throw new \RuntimeException('Sentiment script error: ' . ($stderr ?: "exit $code"));
         }
 
         $data = json_decode($stdout, true);
         if (!\is_array($data)) {
-            throw new \RuntimeException('Script HF sentiment: sortie JSON invalide.');
+            throw new \RuntimeException('Sentiment script returned invalid JSON.');
         }
         if (isset($data['error'])) {
-            throw new \RuntimeException('Script HF sentiment: ' . $data['error']);
+            throw new \RuntimeException('Sentiment script error: ' . $data['error']);
         }
 
-        $result = [];
-        foreach ($data as $item) {
-            if (isset($item['label'], $item['score'])) {
-                $result[] = [
-                    'label' => (string) $item['label'],
-                    'score' => (float) $item['score'],
-                ];
-            }
-        }
-        return $result;
+        return $this->normalizeScores($data);
     }
 
     private function resolveApiUrl(): string
     {
         $url = trim($this->inferenceUrl ?? '');
-        return $url !== '' ? $url : self::DEFAULT_API_URL;
+        if ($url === '') {
+            return self::DEFAULT_API_URL;
+        }
+
+        // Backward compatibility for old/deprecated Hugging Face endpoints.
+        $url = preg_replace(
+            '#^https://api-inference\.huggingface\.co/models/(.+)$#i',
+            'https://router.huggingface.co/hf-inference/models/$1',
+            $url
+        ) ?? $url;
+        $url = preg_replace(
+            '#^https://router\.huggingface\.co/models/(.+)$#i',
+            'https://router.huggingface.co/hf-inference/models/$1',
+            $url
+        ) ?? $url;
+
+        return $url;
     }
 
     /**
-     * Appel HTTP direct vers l'API HF.
-     *
      * @return array<array{label: string, score: float}>
      */
     private function callApi(string $text): array
@@ -167,7 +170,7 @@ class SentimentAnalysisService
         $url = $this->resolveApiUrl();
         $token = trim($this->hfToken ?? '');
         if ($token === '') {
-            throw new \RuntimeException('HF_TOKEN manquant pour l’analyse de sentiments.');
+            throw new \RuntimeException('HF_TOKEN is missing for sentiment analysis.');
         }
 
         $response = $this->httpClient->request('POST', $url, [
@@ -186,17 +189,35 @@ class SentimentAnalysisService
         if ($status < 200 || $status >= 300) {
             $decoded = json_decode($body, true);
             $msg = is_array($decoded) ? ($decoded['error'] ?? $decoded['message'] ?? json_encode($decoded)) : $body;
-            throw new \RuntimeException('API Hugging Face (sentiment): HTTP ' . $status . ' - ' . $msg);
+            throw new \RuntimeException('Hugging Face sentiment API: HTTP ' . $status . ' - ' . $msg);
         }
 
         $data = json_decode($body, true);
         if (!\is_array($data)) {
-            throw new \RuntimeException('API Hugging Face (sentiment): réponse JSON invalide.');
+            throw new \RuntimeException('Hugging Face sentiment API returned invalid JSON.');
+        }
+
+        return $this->normalizeScores($data);
+    }
+
+    /**
+     * @param mixed $data
+     * @return array<array{label: string, score: float}>
+     */
+    private function normalizeScores(mixed $data): array
+    {
+        if (!\is_array($data)) {
+            return [];
+        }
+
+        // HF often returns nested arrays: [[{label, score}, ...]]
+        if (isset($data[0]) && \is_array($data[0]) && isset($data[0][0]) && \is_array($data[0][0])) {
+            $data = $data[0];
         }
 
         $result = [];
         foreach ($data as $item) {
-            if (isset($item['label'], $item['score'])) {
+            if (\is_array($item) && isset($item['label'], $item['score'])) {
                 $result[] = [
                     'label' => (string) $item['label'],
                     'score' => (float) $item['score'],
@@ -242,8 +263,5 @@ class SentimentAnalysisService
 
         return null;
     }
+
 }
-
-
-
-

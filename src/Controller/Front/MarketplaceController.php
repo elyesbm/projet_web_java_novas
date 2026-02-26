@@ -148,53 +148,70 @@ class MarketplaceController extends AbstractController
         }, $articlesEntities);
 
         $recommendedArticles = [];
+        $session = $request->getSession();
+        $lastViewedArticleId = (int) $session->get('marketplace_last_viewed_article_id', 0);
+        $lastViewedCategoryId = (int) $session->get('marketplace_last_viewed_category_id', 0);
+        $lastViewedCategoryName = (string) $session->get('marketplace_last_viewed_category_name', '');
+        $favoriteCategoryIds = $lastViewedCategoryId > 0 ? [$lastViewedCategoryId] : [];
+        $excludedArticleIds = [];
+
         $currentUser = $this->getUser();
         if ($currentUser instanceof User && $currentUser->getId() !== null) {
             try {
                 $userId = (int) $currentUser->getId();
-                $purchasedArticleIds = $commandeRepository->findPurchasedArticleIdsForUser($userId);
-                $lastViewedArticleId = $historiqueVueRepository->findLastViewedArticleIdForUser($userId);
-                $lastViewedCategoryId = $historiqueVueRepository->findLastViewedCategoryIdForUser($userId);
-                $favoriteCategoryIds = $lastViewedCategoryId !== null ? [$lastViewedCategoryId] : [];
+                $excludedArticleIds = $commandeRepository->findPurchasedArticleIdsForUser($userId);
+                $dbLastViewedArticleId = $historiqueVueRepository->findLastViewedArticleIdForUser($userId);
+                $dbLastViewedCategoryId = $historiqueVueRepository->findLastViewedCategoryIdForUser($userId);
+
+                if ($dbLastViewedArticleId !== null) {
+                    $lastViewedArticleId = $dbLastViewedArticleId;
+                }
+                if ($dbLastViewedCategoryId !== null) {
+                    $favoriteCategoryIds = [$dbLastViewedCategoryId];
+                }
                 if (empty($favoriteCategoryIds)) {
                     $favoriteCategoryIds = $commandeRepository->findTopCategoryIdsForUser($userId, 1);
                 }
                 if (empty($favoriteCategoryIds)) {
                     $favoriteCategoryIds = $historiqueVueRepository->findTopCategoryIdsForUser($userId, 1);
                 }
+            } catch (\Throwable) {
+                // Fallback session-only mode.
+            }
+        }
 
-                if (!empty($favoriteCategoryIds)) {
-                    $excludedArticleIds = $purchasedArticleIds;
-                    if ($lastViewedArticleId !== null) {
-                        $excludedArticleIds[] = $lastViewedArticleId;
+        if (!empty($favoriteCategoryIds)) {
+            if ($lastViewedArticleId > 0) {
+                $excludedArticleIds[] = $lastViewedArticleId;
+            }
+            $excludedArticleIds = array_values(array_unique(array_map('intval', $excludedArticleIds)));
+
+            try {
+                $recommendedEntities = $articleRepository->findRecommendedByCategoryIds($favoriteCategoryIds, $excludedArticleIds, 3);
+                $recommendedArticles = array_map(function (Article $article): array {
+                    $categorie = $article->getCategorie();
+                    $auteur = $article->getAuteur();
+                    $image = $article->getImageArticle() ?: 'skills-learning.jpg';
+                    $imagesDir = $this->getParameter('kernel.project_dir') . '/public/images';
+                    if (!is_file($imagesDir . '/' . $image)) {
+                        $image = 'skills-learning.jpg';
                     }
-                    $excludedArticleIds = array_values(array_unique(array_map('intval', $excludedArticleIds)));
-                    $recommendedEntities = $articleRepository->findRecommendedByCategoryIds($favoriteCategoryIds, $excludedArticleIds, 3);
-                    $recommendedArticles = array_map(function (Article $article): array {
-                        $categorie = $article->getCategorie();
-                        $auteur = $article->getAuteur();
-                        $image = $article->getImageArticle() ?: 'skills-learning.jpg';
-                        $imagesDir = $this->getParameter('kernel.project_dir') . '/public/images';
-                        if (!is_file($imagesDir . '/' . $image)) {
-                            $image = 'skills-learning.jpg';
-                        }
 
-                        return [
-                            'id' => $article->getId(),
-                            'titre' => $article->getTitreArticle(),
-                            'image' => $image,
-                            'type' => $article->getTypeArticle() ?: 'academic',
-                            'prix' => $article->getPrixArticle() ?? 0,
-                            'categorie' => $categorie instanceof Categorie ? ['id' => $categorie->getId(), 'nom' => $categorie->getNomCategorie()] : ['id' => null, 'nom' => 'Autre'],
-                            'vendeur' => [
-                                'nom' => $auteur instanceof User ? trim(($auteur->getPrenom() ?? '') . ' ' . ($auteur->getNom() ?? '')) : 'Etudiant',
-                                'avatar' => 'student-avatar.jpg',
-                                'niveau' => $auteur instanceof User ? ($auteur->getROLE() ?? 'Etudiant') : 'Etudiant',
-                            ],
-                            'date' => (new \DateTimeImmutable())->format('Y-m-d'),
-                        ];
-                    }, $recommendedEntities);
-                }
+                    return [
+                        'id' => $article->getId(),
+                        'titre' => $article->getTitreArticle(),
+                        'image' => $image,
+                        'type' => $article->getTypeArticle() ?: 'academic',
+                        'prix' => $article->getPrixArticle() ?? 0,
+                        'categorie' => $categorie instanceof Categorie ? ['id' => $categorie->getId(), 'nom' => $categorie->getNomCategorie()] : ['id' => null, 'nom' => 'Autre'],
+                        'vendeur' => [
+                            'nom' => $auteur instanceof User ? trim(($auteur->getPrenom() ?? '') . ' ' . ($auteur->getNom() ?? '')) : 'Etudiant',
+                            'avatar' => 'student-avatar.jpg',
+                            'niveau' => $auteur instanceof User ? ($auteur->getROLE() ?? 'Etudiant') : 'Etudiant',
+                        ],
+                        'date' => (new \DateTimeImmutable())->format('Y-m-d'),
+                    ];
+                }, $recommendedEntities);
             } catch (\Throwable) {
                 $recommendedArticles = [];
             }
@@ -206,6 +223,7 @@ class MarketplaceController extends AbstractController
             'current_page' => $currentPage,
             'total_pages' => $totalPages,
             'recommended_articles' => $recommendedArticles,
+            'recommended_category_name' => $lastViewedCategoryName,
         ]);
     }
 
@@ -279,6 +297,12 @@ class MarketplaceController extends AbstractController
             }
         }
         $categorie = $articleEntity->getCategorie();
+        $session = $request->getSession();
+        $session->set('marketplace_last_viewed_article_id', (int) $articleEntity->getId());
+        if ($categorie instanceof Categorie && $categorie->getId() !== null) {
+            $session->set('marketplace_last_viewed_category_id', (int) $categorie->getId());
+            $session->set('marketplace_last_viewed_category_name', (string) ($categorie->getNomCategorie() ?? ''));
+        }
         $auteur = $articleEntity->getAuteur();
         // Detail image handling: prefer stored image if file exists
         $detailImage = $articleEntity->getImageArticle() ?: 'skills-learning.jpg';
@@ -318,7 +342,6 @@ class MarketplaceController extends AbstractController
             ];
         }, array_values(array_filter($autres, static fn (Article $a) => $a->getId() !== $id)));
         $articles_similaires = array_slice($articles_similaires, 0, 3);
-        $session = $request->getSession();
         $cartQty = (array) $session->get('marketplace_cart_qty', []);
         if (empty($cartQty)) {
             $legacyCartIds = array_values(array_unique(array_map('intval', (array) $session->get('marketplace_cart', []))));

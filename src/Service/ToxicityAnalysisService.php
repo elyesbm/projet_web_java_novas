@@ -5,13 +5,13 @@ namespace App\Service;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
- * Analyse de toxicité via l'API Hugging Face (unitary/toxic-bert).
- * - Si HF_TOXICITY_SCRIPT est défini : appelle le script Python (client officiel huggingface_hub).
- * - Sinon : appel HTTP vers HF_INFERENCE_URL (ou URL par défaut).
+ * Toxicity analysis using Hugging Face Toxic-BERT.
+ * - If HF_TOXICITY_SCRIPT is configured, use Python helper script.
+ * - Otherwise, call HTTP inference endpoint.
  */
 class ToxicityAnalysisService
 {
-    private const DEFAULT_API_URL = 'https://router.huggingface.co/models/unitary/toxic-bert';
+    private const DEFAULT_API_URL = 'https://router.huggingface.co/hf-inference/models/unitary/toxic-bert';
     private const TOXICITY_THRESHOLD = 0.5;
     private const TOXIC_LABELS = ['toxic', 'severe_toxic', 'threat', 'insult', 'obscene', 'identity_hate'];
 
@@ -25,8 +25,7 @@ class ToxicityAnalysisService
     }
 
     /**
-     * Retourne true si le texte est considéré comme toxique.
-     * Si HF_TOKEN est vide : retourne false (désactivé).
+     * Returns true if text is toxic.
      */
     public function isToxic(string $text): bool
     {
@@ -34,6 +33,7 @@ class ToxicityAnalysisService
         if ($trimmed === '') {
             return false;
         }
+
         if (empty(trim($this->hfToken ?? '')) && $this->resolveScriptPath() === null) {
             return false;
         }
@@ -44,25 +44,26 @@ class ToxicityAnalysisService
         } catch (\Throwable $e) {
             $msg = $e->getMessage();
             throw new \RuntimeException(
-                'Vérification de toxicité indisponible. ' . ($msg ?: 'Réessayez plus tard.'),
+                'Verification de toxicite indisponible. ' . ($msg ?: 'Reessayez plus tard.'),
                 0,
                 $e
             );
         }
     }
 
-    /** Source utilisée (URL HTTP ou script) pour debug / commande de test. */
+    /**
+     * Source used (URL or script) for debug/testing.
+     */
     public function getApiUrl(): string
     {
         if ($this->resolveScriptPath() !== null) {
             return 'script: ' . trim($this->scriptPath ?? '');
         }
+
         return $this->resolveApiUrl();
     }
 
     /**
-     * Retourne les scores de toxicité (pour debug / affichage).
-     *
      * @return array<array{label: string, score: float}>
      */
     public function getToxicityScores(string $text): array
@@ -71,6 +72,7 @@ class ToxicityAnalysisService
         if ($trimmed === '' || (empty(trim($this->hfToken ?? '')) && $this->resolveScriptPath() === null)) {
             return [];
         }
+
         try {
             return $this->analyze($trimmed);
         } catch (\Throwable) {
@@ -79,8 +81,6 @@ class ToxicityAnalysisService
     }
 
     /**
-     * Script configuré → appel du script (API via SDK). Sinon → HTTP.
-     *
      * @return array<array{label: string, score: float}>
      */
     private function analyze(string $text): array
@@ -93,9 +93,11 @@ class ToxicityAnalysisService
                 if (empty(trim($this->hfToken ?? ''))) {
                     throw $e;
                 }
+
                 return $this->callApi($text);
             }
         }
+
         return $this->callApi($text);
     }
 
@@ -105,10 +107,12 @@ class ToxicityAnalysisService
         if ($raw === '') {
             return null;
         }
+
         $path = $raw;
         if ($this->projectDir !== '' && !str_starts_with($path, '/') && !preg_match('#^[A-Za-z]:\\\\#', $path)) {
             $path = rtrim($this->projectDir, '/\\') . \DIRECTORY_SEPARATOR . ltrim($path, '/\\');
         }
+
         return is_file($path) ? $path : null;
     }
 
@@ -126,52 +130,68 @@ class ToxicityAnalysisService
             $env,
             ['bypass_shell' => true]
         );
+
         if (!\is_resource($proc)) {
-            throw new \RuntimeException('Impossible de lancer le script HF.');
+            throw new \RuntimeException('Unable to start toxicity helper script.');
         }
+
         fwrite($pipes[0], $text);
         fclose($pipes[0]);
+
         $stdout = stream_get_contents($pipes[1]);
         $stderr = stream_get_contents($pipes[2]);
         fclose($pipes[1]);
         fclose($pipes[2]);
+
         $code = proc_close($proc);
         if ($code !== 0 && $stdout === '') {
-            throw new \RuntimeException('Script HF: ' . ($stderr ?: "exit $code"));
+            throw new \RuntimeException('Toxicity script error: ' . ($stderr ?: "exit $code"));
         }
+
         $data = json_decode($stdout, true);
         if (!\is_array($data)) {
-            throw new \RuntimeException('Script HF: sortie JSON invalide.');
+            throw new \RuntimeException('Toxicity script returned invalid JSON.');
         }
         if (isset($data['error'])) {
-            throw new \RuntimeException('Script HF: ' . $data['error']);
+            throw new \RuntimeException('Toxicity script error: ' . $data['error']);
         }
-        $result = [];
-        foreach ($data as $item) {
-            if (isset($item['label'], $item['score'])) {
-                $result[] = ['label' => (string) $item['label'], 'score' => (float) $item['score']];
-            }
-        }
-        return $result;
+
+        return $this->normalizeScores($data);
     }
 
     private function resolveApiUrl(): string
     {
         $url = trim($this->inferenceUrl ?? '');
-        return $url !== '' ? $url : self::DEFAULT_API_URL;
+        if ($url === '') {
+            return self::DEFAULT_API_URL;
+        }
+
+        // Backward compatibility for old/deprecated Hugging Face endpoints.
+        $url = preg_replace(
+            '#^https://api-inference\.huggingface\.co/models/(.+)$#i',
+            'https://router.huggingface.co/hf-inference/models/$1',
+            $url
+        ) ?? $url;
+        $url = preg_replace(
+            '#^https://router\.huggingface\.co/models/(.+)$#i',
+            'https://router.huggingface.co/hf-inference/models/$1',
+            $url
+        ) ?? $url;
+
+        return $url;
     }
 
     /**
-     * Un seul appel HTTP vers l'URL configurée.
-     *
      * @return array<array{label: string, score: float}>
      */
     private function callApi(string $text): array
     {
         $url = $this->resolveApiUrl();
+        $token = trim($this->hfToken ?? '');
+
         $response = $this->httpClient->request('POST', $url, [
             'headers' => [
-                'Authorization' => 'Bearer ' . $this->hfToken,
+                'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
             ],
             'json' => ['inputs' => $text],
@@ -182,50 +202,68 @@ class ToxicityAnalysisService
         $body = $response->getContent(false);
 
         if ($status === 401) {
-            throw new \RuntimeException('Token Hugging Face invalide ou permissions manquantes.');
+            throw new \RuntimeException('Invalid Hugging Face token or missing permissions.');
         }
+
         if ($status < 200 || $status >= 300) {
-            throw new \RuntimeException('API Hugging Face: HTTP ' . $status . ' - ' . substr($body, 0, 150));
+            throw new \RuntimeException('Hugging Face API: HTTP ' . $status . ' - ' . substr((string) $body, 0, 200));
         }
 
         $data = json_decode($body, true);
-        if (!\is_array($data) || isset($data['error'])) {
+        if (!\is_array($data)) {
+            throw new \RuntimeException('Hugging Face API returned invalid JSON.');
+        }
+
+        if (isset($data['error'])) {
+            throw new \RuntimeException((string) $data['error']);
+        }
+
+        return $this->normalizeScores($data);
+    }
+
+    /**
+     * @param mixed $data
+     * @return array<array{label: string, score: float}>
+     */
+    private function normalizeScores(mixed $data): array
+    {
+        if (!\is_array($data)) {
             return [];
         }
 
-        // Format tableau [ { "label": "toxic", "score": 0.99 }, ... ]
-        if (isset($data[0]) && \is_array($data[0])) {
-            $result = [];
-            foreach ($data as $item) {
-                if (isset($item['label'], $item['score'])) {
-                    $result[] = ['label' => (string) $item['label'], 'score' => (float) $item['score']];
-                }
-            }
-            return $result;
+        // HF often returns nested arrays: [[{label, score}, ...]]
+        if (isset($data[0]) && \is_array($data[0]) && isset($data[0][0]) && \is_array($data[0][0])) {
+            $data = $data[0];
         }
-        // Format objet { "toxic": 0.99, ... }
+
         $result = [];
-        foreach ($data as $label => $score) {
-            if (\is_string($label) && \is_numeric($score)) {
-                $result[] = ['label' => $label, 'score' => (float) $score];
+        foreach ($data as $item) {
+            if (\is_array($item) && isset($item['label'], $item['score'])) {
+                $result[] = [
+                    'label' => (string) $item['label'],
+                    'score' => (float) $item['score'],
+                ];
             }
         }
+
         return $result;
     }
 
+    /**
+     * @param array<array{label: string, score: float}> $scores
+     */
     private function isToxicFromScores(array $scores): bool
     {
         foreach ($scores as $item) {
             $label = strtolower((string) ($item['label'] ?? ''));
             $score = (float) ($item['score'] ?? 0);
+
             if ($score >= self::TOXICITY_THRESHOLD && \in_array($label, self::TOXIC_LABELS, true)) {
                 return true;
             }
         }
+
         return false;
     }
+
 }
-
-
-
-

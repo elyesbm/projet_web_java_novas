@@ -9,7 +9,7 @@ Usage : echo "Prompt" | python3 hf_image.py
 
 Variables d'environnement :
   HF_TOKEN          (obligatoire) Token HF avec permission "Inference Providers"
-  HF_IMAGE_PROVIDER (optionnel)  "replicate" ou "fastest", défaut: replicate
+  HF_IMAGE_PROVIDER (optionnel)  "hf-inference" (recommandé), "replicate", "fal-ai", etc.
   HF_IMAGE_MODEL    (optionnel)  Modèle, défaut: ByteDance/SDXL-Lightning
 
 Sortie : une ligne base64 de l'image PNG sur stdout.
@@ -41,7 +41,7 @@ def main() -> None:
         print("huggingface_hub manquant. Exécuter: pip install huggingface_hub", file=sys.stderr)
         sys.exit(2)
 
-    provider = os.environ.get("HF_IMAGE_PROVIDER", "replicate").strip() or "replicate"
+    provider = os.environ.get("HF_IMAGE_PROVIDER", "hf-inference").strip() or "hf-inference"
     model = os.environ.get("HF_IMAGE_MODEL", "ByteDance/SDXL-Lightning").strip() or "ByteDance/SDXL-Lightning"
 
     try:

@@ -2,18 +2,16 @@
 
 namespace App\Service;
 
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
- * Génération d'images à partir de texte via l'API Hugging Face Inference Providers (text-to-image).
- * Modèle par défaut : ByteDance/SDXL-Lightning (Replicate).
- * - Si HF_IMAGE_SCRIPT est configuré : utilise le script Python (InferenceClient), plus fiable.
- * - Sinon : appel HTTP vers router.huggingface.co (ou HF_IMAGE_BASE_URL).
+ * Image generation via Hugging Face Inference providers.
+ * - If HF_IMAGE_SCRIPT is configured: uses Python helper script.
+ * - Otherwise: uses HTTP API.
  */
 class HuggingFaceImageService
 {
-    private const DEFAULT_BASE_URL = 'https://router.huggingface.co';
+    private const DEFAULT_BASE_URL = 'https://router.huggingface.co/hf-inference/models';
     private const DEFAULT_MODEL = 'ByteDance/SDXL-Lightning';
 
     public function __construct(
@@ -28,10 +26,6 @@ class HuggingFaceImageService
     }
 
     /**
-     * Génère des images à partir d'un prompt texte.
-     *
-     * @param string $prompt      Description de l'image (prompt)
-     * @param int    $sampleCount Nombre d'images (1 par défaut ; l'API HF en renvoie souvent une seule par appel)
      * @return array<array{base64: string}>
      */
     public function generateImages(string $prompt, int $sampleCount = 1): array
@@ -39,40 +33,30 @@ class HuggingFaceImageService
         $token = trim($this->hfToken ?? '');
         if ($token === '') {
             throw new \RuntimeException(
-                'HF_TOKEN n\'est pas configuré. Créez un token avec la permission "Inference Providers" sur huggingface.co/settings/tokens'
+                'HF_TOKEN is missing. Add a token with "Inference Providers" permission on huggingface.co/settings/tokens.'
             );
+        }
+
+        $prompt = trim($prompt);
+        if ($prompt === '') {
+            throw new \RuntimeException('Prompt is required.');
         }
 
         $script = $this->resolveScriptPath();
         if ($script !== null) {
             try {
-                return $this->runScript($script, trim($prompt));
+                return $this->runScript($script, $prompt);
             } catch (\Throwable $e) {
-                // Fallback HTTP si le script échoue (ex. Python non installé)
+                // Fallback to HTTP if local Python script fails.
                 try {
-                    return $this->callHttpApi(trim($prompt));
+                    return $this->callHttpApi($prompt);
                 } catch (\Throwable) {
-                    throw new \RuntimeException('Génération d\'image indisponible. ' . $e->getMessage(), 0, $e);
+                    throw new \RuntimeException('Image generation unavailable. ' . $e->getMessage(), 0, $e);
                 }
             }
         }
 
-        try {
-            return $this->callHttpApi(trim($prompt));
-        } catch (\Throwable $e) {
-            $status = null;
-            if ($e instanceof \Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface) {
-                $status = $e->getResponse()->getStatusCode();
-            }
-            if ($status === 410 || $status === 404) {
-                throw new \RuntimeException(
-                    'L\'API HTTP Hugging Face ne supporte plus ce type d\'appel. Configurez HF_IMAGE_SCRIPT=scripts/hf_image.py (voir docs/HF_IMAGE_ETAPES.md).',
-                    0,
-                    $e
-                );
-            }
-            throw $e;
-        }
+        return $this->callHttpApi($prompt);
     }
 
     private function resolveScriptPath(): ?string
@@ -81,10 +65,12 @@ class HuggingFaceImageService
         if ($raw === '') {
             return null;
         }
+
         $path = $raw;
         if ($this->projectDir !== '' && !str_starts_with($path, '/') && !preg_match('#^[A-Za-z]:\\\\#', $path)) {
             $path = rtrim($this->projectDir, '/\\') . \DIRECTORY_SEPARATOR . ltrim($path, '/\\');
         }
+
         return is_file($path) ? $path : null;
     }
 
@@ -95,13 +81,15 @@ class HuggingFaceImageService
     {
         $provider = trim($this->provider ?? '');
         if ($provider === '') {
-            $provider = 'replicate';
+            $provider = 'hf-inference';
         }
+
         $env = array_merge(getenv(), [
             'HF_TOKEN' => $this->hfToken ?? '',
             'HF_IMAGE_MODEL' => trim($this->model ?? '') !== '' ? trim($this->model) : self::DEFAULT_MODEL,
             'HF_IMAGE_PROVIDER' => $provider,
         ]);
+
         $proc = proc_open(
             [PHP_OS_FAMILY === 'Windows' ? 'py' : 'python3', ...(PHP_OS_FAMILY === 'Windows' ? ['-3', $scriptPath] : [$scriptPath])],
             [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
@@ -110,23 +98,33 @@ class HuggingFaceImageService
             $env,
             ['bypass_shell' => true]
         );
+
         if (!\is_resource($proc)) {
-            throw new \RuntimeException('Impossible de lancer le script HF (hf_image.py).');
+            throw new \RuntimeException('Unable to start hf_image.py script.');
         }
+
         fwrite($pipes[0], $prompt);
         fclose($pipes[0]);
+
         $stdout = stream_get_contents($pipes[1]);
         $stderr = stream_get_contents($pipes[2]);
         fclose($pipes[1]);
         fclose($pipes[2]);
+
         $code = proc_close($proc);
         if ($code !== 0) {
-            throw new \RuntimeException('Script HF image: ' . ($stderr ?: "exit $code"));
+            throw new \RuntimeException('HF image script error: ' . ($stderr ?: "exit $code"));
         }
+
         $stdout = trim($stdout);
         if ($stdout === '') {
-            throw new \RuntimeException('Script HF image: sortie vide.');
+            throw new \RuntimeException('HF image script returned empty output.');
         }
+
+        if (base64_decode($stdout, true) === false) {
+            throw new \RuntimeException('HF image script returned invalid base64.');
+        }
+
         return [['base64' => $stdout]];
     }
 
@@ -137,7 +135,26 @@ class HuggingFaceImageService
     {
         $modelId = trim($this->model ?? '') !== '' ? trim($this->model) : self::DEFAULT_MODEL;
         $base = trim($this->baseUrl ?? '') !== '' ? rtrim($this->baseUrl, '/') : self::DEFAULT_BASE_URL;
-        $url = $base . '/models/' . $modelId;
+
+        // Backward compatibility for old/deprecated endpoints.
+        if (preg_match('#^https://api-inference\.huggingface\.co/models#i', $base)) {
+            $base = preg_replace(
+                '#^https://api-inference\.huggingface\.co/models#i',
+                'https://router.huggingface.co/hf-inference/models',
+                $base
+            ) ?? $base;
+        } elseif (preg_match('#^https://router\.huggingface\.co/models#i', $base)) {
+            $base = preg_replace(
+                '#^https://router\.huggingface\.co/models#i',
+                'https://router.huggingface.co/hf-inference/models',
+                $base
+            ) ?? $base;
+        }
+
+        $modelPath = str_replace('%2F', '/', rawurlencode($modelId));
+        $url = str_contains($base, '{model}')
+            ? str_replace('{model}', $modelPath, $base)
+            : $base . '/' . $modelPath;
 
         $payload = [
             'inputs' => $prompt,
@@ -150,6 +167,7 @@ class HuggingFaceImageService
             'headers' => [
                 'Authorization' => 'Bearer ' . trim($this->hfToken ?? ''),
                 'Content-Type' => 'application/json',
+                'Accept' => 'image/png,application/json',
             ],
             'json' => $payload,
             'timeout' => 120,
@@ -158,27 +176,37 @@ class HuggingFaceImageService
         $status = $response->getStatusCode();
         $body = $response->getContent(false);
 
+        if ($status === 404 || $status === 410) {
+            throw new \RuntimeException(
+                'API image Hugging Face indisponible pour ce modele/provider (HTTP ' . $status . '). ' .
+                'Configurez HF_IMAGE_SCRIPT=scripts/hf_image.py pour forcer le mode script Python.'
+            );
+        }
+
         if ($status === 503) {
             $decoded = json_decode($body, true);
             $msg = $decoded['error'] ?? $decoded['estimated_time'] ?? $body;
             throw new \RuntimeException(
-                'Modèle en cours de chargement. Réessayez dans quelques secondes. ' . (is_string($msg) ? $msg : json_encode($msg))
+                'Modele en cours de chargement. Reessayez dans quelques secondes. ' .
+                (is_string($msg) ? $msg : json_encode($msg))
             );
         }
 
         if ($status < 200 || $status >= 300) {
             $decoded = json_decode($body, true);
             $msg = is_array($decoded) ? ($decoded['error'] ?? $decoded['message'] ?? json_encode($decoded)) : $body;
-            throw new \RuntimeException('API Hugging Face: HTTP ' . $status . ' - ' . $msg);
+            throw new \RuntimeException(sprintf(
+                'Hugging Face API (%s): HTTP %d - %s',
+                $modelId,
+                $status,
+                (string) $msg
+            ));
         }
 
         if ($body === '') {
-            throw new \RuntimeException('API Hugging Face: réponse vide.');
+            throw new \RuntimeException('Hugging Face API returned an empty response.');
         }
 
         return [['base64' => base64_encode($body)]];
     }
 }
-
-
-

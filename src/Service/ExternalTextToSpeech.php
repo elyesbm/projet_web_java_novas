@@ -46,7 +46,7 @@ class ExternalTextToSpeech
 
     private function synthesizeWithGoogle(string $text, string $lang): string
     {
-        $apiKey = trim((string) ($this->googleApiKey ?? ''));
+        $apiKey = trim((string) ($this->googleApiKey ?: $this->readEnv('GOOGLE_TTS_API_KEY')));
         if ($apiKey === '') {
             throw new \RuntimeException('GOOGLE_TTS_API_KEY manquant. Ajoutez-le dans .env.local.');
         }
@@ -107,7 +107,7 @@ class ExternalTextToSpeech
 
     private function synthesizeWithVoiceRss(string $text, string $lang): string
     {
-        $apiKey = trim((string) ($this->voiceRssApiKey ?? ''));
+        $apiKey = trim((string) ($this->voiceRssApiKey ?: $this->readEnv('VOICERSS_API_KEY')));
         if ($apiKey === '') {
             throw new \RuntimeException('VOICERSS_API_KEY manquant. Ajoutez-le dans .env.local.');
         }
@@ -178,6 +178,16 @@ class ExternalTextToSpeech
         $text = preg_replace('/\\s+/u', ' ', $text);
 
         return trim((string) $text);
+    }
+
+    private function readEnv(string $name): string
+    {
+        $value = $_ENV[$name] ?? $_SERVER[$name] ?? getenv($name);
+        if (!is_string($value)) {
+            return '';
+        }
+
+        return trim($value);
     }
 
     private function mapLangToGoogleLanguageCode(string $lang): string
