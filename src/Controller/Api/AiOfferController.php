@@ -43,42 +43,82 @@ class AiOfferController extends AbstractController
 
         try {
             $result = $optimizerService->optimizeOffer($title, $description);
-            return $this->json($result);
-        } catch (\InvalidArgumentException $e) {
-            return $this->json(['error' => $e->getMessage()], 400);
-        } catch (AiApiException $e) {
-            $logger?->error('AI optimize failed', [
-                'message' => $e->getMessage(),
-                'status' => $e->getHttpStatus(),
-                'provider_response' => $e->getProviderResponse(),
-                'raw_response' => $kernel->isDebug() ? $e->getRawResponse() : null,
+            return $this->json([
+                'success' => true,
+                'fallback' => false,
+                'warning' => null,
+                ...$result,
             ]);
-
-            $response = [
+        } catch (\InvalidArgumentException $e) {
+            return $this->json([
+                'success' => false,
+                'fallback' => false,
                 'error' => $e->getMessage(),
-                'status' => $e->getHttpStatus(),
-            ];
-
+            ], 400);
+        } catch (AiApiException $e) {
             if ($kernel->isDebug()) {
-                $response['details'] = [
-                    'providerResponse' => $e->getProviderResponse(),
-                    'rawResponse' => $e->getRawResponse(),
-                ];
+                $logger?->error('Gemini optimize failed, local fallback applied', [
+                    'message' => $e->getMessage(),
+                    'status' => $e->getHttpStatus(),
+                    'is_quota_exceeded' => $this->isQuotaExceeded($e),
+                    'provider_response' => $e->getProviderResponse(),
+                    'raw_response' => $e->getRawResponse(),
+                ]);
             }
 
-            return $this->json($response, $e->getHttpStatus());
+            return $this->json($this->buildFallbackResponse($optimizerService, $title, $description));
         } catch (\Throwable $e) {
-            $logger?->error('Unexpected AI optimize failure', [
-                'message' => $e->getMessage(),
-                'exception' => $e::class,
-            ]);
+            if ($kernel->isDebug()) {
+                $logger?->error('Unexpected AI optimize failure, local fallback applied', [
+                    'message' => $e->getMessage(),
+                    'exception' => $e::class,
+                ]);
+            }
 
-            return $this->json([
-                'error' => $kernel->isDebug()
-                    ? 'Erreur inattendue IA: ' . $e->getMessage()
-                    : 'Le service IA est momentanement indisponible. Reessayez plus tard.',
-                'status' => 503,
-            ], 503);
+            return $this->json($this->buildFallbackResponse($optimizerService, $title, $description));
         }
+    }
+
+    private function isQuotaExceeded(AiApiException $exception): bool
+    {
+        if ($exception->getHttpStatus() === 429) {
+            return true;
+        }
+
+        $haystack = strtolower(implode(' ', [
+            $exception->getMessage(),
+            $exception->getProviderResponse() ?? '',
+            $exception->getRawResponse() ?? '',
+        ]));
+
+        return str_contains($haystack, 'quota')
+            || str_contains($haystack, 'rate limit')
+            || str_contains($haystack, 'limit: 0')
+            || str_contains($haystack, 'resource_exhausted');
+    }
+
+    private function buildFallbackResponse(
+        AiOfferOptimizerService $optimizerService,
+        string $title,
+        string $description
+    ): array {
+        try {
+            $fallback = $optimizerService->optimizeOfferLocally($title, $description);
+        } catch (\Throwable) {
+            $fallback = [
+                'optimizedTitle' => $title,
+                'optimizedDescription' => $description,
+                'suggestedCategory' => 'tutorat',
+                'tags' => ['tutorat', 'etudiant'],
+            ];
+        }
+
+        return [
+            'success' => false,
+            'error' => 'AI service temporarily unavailable',
+            'fallback' => true,
+            'warning' => 'Service IA temporairement indisponible, optimisation locale appliquée.',
+            ...$fallback,
+        ];
     }
 }

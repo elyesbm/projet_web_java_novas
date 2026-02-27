@@ -178,10 +178,17 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify({ prompt: prompt })
         }).then(function(r) {
+            const contentType = (r.headers.get('content-type') || '').toLowerCase();
             return r.text().then(function(raw) {
                 var data = null;
+                if (contentType.indexOf('application/json') === -1) {
+                    if (r.redirected || r.status === 401 || r.status === 403) {
+                        throw new Error('Session expiree. Rechargez la page puis reconnectez-vous.');
+                    }
+                    throw new Error('Reponse serveur invalide. Verifiez les logs serveur.');
+                }
                 try { data = JSON.parse(raw); } catch (e) {
-                    throw new Error('Reponse serveur non JSON (session expiree ou erreur interne).');
+                    throw new Error('JSON invalide recu du serveur.');
                 }
                 if (!r.ok) {
                     throw new Error(data.message || data.error || ('HTTP ' + r.status));

@@ -28,7 +28,7 @@ class AiAtelierDescriptionGenerator
         }
 
         $provider = strtolower(trim($this->provider ?: 'huggingface'));
-        $apiKey = trim($this->apiKey);
+        $apiKey = $this->resolveApiKey($provider);
         if ($apiKey === '') {
             throw new \RuntimeException('AI_API_KEY manquant. Ajoutez-le dans .env.local.');
         }
@@ -75,6 +75,9 @@ class AiAtelierDescriptionGenerator
         }
         if ($status >= 400) {
             $message = $data['error']['message'] ?? ($data['error'] ?? 'Erreur API Hugging Face.');
+            if (str_contains(strtolower((string) $message), 'invalid username or password')) {
+                throw new \RuntimeException('Token Hugging Face invalide (ou ecrase par une valeur vide/CHANGE_ME dans .env.local).');
+            }
             throw new \RuntimeException((string) $message);
         }
 
@@ -208,5 +211,26 @@ class AiAtelierDescriptionGenerator
             $model = substr($model, 7);
         }
         return $model;
+    }
+
+    private function resolveApiKey(string $provider): string
+    {
+        $apiKey = trim($this->apiKey);
+        if ($apiKey !== '' && strtoupper($apiKey) !== 'CHANGE_ME') {
+            return $apiKey;
+        }
+
+        // Fallback for HF provider when AI_API_KEY is accidentally overridden.
+        if ($provider === 'huggingface' || $provider === 'hf') {
+            $hfToken = $_ENV['HF_TOKEN'] ?? $_SERVER['HF_TOKEN'] ?? getenv('HF_TOKEN');
+            if (is_string($hfToken)) {
+                $hfToken = trim($hfToken);
+                if ($hfToken !== '' && str_starts_with($hfToken, 'hf_')) {
+                    return $hfToken;
+                }
+            }
+        }
+
+        return '';
     }
 }

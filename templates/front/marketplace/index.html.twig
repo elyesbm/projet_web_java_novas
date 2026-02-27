@@ -103,7 +103,12 @@
             {% if recommended_articles is defined and recommended_articles is not empty %}
                 <div class="mb-10">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="font-serif text-2xl md:text-3xl font-medium">Produits recommandés pour vous</h2>
+                        <h2 class="font-serif text-2xl md:text-3xl font-medium">
+                            Produits recommandés
+                            {% if recommended_category_name is defined and recommended_category_name is not empty %}
+                                <span class="text-base md:text-lg font-normal text-muted-foreground">({{ recommended_category_name }})</span>
+                            {% endif %}
+                        </h2>
                         <span class="text-xs px-3 py-1 rounded-full bg-primary/20 text-primary">Personnalisé</span>
                     </div>
                     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">

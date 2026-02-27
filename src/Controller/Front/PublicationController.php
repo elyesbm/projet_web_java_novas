@@ -18,6 +18,7 @@ use App\Service\PublicationTranslationService;
 use App\Service\SentimentAnalysisService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -61,6 +62,16 @@ class PublicationController extends AbstractController
             return $input;
         }
         return null;
+    }
+
+    private static function safeJsonMessage(string $message): string
+    {
+        $clean = @iconv('UTF-8', 'UTF-8//IGNORE', $message);
+        if ($clean === false || $clean === '') {
+            return 'Erreur interne.';
+        }
+
+        return $clean;
     }
 
     /**
@@ -223,7 +234,11 @@ class PublicationController extends AbstractController
         Request $request,
         HuggingFaceImageService $hfImageService
     ): Response {
-        $data = json_decode($request->getContent(), true);
+        try {
+            $data = json_decode($request->getContent(), true, 512, \JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return $this->json(['ok' => false, 'message' => 'Corps JSON invalide.'], 400);
+        }
         $prompt = trim((string) ($data['prompt'] ?? ''));
         if ($prompt === '') {
             return $this->json(['ok' => false, 'message' => 'Prompt requis.'], 400);
@@ -232,20 +247,33 @@ class PublicationController extends AbstractController
         try {
             $images = $hfImageService->generateImages($prompt, 1);
         } catch (\Throwable $e) {
-            return $this->json(['ok' => false, 'message' => $e->getMessage()], 500);
+            return $this->json(['ok' => false, 'message' => self::safeJsonMessage($e->getMessage())], 500);
         }
 
-        if (empty($images)) {
+        if (empty($images) || !isset($images[0]['base64']) || !\is_string($images[0]['base64'])) {
             return $this->json(['ok' => false, 'message' => 'Aucune image générée.'], 500);
         }
 
-        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/publication_images';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
+        $binary = base64_decode(trim($images[0]['base64']), true);
+        if ($binary === false) {
+            return $this->json(['ok' => false, 'message' => 'Image IA invalide (base64).'], 500);
         }
-        $filename = 'hf_' . uniqid() . '_' . time() . '.png';
-        $path = $uploadDir . '/' . $filename;
-        file_put_contents($path, base64_decode($images[0]['base64']));
+
+        try {
+            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/publication_images';
+            if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+                throw new \RuntimeException('Impossible de creer le dossier des images.');
+            }
+
+            $filename = 'hf_' . uniqid('', true) . '_' . time() . '.png';
+            $path = $uploadDir . '/' . $filename;
+            $written = file_put_contents($path, $binary);
+            if ($written === false) {
+                throw new \RuntimeException('Impossible d\'enregistrer l\'image.');
+            }
+        } catch (\Throwable $e) {
+            return $this->json(['ok' => false, 'message' => self::safeJsonMessage($e->getMessage())], 500);
+        }
 
         return $this->json(['ok' => true, 'filename' => $filename]);
     }
@@ -255,7 +283,8 @@ class PublicationController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         UserRepository $userRepo,
-        ToxicityAnalysisService $toxicityService
+        ToxicityAnalysisService $toxicityService,
+        LoggerInterface $logger
     ): Response {
         $user = $this->getCurrentUserOrFallback($userRepo);
 
@@ -279,6 +308,9 @@ class PublicationController extends AbstractController
                     ]);
                 }
             } catch (\RuntimeException $e) {
+                $logger->warning('Toxicity check unavailable on publication create.', [
+                    'message' => $e->getMessage(),
+                ]);
                 $this->addFlash('error', $e->getMessage());
                 return $this->render('front/publication/nouvelle.html.twig', [
                     'form' => $form->createView(),
@@ -314,7 +346,8 @@ class PublicationController extends AbstractController
         PublicationRepository $repo,
         UserRepository $userRepo,
         EntityManagerInterface $em,
-        ToxicityAnalysisService $toxicityService
+        ToxicityAnalysisService $toxicityService,
+        LoggerInterface $logger
     ): Response {
         $pub = $repo->find($id);
         if (!$pub) {
@@ -344,6 +377,10 @@ class PublicationController extends AbstractController
                     ]);
                 }
             } catch (\RuntimeException $e) {
+                $logger->warning('Toxicity check unavailable on publication update.', [
+                    'publication_id' => $pub->getId(),
+                    'message' => $e->getMessage(),
+                ]);
                 $this->addFlash('error', $e->getMessage());
                 return $this->render('front/publication/modifier.html.twig', [
                     'publication' => $pub,

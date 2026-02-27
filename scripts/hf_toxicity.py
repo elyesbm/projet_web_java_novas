@@ -38,8 +38,8 @@ def main() -> None:
         sys.exit(2)
 
     try:
-        client = InferenceClient(model="unitary/toxic-bert", token=token)
-        result = client.text_classification(text)
+        client = InferenceClient(provider="hf-inference", api_key=token)
+        result = client.text_classification(text, model="unitary/toxic-bert")
     except Exception as e:
         print(json.dumps({"error": str(e)}), file=sys.stderr)
         sys.exit(1)
