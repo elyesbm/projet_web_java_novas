@@ -266,8 +266,7 @@
                                             <i data-lucide="pencil" class="w-4 h-4"></i>
                                             Modifier
                                         </a>
-                                        <form method="post" action="{{ path('app_admin_ateliers_delete', { id: atelier.id }) }}" class="inline"
-                                              onsubmit="return confirm('Supprimer cet atelier ?');">
+                                        <form method="post" action="{{ path('app_admin_ateliers_delete', { id: atelier.id }) }}" class="inline">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ atelier.id) }}">
                                             <button type="submit" class="inline-flex items-center justify-center p-2 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors" title="Supprimer">
                                                 <i data-lucide="trash-2" class="w-4 h-4"></i>

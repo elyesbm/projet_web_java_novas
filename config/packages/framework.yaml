@@ -5,6 +5,14 @@ framework:
     http_method_override: false
     handle_all_throwables: true
 
+    # Rate limiting (anti-spam commentaires)
+    rate_limiter:
+        comment_add:
+            policy: 'sliding_window'
+            limit: 3
+            interval: '1 minute'
+            cache_pool: cache.rate_limiter
+
     # Enables session support. Note that the session will ONLY be started if you read or write from it.
     # Remove or comment this section to explicitly disable session support.
     session:

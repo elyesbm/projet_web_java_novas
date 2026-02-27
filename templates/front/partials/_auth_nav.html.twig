@@ -1,4 +1,13 @@
 {% set current_route = app.request.attributes.get('_route')|default('') %}
+{% set cart_items = app.request.hasPreviousSession ? app.session.get('marketplace_cart', []) : [] %}
+{% set cart_qty = app.request.hasPreviousSession ? app.session.get('marketplace_cart_qty', {}) : {} %}
+{% set cart_count = 0 %}
+{% for qty in cart_qty %}
+    {% set cart_count = cart_count + qty %}
+{% endfor %}
+{% if cart_count == 0 %}
+    {% set cart_count = cart_items|length %}
+{% endif %}
 
 <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-background/85 backdrop-blur-xl">
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -17,18 +26,53 @@
         </div>
 
         <div class="flex items-center gap-3">
-            {% if app.user %}
-                {% if is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('app_admin_dashboard') }}" class="hidden sm:inline-flex text-sm px-4 py-2 rounded-xl border border-white/15 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors">
-                        Admin
-                    </a>
+            <a href="{{ path('app_marketplace_panier') }}" class="relative inline-flex items-center justify-center w-10 h-10 rounded-xl border border-white/15 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors {{ current_route starts with 'app_marketplace_panier' ? 'text-primary border-primary/30 bg-primary/10' : '' }}" title="Panier">
+                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                {% if cart_count > 0 %}
+                    <span class="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-white text-[10px] leading-5 text-center font-semibold">{{ cart_count }}</span>
                 {% endif %}
+            </a>
+            {% if app.user %}
                 <a href="{{ path('app_user_profile') }}" class="hidden sm:inline-flex text-sm px-4 py-2 rounded-xl border border-white/15 {{ current_route starts with 'app_user_' ? 'text-primary border-primary/30 bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-white/5' }} transition-colors">
                     Mon compte
                 </a>
                 <a href="{{ path('app_logout') }}" class="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/25">
                     Deconnexion
                 </a>
+
+                {# ── 🔔 NOTIFICATION BELL ── #}
+                <div class="relative" id="notif-wrapper">
+                    <button id="notif-bell" type="button" class="relative p-2 rounded-xl border border-white/15 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50" title="Notifications">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        {# Badge compteur #}
+                        <span id="notif-badge" class="hidden absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-red-500/40 animate-bounce-soft">
+                            0
+                        </span>
+                    </button>
+
+                    {# ── Dropdown Panel ── #}
+                    <div id="notif-dropdown" class="hidden absolute right-0 top-[calc(100%+8px)] w-[380px] max-h-[480px] bg-background border border-border rounded-2xl shadow-2xl shadow-black/20 overflow-hidden z-[999]" style="background-color: oklch(0.96 0.015 75);">
+                        {# Header #}
+                        <div class="flex items-center justify-between px-5 py-3.5 border-b border-border bg-secondary/50">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="bell-ring" class="w-4 h-4 text-primary"></i>
+                                <span class="text-sm font-semibold text-foreground">Notifications</span>
+                                <span id="notif-header-count" class="text-xs text-muted-foreground"></span>
+                            </div>
+                            <button id="notif-mark-seen" type="button" class="text-xs text-primary hover:text-primary/80 font-medium transition-colors hover:underline">
+                                Tout marquer vu ✓
+                            </button>
+                        </div>
+
+                        {# List #}
+                        <div id="notif-list" class="overflow-y-auto max-h-[380px] divide-y divide-border/50">
+                            <div class="px-5 py-8 text-center text-sm text-muted-foreground">
+                                <i data-lucide="bell-off" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+                                <p>Aucune nouvelle notification</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             {% else %}
                 <a href="{{ path('app_login') }}" class="hidden sm:inline-flex text-sm px-4 py-2 rounded-xl border border-white/15 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors">
                     Se connecter
@@ -49,7 +93,177 @@
             <a href="{{ path('app_marketplace_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_marketplace_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Marketplace</a>
             <a href="{{ path('front_jobs_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'front_jobs_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Jobs</a>
             <a href="{{ path('app_publications_index') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_publication' or current_route starts with 'app_publications_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Forum</a>
+            <a href="{{ path('app_marketplace_panier') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_marketplace_panier' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Panier{% if cart_count > 0 %} ({{ cart_count }}){% endif %}</a>
             <a href="{{ path('app_user_profile') }}" class="text-xs px-3 py-1.5 rounded-lg {{ current_route starts with 'app_user_' ? 'bg-primary/15 text-primary' : 'bg-white/5 text-muted-foreground' }}">Profil</a>
         </div>
     </div>
 </nav>
+
+{# ── 🔔 NOTIFICATION JS ── #}
+<style>
+    @keyframes bounce-soft {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
+    }
+    .animate-bounce-soft {
+        animation: bounce-soft 2s ease-in-out infinite;
+    }
+    #notif-dropdown {
+        transform-origin: top right;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    #notif-dropdown.show {
+        display: block !important;
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    #notif-dropdown.hidden {
+        opacity: 0;
+        transform: scale(0.95) translateY(-4px);
+    }
+    #notif-list::-webkit-scrollbar { width: 4px; }
+    #notif-list::-webkit-scrollbar-thumb { background: oklch(0.8 0.02 75); border-radius: 2px; }
+</style>
+
+<script>
+(function() {
+    const STORAGE_KEY_SKILL = 'novas_last_skill_id';
+    const STORAGE_KEY_PATH  = 'novas_last_path_id';
+    const CHECK_URL         = '{{ path("app_notifications_check") }}';
+    const POLL_INTERVAL     = 30000; // 30 secondes
+
+    const bell       = document.getElementById('notif-bell');
+    const badge      = document.getElementById('notif-badge');
+    const dropdown   = document.getElementById('notif-dropdown');
+    const list       = document.getElementById('notif-list');
+    const markBtn    = document.getElementById('notif-mark-seen');
+    const headerCnt  = document.getElementById('notif-header-count');
+    const wrapper    = document.getElementById('notif-wrapper');
+
+    let isOpen   = false;
+    let lastData = null;
+
+    function getLastSeenIds() {
+        return {
+            skill: parseInt(localStorage.getItem(STORAGE_KEY_SKILL) || '0', 10),
+            path:  parseInt(localStorage.getItem(STORAGE_KEY_PATH)  || '0', 10),
+        };
+    }
+
+    function saveSeenIds(maxSkillId, maxPathId) {
+        localStorage.setItem(STORAGE_KEY_SKILL, String(maxSkillId));
+        localStorage.setItem(STORAGE_KEY_PATH,  String(maxPathId));
+    }
+
+    function updateBadge(count) {
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : String(count);
+            badge.classList.remove('hidden');
+            badge.classList.add('flex');
+        } else {
+            badge.classList.add('hidden');
+            badge.classList.remove('flex');
+        }
+    }
+
+    function renderItems(items) {
+        if (!items || items.length === 0) {
+            list.innerHTML = `
+                <div class="px-5 py-8 text-center text-sm text-muted-foreground">
+                    <i data-lucide="bell-off" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+                    <p>Aucune nouvelle notification</p>
+                </div>`;
+            if (window.lucide) lucide.createIcons({ nodes: [list] });
+            return;
+        }
+
+        list.innerHTML = items.map(item => {
+            const isSkill = item.type === 'skill';
+            const icon    = isSkill ? 'sparkles' : 'book-open';
+            const label   = isSkill ? 'Nouveau Skill' : 'Nouveau Parcours';
+            const color   = isSkill ? 'text-personal' : 'text-academic';
+            const bg      = isSkill ? 'bg-personal/15' : 'bg-academic/15';
+            const extra   = isSkill
+                ? (item.cat ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">${item.cat}</span>` : '')
+                : (item.skill ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">${item.skill}</span>` : '');
+
+            return `
+                <a href="${item.link}" class="flex items-start gap-3 px-5 py-3.5 hover:bg-secondary/70 transition-colors group">
+                    <div class="w-9 h-9 rounded-xl ${bg} flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 transition-transform">
+                        <i data-lucide="${icon}" class="w-4 h-4 ${color}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <span class="text-[10px] font-semibold uppercase tracking-wider ${color}">${label}</span>
+                            ${extra}
+                        </div>
+                        <p class="text-sm font-medium text-foreground truncate">${item.title}</p>
+                        ${item.desc ? `<p class="text-xs text-muted-foreground mt-0.5 line-clamp-1">${item.desc}</p>` : ''}
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground/50 shrink-0 mt-2 group-hover:text-primary transition-colors"></i>
+                </a>`;
+        }).join('');
+
+        if (window.lucide) lucide.createIcons({ nodes: [list] });
+    }
+
+    async function checkNotifications() {
+        try {
+            const ids = getLastSeenIds();
+            const url = `${CHECK_URL}?lastSkillId=${ids.skill}&lastPathId=${ids.path}`;
+            const res = await fetch(url);
+            if (!res.ok) return;
+            const data = await res.json();
+            lastData = data;
+            updateBadge(data.totalNew);
+            headerCnt.textContent = data.totalNew > 0 ? `(${data.totalNew})` : '';
+            renderItems(data.items);
+        } catch(e) {
+            console.warn('[Notifications] Erreur polling:', e);
+        }
+    }
+
+    // Toggle dropdown
+    bell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isOpen = !isOpen;
+        if (isOpen) {
+            dropdown.classList.remove('hidden');
+            setTimeout(() => dropdown.classList.add('show'), 10);
+            checkNotifications(); // refresh au clic
+        } else {
+            dropdown.classList.remove('show');
+            setTimeout(() => dropdown.classList.add('hidden'), 200);
+        }
+    });
+
+    // Fermer en cliquant dehors
+    document.addEventListener('click', (e) => {
+        if (isOpen && !wrapper.contains(e.target)) {
+            isOpen = false;
+            dropdown.classList.remove('show');
+            setTimeout(() => dropdown.classList.add('hidden'), 200);
+        }
+    });
+
+    // Marquer tout comme vu
+    markBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (lastData) {
+            saveSeenIds(lastData.maxSkillId, lastData.maxPathId);
+        }
+        updateBadge(0);
+        headerCnt.textContent = '';
+        list.innerHTML = `
+            <div class="px-5 py-8 text-center text-sm text-muted-foreground">
+                <i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-2 text-accent opacity-60"></i>
+                <p>Tout est à jour !</p>
+            </div>`;
+        if (window.lucide) lucide.createIcons({ nodes: [list] });
+    });
+
+    // Premier check + polling
+    checkNotifications();
+    setInterval(checkNotifications, POLL_INTERVAL);
+})();
+</script>

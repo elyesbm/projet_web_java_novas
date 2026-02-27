@@ -2,6 +2,45 @@
 
 {% block title %}Nouvelle Publication - NoVas{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* CKEditor : thème sombre pour la barre d'outils et le cadre */
+.cke_chrome {
+    border-color: rgba(255,255,255,0.1) !important;
+    background: #1a1917 !important;
+}
+.cke_top {
+    background: #1a1917 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+}
+.cke_bottom {
+    background: #2a2825 !important;
+    border-top: 1px solid rgba(255,255,255,0.1) !important;
+    color: #a8a29e !important;
+}
+.cke_toolbar,
+.cke_toolgroup {
+    background: transparent !important;
+    border: none !important;
+}
+.cke_button_label,
+.cke_combo_label {
+    color: #faf7f2 !important;
+}
+.cke_combo_text {
+    color: #faf7f2 !important;
+}
+.cke_panel {
+    background: #1a1917 !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+.cke_resizer {
+    border-color: #a8a29e transparent transparent #a8a29e !important;
+}
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="min-h-screen bg-background relative overflow-hidden">
     <div class="absolute inset-0 gradient-orb"></div>
@@ -34,9 +73,16 @@
                 <p class="text-muted-foreground">Partagez votre experience ou posez une question a la communaute</p>
             </div>
 
-            {{ form_start(form, { attr: { class: 'glass-card rounded-3xl p-8 space-y-6' } }) }}
+            {{ form_start(form, { attr: { class: 'glass-card rounded-3xl p-8 space-y-6', novalidate: 'novalidate' } }) }}
 
-                {# erreurs globales #}
+                {# message haineux / erreur serveur #}
+                {% for msg in app.flashes('error') %}
+                    <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-200">
+                        {{ msg }}
+                    </div>
+                {% endfor %}
+
+                {# erreurs globales du formulaire #}
                 {% if form_errors(form) %}
                     <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-200">
                         {{ form_errors(form) }}
@@ -49,19 +95,21 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         {% for choice in form.contexte %}
-                            <label class="cursor-pointer">
-                                {{ form_widget(choice, { attr: { class: 'peer hidden' } }) }}
+                            {% if choice.vars.value == 1 or choice.vars.value == 2 %}
+                                <label class="cursor-pointer">
+                                    {{ form_widget(choice, { attr: { class: 'peer hidden' } }) }}
 
-                                <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-primary peer-checked:bg-primary/10 transition-all text-center">
-                                    {% if choice.vars.value == 1 %}
-                                        <i data-lucide="graduation-cap" class="w-8 h-8 text-academic mx-auto mb-2"></i>
-                                        <p class="font-medium text-sm">Academic</p>
-                                    {% else %}
-                                        <i data-lucide="heart" class="w-8 h-8 text-personal mx-auto mb-2"></i>
-                                        <p class="font-medium text-sm">Personal</p>
-                                    {% endif %}
-                                </div>
-                            </label>
+                                    <div class="p-4 rounded-xl border border-white/10 bg-secondary peer-checked:border-primary peer-checked:bg-primary/10 transition-all text-center">
+                                        {% if choice.vars.value == 1 %}
+                                            <i data-lucide="graduation-cap" class="w-8 h-8 text-academic mx-auto mb-2"></i>
+                                            <p class="font-medium text-sm">Academic</p>
+                                        {% else %}
+                                            <i data-lucide="heart" class="w-8 h-8 text-personal mx-auto mb-2"></i>
+                                            <p class="font-medium text-sm">Personal</p>
+                                        {% endif %}
+                                    </div>
+                                </label>
+                            {% endif %}
                         {% endfor %}
                     </div>
 
@@ -80,6 +128,40 @@
                     <div class="mt-2 text-xs text-red-400">{{ form_errors(form.titre) }}</div>
                 </div>
 
+                <!-- Image générée par IA -->
+                {{ form_widget(form.image_publication, { attr: { id: 'publication-image-generated', class: 'hidden' } }) }}
+                <div class="p-4 rounded-xl bg-secondary/50 border border-white/10">
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Image (optionnel) – Générer avec l'IA</label>
+                    <p class="text-xs text-muted-foreground mb-2">Génération d'image à partir du texte (Hugging Face, Vertex AI ou Replicate). FR ou EN.</p>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="image-prompt" placeholder="Ex: Robot tenant une planche rouge, style réaliste"
+                            class="flex-1 h-10 bg-secondary border border-white/10 rounded-lg px-3 text-sm focus:outline-none focus:border-primary">
+                        <button type="button" id="btn-generate-image"
+                            class="h-10 px-4 rounded-lg bg-primary/20 text-primary text-sm font-medium hover:bg-primary/30 transition-colors flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                            Générer
+                        </button>
+                    </div>
+                    <p id="image-generate-status" class="text-xs text-muted-foreground hidden"></p>
+                    <div id="image-preview-container" class="mt-3 hidden">
+                        <p class="text-xs text-muted-foreground mb-2">Image générée (sera enregistrée avec la publication) :</p>
+                        <img id="image-preview" src="" alt="Aperçu" class="max-w-full max-h-96 object-contain rounded-xl border border-white/10 bg-white/5">
+                    </div>
+                </div>
+
+                <!-- Vidéo YouTube (optionnel) -->
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Vidéo YouTube (optionnel)</label>
+                    {{ form_widget(form.youtube_video, {
+                        attr: {
+                            placeholder: "Collez l'URL ou l'ID (ex: https://www.youtube.com/watch?v=dQw4w9WgXcQ)",
+                            class: "w-full h-10 bg-secondary border border-white/10 rounded-xl px-4 text-sm focus:outline-none focus:border-primary placeholder:text-muted-foreground/50"
+                        }
+                    }) }}
+                    <p class="mt-1 text-xs text-muted-foreground">Lien YouTube ou ID de la vidéo. La vidéo sera affichée dans la publication.</p>
+                    <div class="mt-2 text-xs text-red-400">{{ form_errors(form.youtube_video) }}</div>
+                </div>
+
                 <!-- Contenu -->
                 <div>
                     <label class="block text-sm font-medium mb-2 text-muted-foreground">Contenu</label>
@@ -92,7 +174,7 @@
                     }) }}
                     <div class="flex justify-between mt-2">
                         <p class="text-xs text-muted-foreground">Soyez respectueux et constructif</p>
-                        <p class="text-xs text-muted-foreground">0 / 2000 caracteres</p>
+                        <p class="text-xs text-muted-foreground">0 / 5000 caractères</p>
                     </div>
                     <div class="mt-2 text-xs text-red-400">{{ form_errors(form.contenu) }}</div>
                 </div>
@@ -120,4 +202,63 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('btn-generate-image');
+    const promptInput = document.getElementById('image-prompt');
+    const statusEl = document.getElementById('image-generate-status');
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImg = document.getElementById('image-preview');
+    var hiddenInput = document.getElementById('publication-image-generated') || document.querySelector('input[name="publication[image_publication]"]');
+
+    if (!btn) return;
+
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const prompt = (promptInput && promptInput.value || '').trim();
+        if (!prompt) {
+            if (statusEl) { statusEl.textContent = 'Entrez une description pour générer une image.'; statusEl.classList.remove('hidden'); statusEl.classList.add('text-amber-400'); }
+            return;
+        }
+        btn.disabled = true;
+        if (statusEl) { statusEl.textContent = 'Génération en cours (10-30 s)...'; statusEl.classList.remove('hidden', 'text-amber-400', 'text-red-400'); statusEl.classList.add('text-primary'); }
+        if (previewContainer) previewContainer.classList.add('hidden');
+
+        fetch('{{ path("app_publication_generer_image") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ prompt: prompt })
+        })
+        .then(function(r) {
+            return r.text().then(function(raw) {
+                var data = null;
+                try { data = JSON.parse(raw); } catch (e) {
+                    throw new Error('Reponse serveur non JSON (session expiree ou erreur interne).');
+                }
+                if (!r.ok) {
+                    throw new Error(data.message || data.error || ('HTTP ' + r.status));
+                }
+                return data;
+            });
+        })
+        .then(function(data) {
+            if (data.ok && data.filename) {
+                if (hiddenInput) hiddenInput.value = data.filename;
+                if (previewImg) previewImg.src = '/uploads/publication_images/' + data.filename;
+                if (previewContainer) previewContainer.classList.remove('hidden');
+                if (statusEl) { statusEl.textContent = 'Image générée. Elle sera enregistrée avec la publication.'; statusEl.classList.remove('text-red-400'); statusEl.classList.add('text-emerald-400'); }
+            } else {
+                if (statusEl) { statusEl.textContent = data.message || 'Erreur lors de la génération.'; statusEl.classList.add('text-red-400'); }
+            }
+        })
+        .catch(function(err) {
+            if (statusEl) { statusEl.textContent = 'Erreur: ' + (err.message || 'Connexion impossible'); statusEl.classList.add('text-red-400'); }
+        })
+        .finally(function() { btn.disabled = false; });
+    });
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+});
+</script>
 {% endblock %}
+

@@ -6,6 +6,7 @@ use App\Entity\Skill;
 use App\Form\SkillType;
 use App\Repository\LearningPathRepository;
 use App\Repository\SkillRepository;
+use App\Service\SkillMarketStatsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +20,7 @@ class SkillAdminController extends AbstractController
         private SkillRepository $skillRepository,
         private LearningPathRepository $learningPathRepository,
         private EntityManagerInterface $entityManager,
+        private SkillMarketStatsService $marketStatsService,
     ) {
     }
 
@@ -41,6 +43,13 @@ class SkillAdminController extends AbstractController
         );
         $totalSkills = $this->skillRepository->count([]);
         $totalPaths = $this->learningPathRepository->count([]);
+        $tendanceCounts = $this->skillRepository->getCountByTendance();
+        $skillsForChart = $this->skillRepository->findWithMarketStats();
+        $chartSkillsData = array_map(fn (Skill $s) => [
+            'nom' => $s->getNomSkill(),
+            'offres' => $s->getNombreOffresAssociees(),
+            'tendance' => $s->getTendanceMarche(),
+        ], $skillsForChart);
         $categories = ['Communication', 'Programmation', 'Management', 'Data Science', 'Bien-être', 'Développement Web', 'Design', 'Marketing'];
 
         return $this->render('admin/skill/list.html.twig', [
@@ -48,6 +57,9 @@ class SkillAdminController extends AbstractController
             'learningPaths' => $learningPaths,
             'totalSkills' => $totalSkills,
             'totalPaths' => $totalPaths,
+            'tendanceCounts' => $tendanceCounts,
+            'skillsForChart' => $skillsForChart,
+            'chartSkillsData' => $chartSkillsData,
             'categories' => $categories,
             'search_q' => $q,
             'search_type' => $type,
@@ -102,6 +114,57 @@ class SkillAdminController extends AbstractController
             'skill' => $skill,
             'mode' => 'edit',
         ]);
+    }
+
+    #[Route('/refresh-all-stats', name: 'refresh_all_stats', methods: ['POST'])]
+    public function refreshAllStats(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('refresh_all_skills_stats', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_admin_skills_list');
+        }
+
+        $skills = $this->skillRepository->findBy([], ['nom_skill' => 'ASC']);
+        $updated = 0;
+        foreach ($skills as $skill) {
+            if ($this->marketStatsService->fetchAndUpdateSkillStats($skill) !== null) {
+                $updated++;
+            }
+        }
+        $this->entityManager->flush();
+
+        $this->addFlash('success', sprintf('%d compétence(s) mise(s) à jour.', $updated));
+        return $this->redirectToRoute('app_admin_skills_list');
+    }
+
+    #[Route('/{id}/refresh-stats', name: 'refresh_stats', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function refreshStats(Request $request, int $id): Response
+    {
+        $skill = $this->skillRepository->find($id);
+        if (!$skill) {
+            $this->addFlash('error', 'Compétence introuvable.');
+            return $this->redirectToRoute('app_admin_skills_list');
+        }
+
+        if (!$this->isCsrfTokenValid('refresh_stats_skill_' . $id, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_admin_skills_list');
+        }
+
+        $result = $this->marketStatsService->fetchAndUpdateSkillStats($skill);
+        if ($result !== null) {
+            $this->entityManager->flush();
+            $this->addFlash('success', sprintf(
+                'Statistiques mises à jour : %d offres, score %d/5, tendance %s.',
+                $result['nombre_offres'],
+                $result['score_demande'],
+                $result['tendance'],
+            ));
+        } else {
+            $this->addFlash('warning', 'Impossible de récupérer les statistiques pour ce skill.');
+        }
+
+        return $this->redirectToRoute('app_admin_skills_list');
     }
 
     #[Route('/{id}/delete', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]

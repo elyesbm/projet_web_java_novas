@@ -49,6 +49,22 @@ class Skill
     #[ORM\OneToMany(mappedBy: 'skill', targetEntity: LearningPath::class)]
     private Collection $learningPaths;
 
+    /** Nombre d'offres d'emploi associées à ce skill (source: API marché) */
+    #[ORM\Column(name: 'nombre_offres_associees', nullable: true)]
+    private ?int $nombreOffresAssociees = null;
+
+    /** Score de demande sur le marché (1-5, 5 = très demandé) */
+    #[ORM\Column(name: 'score_demande', nullable: true)]
+    private ?int $scoreDemande = null;
+
+    /** Tendance marché: en_hausse, stable, en_baisse */
+    #[ORM\Column(name: 'tendance_marche', length: 20, nullable: true)]
+    private ?string $tendanceMarche = null;
+
+    /** Date de dernière mise à jour des statistiques marché */
+    #[ORM\Column(name: 'date_mise_a_jour_stats', type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $dateMiseAJourStats = null;
+
     public function __construct()
     {
         $this->learningPaths = new ArrayCollection();
@@ -75,4 +91,16 @@ class Skill
     public function getCreateur(): ?User { return $this->createur; }
     public function setCreateur(?User $createur): static { $this->createur = $createur; return $this; }
     public function getLearningPaths(): Collection { return $this->learningPaths; }
+
+    public function getNombreOffresAssociees(): ?int { return $this->nombreOffresAssociees; }
+    public function setNombreOffresAssociees(?int $nombreOffresAssociees): static { $this->nombreOffresAssociees = $nombreOffresAssociees; return $this; }
+
+    public function getScoreDemande(): ?int { return $this->scoreDemande; }
+    public function setScoreDemande(?int $scoreDemande): static { $this->scoreDemande = $scoreDemande; return $this; }
+
+    public function getTendanceMarche(): ?string { return $this->tendanceMarche; }
+    public function setTendanceMarche(?string $tendanceMarche): static { $this->tendanceMarche = $tendanceMarche; return $this; }
+
+    public function getDateMiseAJourStats(): ?\DateTimeInterface { return $this->dateMiseAJourStats; }
+    public function setDateMiseAJourStats(?\DateTimeInterface $dateMiseAJourStats): static { $this->dateMiseAJourStats = $dateMiseAJourStats; return $this; }
 }

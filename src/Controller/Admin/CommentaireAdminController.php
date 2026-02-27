@@ -28,19 +28,19 @@ class CommentaireAdminController extends AbstractController
     {
         if (!$this->isCsrfTokenValid('admin_delete_comment_' . $id, $request->request->get('_token'))) {
             $this->addFlash('error', 'Token invalide');
-            return $this->redirectToRoute('app_admin_commentaires_list');
+            return $this->redirectToRoute('app_admin_publications_list');
         }
 
         $comment = $commentRepo->find($id);
         if (!$comment) {
             $this->addFlash('error', 'Commentaire introuvable');
-            return $this->redirectToRoute('app_admin_commentaires_list');
+            return $this->redirectToRoute('app_admin_publications_list');
         }
 
         $em->remove($comment);
         $em->flush();
 
         $this->addFlash('success', 'Commentaire supprimé');
-        return $this->redirectToRoute('app_admin_commentaires_list');
+        return $this->redirectToRoute('app_admin_publications_list');
     }
 }

@@ -1,0 +1,12 @@
+/* Thème sombre pour le contenu éditable CKEditor (iframe) */
+body {
+    background-color: #1a1917 !important;
+    color: #faf7f2 !important;
+    font-family: 'Nunito', sans-serif;
+}
+a {
+    color: #c75b39;
+}
+p, li {
+    color: #faf7f2;
+}

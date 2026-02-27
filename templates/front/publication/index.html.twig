@@ -2,6 +2,19 @@
 
 {% block title %}Publications - NoVas{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* CKEditor (commentaires) : thème sombre */
+.cke_chrome { border-color: rgba(255,255,255,0.1) !important; background: #1a1917 !important; }
+.cke_top { background: #1a1917 !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
+.cke_bottom { background: #2a2825 !important; border-top: 1px solid rgba(255,255,255,0.1) !important; color: #a8a29e !important; }
+.cke_toolbar, .cke_toolgroup { background: transparent !important; border: none !important; }
+.cke_button_label, .cke_combo_label, .cke_combo_text { color: #faf7f2 !important; }
+.cke_panel { background: #1a1917 !important; border-color: rgba(255,255,255,0.1) !important; }
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="min-h-screen bg-background">
     {% include 'front/partials/_auth_nav.html.twig' %}
@@ -11,7 +24,11 @@
         <div class="absolute inset-0 gradient-orb"></div>
 
         <div class="max-w-4xl mx-auto relative">
-            <div class="hidden sm:flex justify-end mb-4">
+            <div class="hidden sm:flex justify-end gap-2 mb-4">
+                <a href="{{ path('app_publications_supprimees') }}" class="flex items-center gap-2 px-4 py-2 bg-secondary border border-white/10 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    Supprimées
+                </a>
                 <a href="{{ path('app_publication_nouvelle') }}" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     Nouvelle publication
@@ -27,15 +44,19 @@
                     Echangez avec la <span class="italic text-primary">communaute</span>
                 </h1>
                 <p class="text-muted-foreground max-w-2xl mx-auto">
-                    Partagez vos experiences, posez vos questions et entraidez-vous avec d'autres etudiants.
+                    2222222Partagez vos experiences, posez vos questions et entraidez-vous avec d'autres etudiants.
                 </p>
             </div>
 
-            <!-- Mobile New Post Button -->
-            <div class="sm:hidden mb-6">
-                <a href="{{ path('app_publication_nouvelle') }}" class="flex items-center justify-center gap-2 w-full h-12 bg-primary text-white rounded-xl font-medium">
+            <!-- Mobile: Supprimées + Nouvelle publication -->
+            <div class="sm:hidden mb-6 flex gap-2">
+                <a href="{{ path('app_publications_supprimees') }}" class="flex-1 flex items-center justify-center gap-2 h-12 bg-secondary border border-white/10 rounded-xl font-medium text-muted-foreground">
+                    <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    Supprimées
+                </a>
+                <a href="{{ path('app_publication_nouvelle') }}" class="flex-1 flex items-center justify-center gap-2 h-12 bg-primary text-white rounded-xl font-medium">
                     <i data-lucide="plus" class="w-5 h-5"></i>
-                    Nouvelle publication
+                    Nouvelle
                 </a>
             </div>
 
@@ -113,8 +134,11 @@
                 {% set isAnonymous = (pub.imageAuteur == 'ANONYMOUS') %}
                 {% set contextMap = { 1: 'academic', 2: 'personal', 3: 'help' } %}
                 {% set contexte = contextMap[pub.contexte] ?? 'help' %}
+                {% set userReaction = user_reactions[pub.id]|default(0) %}
+                {% set likeCount = like_counts[pub.id]|default(0) %}
+                {% set defaultTranslateLang = 'en' %}
 
-                <article class="glass-card rounded-3xl overflow-hidden hover:border-primary/30 transition-all" id="pub-{{ pub.id }}">
+                <article class="glass-card rounded-3xl overflow-visible hover:border-primary/30 transition-all" id="pub-{{ pub.id }}">
                     <!-- Header -->
                     <div class="p-6 pb-4">
                         <div class="flex items-start justify-between">
@@ -148,7 +172,7 @@
                                         <p class="text-sm text-muted-foreground">{{ pub.auteur.ROLE }}</p>
                                     {% endif %}
 
-                                    <p class="text-xs text-muted-foreground mt-0.5">{{ pub.dateCreation|date('d M Y à H:i') }}</p>
+                                    <p class="text-xs text-muted-foreground mt-0.5" title="{{ pub.dateCreation|date('d/m/Y H:i') }}">{{ pub.dateCreation|time_diff }}</p>
                                 </div>
                             </div>
 
@@ -165,24 +189,64 @@
 
                     <!-- Content -->
                     <div class="px-6 pb-4">
-                        <h2 class="font-serif text-xl md:text-2xl font-medium mb-3 text-primary">{{ pub.titre }}</h2>
-                        <p class="text-foreground leading-relaxed">{{ pub.contenu }}</p>
+                        <h2 id="pub-title-{{ pub.id }}" class="font-serif text-xl md:text-2xl font-medium mb-1 text-primary">{{ pub.titre }}</h2>
+
+                        {# Note de sentiment (1–5 étoiles) si disponible #}
+                        {% set stars = sentiment_scores[pub.id] ?? null %}
+                        {% if stars is not null %}
+                            <div class="flex items-center gap-1 text-xs text-amber-300 mb-2" aria-label="Sentiment {{ stars }} sur 5">
+                                {% for i in 1..5 %}
+                                    {% if i <= stars %}
+                                        <span>★</span>
+                                    {% else %}
+                                        <span class="opacity-30">★</span>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="ml-1 text-[11px] text-muted-foreground">({{ stars }}/5)</span>
+                            </div>
+                        {% endif %}
+                        {% if pub.imagePublication %}
+                            <div class="mb-4 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center max-h-96">
+                                <img src="{{ asset('uploads/publication_images/' ~ pub.imagePublication) }}" alt="Image de la publication" class="w-full max-h-96 object-contain">
+                            </div>
+                        {% endif %}
+                        {% if pub.youtubeVideoId %}
+                            <div class="mb-4 rounded-xl overflow-hidden border border-white/10 aspect-video max-w-2xl">
+                                <iframe
+                                    src="https://www.youtube.com/embed/{{ pub.youtubeVideoId }}"
+                                    title="Vidéo YouTube"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen
+                                    class="w-full h-full"
+                                ></iframe>
+                            </div>
+                        {% endif %}
+                        <div id="pub-content-{{ pub.id }}" class="text-foreground leading-relaxed prose prose-invert max-w-none">{{ pub.contenu|raw }}</div>
                     </div>
 
                     <!-- Actions Bar -->
                     <div class="px-6 py-4 bg-secondary/30 border-t border-white/5 flex items-center justify-between">
                         <div class="flex items-center gap-6">
                             <!-- Likes -->
-                            <button
-                                type="button"
-                                onclick="likePublication({{ pub.id }})"
-                                class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
-                            >
-                                <i data-lucide="heart" class="w-5 h-5 group-hover:fill-primary/20"></i>
-                                <span class="text-sm" id="likes-{{ pub.id }}">
-                                    {{ pub.likes ?? 0 }}
-                                </span>
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onclick="likePublication({{ pub.id }})"
+                                    id="like-btn-{{ pub.id }}"
+                                    class="flex items-center {{ userReaction == 1 ? 'text-primary' : 'text-muted-foreground' }} hover:text-primary transition-colors group"
+                                    title="Like"
+                                >
+                                    <i data-lucide="heart" class="w-5 h-5 group-hover:fill-primary/20"></i>
+                                </button>
+                                <button
+                                    type="button"
+                                    onclick="openLikesModal({{ pub.id }})"
+                                    class="text-sm text-muted-foreground hover:text-primary transition-colors"
+                                    title="Voir la liste des likes"
+                                >
+                                    <span id="likes-{{ pub.id }}">{{ likeCount }}</span>
+                                </button>
+                            </div>
 
                             <!-- Comments Toggle -->
                             <button onclick="toggleComments({{ pub.id }})" class="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
@@ -210,7 +274,7 @@
                                 </a>
 
                                 <!-- Supprimer -->
-                                <form action="{{ path('app_publication_supprimer', { id: pub.id }) }}" method="post" class="inline" onsubmit="return confirm('Supprimer cette publication ?');">
+                                <form action="{{ path('app_publication_supprimer', { id: pub.id }) }}" method="post" class="inline">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_publication_' ~ pub.id) }}">
                                     <button type="submit" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-colors" title="Supprimer la publication">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -219,10 +283,55 @@
                                 </form>
                             {% endif %}
 
+                            <!-- Partager -->
+                            {% set share_url = absolute_url(path('app_publications_index', { _fragment: 'pub-' ~ pub.id })) %}
+                            {% set share_title = pub.titre|e('url') %}
+                            {% set share_text = (pub.titre ~ ' - ' ~ share_url)|e('url') %}
+                            <div class="relative inline-block share-dropdown-wrap">
+                                <button type="button" onclick="toggleShareDropdown({{ pub.id }})"
+                                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-colors"
+                                    title="Partager sur les réseaux sociaux" aria-expanded="false" aria-haspopup="true" id="share-btn-{{ pub.id }}">
+                                    <i data-lucide="share-2" class="w-4 h-4"></i>
+                                    <span>Partager</span>
+                                </button>
+                                <div id="share-dropdown-{{ pub.id }}" class="hidden absolute right-0 top-full mt-1 py-2 min-w-[180px] rounded-xl bg-secondary border border-white/10 shadow-xl z-[100]" style="box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ share_url|e('url') }}"
+                                       target="_blank" rel="noopener noreferrer"
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-white/10 transition-colors">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                        Facebook
+                                    </a>
+                                    <a href="https://twitter.com/intent/tweet?url={{ share_url|e('url') }}&text={{ share_title }}"
+                                       target="_blank" rel="noopener noreferrer"
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-white/10 transition-colors">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                        X (Twitter)
+                                    </a>
+                                    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ share_url|e('url') }}"
+                                       target="_blank" rel="noopener noreferrer"
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-white/10 transition-colors">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                                        LinkedIn
+                                    </a>
+                                    <a href="https://wa.me/?text={{ share_text }}"
+                                       target="_blank" rel="noopener noreferrer"
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-white/10 transition-colors">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                        WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+
                             <!-- Signaler -->
-                            <a href="{{ path('app_publication_signaler', {id: pub.id}) }}" class="text-muted-foreground hover:text-red-400 transition-colors" title="Signaler">
-                                <i data-lucide="flag" class="w-5 h-5"></i>
-                            </a>
+                            <button
+                                type="button"
+                                onclick="openSignalModal({{ pub.id }})"
+                                id="signal-btn-{{ pub.id }}"
+                                class="flex items-center {{ userReaction == 2 ? 'text-red-400' : 'text-muted-foreground' }} hover:text-red-400 transition-colors group"
+                                title="Signaler"
+                            >
+                                <i data-lucide="flag" class="w-5 h-5 group-hover:fill-red-400/20"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -234,61 +343,12 @@
 
                     <div id="comments-{{ pub.id }}" class="{{ has_comment_errors ? '' : 'hidden' }} border-t border-white/5">
                         <div class="p-6 bg-secondary/20">
-                            <!-- Comments List -->
-                            <div class="space-y-4 mb-6">
-                                {% if pub.commentaires|length > 0 %}
-                                    {% for comment in pub.commentaires %}
-                                        <div class="flex gap-4">
-                                            {% if comment.auteur and comment.auteur.IMAGE %}
-                                                <img src="{{ asset('images/' ~ comment.auteur.IMAGE) }}" alt="{{ comment.auteur.PRENOM ~ ' ' ~ comment.auteur.NOM }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/5">
-                                            {% else %}
-                                                <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center ring-2 ring-white/5">
-                                                    <i data-lucide="user" class="w-5 h-5 text-muted-foreground"></i>
-                                                </div>
-                                            {% endif %}
-
-                                            <div class="flex-1">
-                                                <div class="glass-card rounded-2xl rounded-tl-none p-4">
-                                                    <div class="flex items-center justify-between mb-2">
-                                                        <div class="flex items-center gap-2">
-                                                            <h4 class="font-medium text-sm">{{ comment.auteur ? (comment.auteur.PRENOM ~ ' ' ~ comment.auteur.NOM) : 'Utilisateur' }}</h4>
-                                                            <span class="text-xs text-muted-foreground">{{ comment.dateCreation|date('d M H:i') }}</span>
-                                                        </div>
-
-                                                        {# ✅ Modifier/Supprimer commentaire UNIQUEMENT si auteur connecté #}
-                                                        {% if comment.auteur and comment.auteur.id == current_user_id %}
-                                                            <div class="flex items-center gap-2">
-                                                                <!-- Modifier commentaire -->
-                                                                <a href="{{ path('app_commentaire_modifier', { id: comment.id }) }}"
-                                                                   class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
-                                                                          text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent
-                                                                          hover:border-primary/30 transition-colors"
-                                                                   title="Modifier le commentaire">
-                                                                    <i data-lucide="pencil" class="w-4 h-4"></i>
-                                                                    <span>Modifier</span>
-                                                                </a>
-
-                                                                <!-- Supprimer commentaire -->
-                                                                <form action="{{ path('app_commentaire_supprimer', { id: comment.id }) }}"
-                                                                      method="post"
-                                                                      onsubmit="return confirm('Supprimer ce commentaire ?');">
-                                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
-                                                                    <button type="submit"
-                                                                            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
-                                                                                   text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-transparent
-                                                                                   hover:border-red-500/30 transition-colors">
-                                                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                                        <span>Supprimer</span>
-                                                                    </button>
-                                                                </form>
-                                                            </div>
-                                                        {% endif %}
-                                                    </div>
-
-                                                    <p class="text-sm text-foreground">{{ comment.contenu }}</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                            <!-- Comments List (arbre : racine → réponses) -->
+                            <div class="space-y-4 mb-6" id="comment-list-{{ pub.id }}">
+                                {% set roots = comment_roots[pub.id] is defined ? comment_roots[pub.id] : [] %}
+                                {% if roots|length > 0 %}
+                                    {% for comment in roots %}
+                                        {% include 'front/publication/_comment_item.html.twig' with { comment: comment, pub: pub, current_user_id: current_user_id, depth: 0 } only %}
                                     {% endfor %}
                                 {% else %}
                                     <div class="text-center py-8">
@@ -301,10 +361,15 @@
 
                             <!-- Add Comment -->
 
-                            {{ form_start(cform, { attr: { class: 'flex gap-4' } }) }}
+                            {{ form_start(cform, { attr: { class: 'flex gap-4 comment-form', novalidate: 'novalidate', 'data-pub-id': pub.id, enctype: 'multipart/form-data' } }) }}
                             <input type="hidden" name="return_q" value="{{ q ?? '' }}">
-<input type="hidden" name="return_sort" value="{{ sort ?? 'created_desc' }}">
-<input type="hidden" name="return_contexte" value="{{ contexte_filter ?? '' }}">
+                            <input type="hidden" name="return_sort" value="{{ sort ?? 'created_desc' }}">
+                            <input type="hidden" name="return_contexte" value="{{ contexte_filter ?? '' }}">
+                            <input type="hidden" name="return_page" value="{{ page ?? 1 }}">
+                            {{ form_widget(cform.parent_id, { id: 'comment-parent-id-' ~ pub.id, attr: { 'data-comment-parent': '' } }) }}
+                            <div class="hidden comment-audio-wrapper" data-pub-id="{{ pub.id }}">
+                                {{ form_widget(cform.audio, { id: 'comment-audio-input-' ~ pub.id }) }}
+                            </div>
 
                                 {% if app.user and app.user.IMAGE %}
                                     <img src="{{ asset('images/' ~ app.user.IMAGE) }}" alt="Moi" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30">
@@ -347,7 +412,13 @@
     </div>
 {% endif %}
 
-
+                                    <div class="absolute right-12 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                        <button type="button" class="comment-voice-btn w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" data-pub-id="{{ pub.id }}" title="Enregistrer un message vocal" aria-label="Enregistrement vocal">
+                                            <i data-lucide="mic" class="w-4 h-4"></i>
+                                        </button>
+                                        <span class="comment-voice-status text-xs text-muted-foreground hidden" data-pub-id="{{ pub.id }}">0:00</span>
+                                        <span class="comment-voice-added text-xs text-emerald-400 hidden" data-pub-id="{{ pub.id }}">Vocal ajouté</span>
+                                    </div>
                                     <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors">
                                         <i data-lucide="send" class="w-4 h-4 text-white"></i>
                                     </button>
@@ -358,10 +429,130 @@
                 </article>
             {% endfor %}
         </div>
+
+        {% if total_pages is defined and total_pages > 1 %}
+            {% set pagination_params = { sort: sort ?? 'created_desc' } %}
+            {% if q is defined and q is not empty %}
+                {% set pagination_params = pagination_params|merge({ q: q }) %}
+            {% endif %}
+            {% if contexte_filter is defined and contexte_filter is not null %}
+                {% set pagination_params = pagination_params|merge({ contexte: contexte_filter }) %}
+            {% endif %}
+
+            <div class="max-w-4xl mx-auto mt-8 flex items-center justify-center gap-2">
+                {% set prev_page = page > 1 ? page - 1 : 1 %}
+                <a href="{{ path('app_publications_index', pagination_params|merge({ page: prev_page })) }}"
+                   class="px-3 py-2 rounded-lg text-sm border border-white/10 {{ page > 1 ? 'bg-secondary hover:bg-white/5 text-foreground' : 'bg-secondary/40 text-muted-foreground pointer-events-none opacity-50' }}">
+                    Prec
+                </a>
+
+                {% for p in 1..total_pages %}
+                    <a href="{{ path('app_publications_index', pagination_params|merge({ page: p })) }}"
+                       class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-sm border {{ p == page ? 'bg-primary text-white border-primary' : 'bg-secondary border-white/10 text-foreground hover:bg-white/5' }}">
+                        {{ p }}
+                    </a>
+                {% endfor %}
+
+                {% set next_page = page < total_pages ? page + 1 : total_pages %}
+                <a href="{{ path('app_publications_index', pagination_params|merge({ page: next_page })) }}"
+                   class="px-3 py-2 rounded-lg text-sm border border-white/10 {{ page < total_pages ? 'bg-secondary hover:bg-white/5 text-foreground' : 'bg-secondary/40 text-muted-foreground pointer-events-none opacity-50' }}">
+                    Suiv
+                </a>
+            </div>
+        {% endif %}
     </section>
+
+    <div id="likes-modal" class="hidden fixed inset-0 z-[70]">
+        <button type="button" class="absolute inset-0 bg-black/60" onclick="closeLikesModal()" aria-label="Fermer la popup likes"></button>
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="w-full max-w-md glass-card rounded-2xl border border-white/10 shadow-2xl">
+                <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+                    <h3 id="likes-modal-title" class="text-lg font-semibold">Likes</h3>
+                    <button type="button" onclick="closeLikesModal()" class="w-8 h-8 rounded-lg bg-secondary hover:bg-white/10 transition-colors flex items-center justify-center" aria-label="Fermer">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div id="likes-modal-list" class="p-4 max-h-[60vh] overflow-y-auto space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    {# Modale choix cause du signalement #}
+    <div id="signal-modal" class="hidden fixed inset-0 z-[70]">
+        <button type="button" class="absolute inset-0 bg-black/60" onclick="closeSignalModal()" aria-label="Fermer"></button>
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="w-full max-w-md glass-card rounded-2xl border border-white/10 shadow-2xl">
+                <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold">Choisir la cause du signalement</h3>
+                    <button type="button" onclick="closeSignalModal()" class="w-8 h-8 rounded-lg bg-secondary hover:bg-white/10 transition-colors flex items-center justify-center" aria-label="Fermer">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <p class="text-sm text-muted-foreground">Sélectionnez la raison pour laquelle vous signalez cette publication.</p>
+                    <div class="space-y-2" id="signal-reasons-list">
+                        {% for code, label in report_causes|default({}) %}
+                            <label class="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-white/5 hover:border-primary/30 cursor-pointer transition-colors">
+                                <input type="radio" name="signal_reason" value="{{ code }}" class="rounded-full border-white/20 text-primary focus:ring-primary">
+                                <span class="text-sm">{{ label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <button type="button" onclick="closeSignalModal()" class="flex-1 px-4 py-2.5 rounded-xl bg-secondary border border-white/10 text-sm font-medium hover:bg-white/5 transition-colors">
+                            Annuler
+                        </button>
+                        <button type="button" id="signal-modal-submit" onclick="submitSignalWithReason()" class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                            <i data-lucide="flag" class="w-4 h-4"></i>
+                            Signaler
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<script id="publication-likers-data" type="application/json">{{ likers_by_publication|default({})|json_encode|raw }}</script>
+<script id="auth-user-data" type="application/json">{{ auth_user|json_encode|raw }}</script>
+
 <script>
+    function toggleShareDropdown(pubId) {
+        const panel = document.getElementById('share-dropdown-' + pubId);
+        const btn = document.getElementById('share-btn-' + pubId);
+        const article = document.getElementById('pub-' + pubId);
+        if (!panel || !btn) return;
+        const isOpen = !panel.classList.contains('hidden');
+        document.querySelectorAll('[id^="share-dropdown-"]').forEach(function(el) {
+            el.classList.add('hidden');
+        });
+        document.querySelectorAll('[id^="share-btn-"]').forEach(function(el) {
+            el.setAttribute('aria-expanded', 'false');
+        });
+        document.querySelectorAll('article[id^="pub-"]').forEach(function(el) {
+            el.style.zIndex = '';
+            el.style.position = '';
+        });
+        if (isOpen) {
+            panel.classList.add('hidden');
+            btn.setAttribute('aria-expanded', 'false');
+            if (article) { article.style.zIndex = ''; article.style.position = ''; }
+        } else {
+            panel.classList.remove('hidden');
+            btn.setAttribute('aria-expanded', 'true');
+            if (article) { article.style.position = 'relative'; article.style.zIndex = '50'; }
+        }
+    }
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.share-dropdown-wrap')) return;
+        document.querySelectorAll('[id^="share-dropdown-"]').forEach(function(el) {
+            el.classList.add('hidden');
+        });
+        document.querySelectorAll('[id^="share-btn-"]').forEach(function(el) {
+            el.setAttribute('aria-expanded', 'false');
+        });
+    });
+
     function toggleComments(pubId) {
         const commentsSection = document.getElementById('comments-' + pubId);
         commentsSection.classList.toggle('hidden');
@@ -372,26 +563,452 @@
             }, 100);
         }
     }
+
+    document.addEventListener('click', function(e) {
+        const replyBtn = e.target.closest('.reply-btn');
+        if (!replyBtn) return;
+        const commentId = replyBtn.getAttribute('data-comment-id');
+        const pubId = replyBtn.getAttribute('data-pub-id');
+        const parentInput = document.getElementById('comment-parent-id-' + pubId);
+        const form = parentInput && parentInput.closest('form');
+        if (parentInput && form) {
+            parentInput.value = commentId;
+            const textarea = form.querySelector('textarea');
+            if (textarea) {
+                textarea.focus();
+                textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+
+    // Enregistrement vocal (MediaRecorder)
+    let voiceRecorder = null;
+    let voiceChunks = [];
+    let voiceStartTime = null;
+    let voiceTimerId = null;
+    let currentVoicePubId = null;
+
+    function startVoiceTimer(pubId) {
+        voiceStartTime = Date.now();
+        const statusEl = document.querySelector('.comment-voice-status[data-pub-id="' + pubId + '"]');
+        if (statusEl) {
+            statusEl.classList.remove('hidden');
+            statusEl.textContent = '0:00';
+        }
+        voiceTimerId = setInterval(function() {
+            const s = Math.floor((Date.now() - voiceStartTime) / 1000);
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            if (statusEl) statusEl.textContent = m + ':' + (sec < 10 ? '0' : '') + sec;
+        }, 500);
+    }
+
+    function stopVoiceTimer(pubId) {
+        if (voiceTimerId) clearInterval(voiceTimerId);
+        voiceTimerId = null;
+        const statusEl = document.querySelector('.comment-voice-status[data-pub-id="' + pubId + '"]');
+        if (statusEl) statusEl.classList.add('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.comment-voice-btn');
+        if (!btn) return;
+        const pubId = btn.getAttribute('data-pub-id');
+        const input = document.getElementById('comment-audio-input-' + pubId);
+        if (!input) return;
+
+        if (voiceRecorder && voiceRecorder.state === 'recording' && currentVoicePubId === pubId) {
+            voiceRecorder.stop();
+            return;
+        }
+
+        if (voiceRecorder && voiceRecorder.state === 'recording') return;
+
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+            const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
+            voiceRecorder = new MediaRecorder(stream);
+            voiceChunks = [];
+            currentVoicePubId = pubId;
+            voiceRecorder.ondataavailable = function(ev) { if (ev.data.size > 0) voiceChunks.push(ev.data); };
+            voiceRecorder.onstop = function() {
+                stream.getTracks().forEach(function(t) { t.stop(); });
+                stopVoiceTimer(pubId);
+                currentVoicePubId = null;
+                if (voiceChunks.length === 0) return;
+                const blob = new Blob(voiceChunks, { type: mime });
+                const file = new File([blob], 'recording.webm', { type: blob.type });
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                input.files = dt.files;
+                const addedEl = document.querySelector('.comment-voice-added[data-pub-id="' + pubId + '"]');
+                if (addedEl) { addedEl.classList.remove('hidden'); }
+                const btn = document.querySelector('.comment-voice-btn[data-pub-id="' + pubId + '"]');
+                if (btn) { const i = btn.querySelector('i'); if (i) i.setAttribute('data-lucide', 'mic'); }
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            };
+            voiceRecorder.start(200);
+            startVoiceTimer(pubId);
+            btn.querySelector('i')?.setAttribute('data-lucide', 'square');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }).catch(function() {
+            alert('Accès au micro refusé ou indisponible.');
+        });
+    });
 </script>
 
 <script>
-function likePublication(pubId) {
-    fetch(`/publications/${pubId}/like`, {
+const publicationLikers = JSON.parse(document.getElementById('publication-likers-data')?.textContent || '{}');
+const authUser = JSON.parse(document.getElementById('auth-user-data')?.textContent || 'null');
+let openedLikesPublicationId = null;
+let signalModalPubId = null;
+const originalPublicationContent = {};
+
+function getPublicationNodes(pubId) {
+    return {
+        title: document.getElementById('pub-title-' + pubId),
+        content: document.getElementById('pub-content-' + pubId),
+        status: document.getElementById('translate-status-' + pubId),
+        translateBtn: document.getElementById('translate-btn-' + pubId),
+        resetBtn: document.getElementById('translate-reset-' + pubId),
+        langSelect: document.getElementById('translate-lang-' + pubId),
+    };
+}
+
+function rememberOriginalPublication(pubId) {
+    const key = String(pubId);
+    if (originalPublicationContent[key]) {
+        return;
+    }
+
+    const nodes = getPublicationNodes(pubId);
+    if (!nodes.title || !nodes.content) {
+        return;
+    }
+
+    originalPublicationContent[key] = {
+        title: nodes.title.textContent || '',
+        content: nodes.content.textContent || '',
+    };
+}
+
+function setTranslationStatus(pubId, message, isError = false) {
+    const statusEl = document.getElementById('translate-status-' + pubId);
+    if (!statusEl) return;
+
+    if (!message) {
+        statusEl.classList.add('hidden');
+        statusEl.textContent = '';
+        statusEl.classList.remove('text-rose-400');
+        statusEl.classList.add('text-primary/90');
+        return;
+    }
+
+    statusEl.classList.remove('hidden');
+    statusEl.textContent = message;
+    statusEl.classList.toggle('text-rose-400', isError);
+    statusEl.classList.toggle('text-primary/90', !isError);
+}
+
+function translatePublication(pubId) {
+    const nodes = getPublicationNodes(pubId);
+    if (!nodes.title || !nodes.content || !nodes.langSelect) return;
+
+    rememberOriginalPublication(pubId);
+    const target = nodes.langSelect.value || 'en';
+
+    if (nodes.translateBtn) {
+        nodes.translateBtn.disabled = true;
+        nodes.translateBtn.classList.add('opacity-70', 'cursor-not-allowed');
+    }
+
+    fetch(`/publications/${pubId}/translate`, {
         method: 'POST',
         headers: {
+            'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
-        }
+        },
+        body: JSON.stringify({ target })
     })
     .then(response => response.json())
     .then(data => {
-        if (data.ok) {
-            document.getElementById('likes-' + pubId).innerText = data.likes;
+        if (!data.ok) {
+            throw new Error(data.message || 'Traduction impossible');
         }
+
+        nodes.title.textContent = data.title || '';
+        nodes.content.textContent = data.content || '';
+        if (nodes.resetBtn) {
+            nodes.resetBtn.classList.remove('hidden');
+        }
+
+        setTranslationStatus(pubId, `Traduit en ${data.language_label || target}.`);
     })
-    .catch(() => {
-        alert('Erreur lors du like');
+    .catch((error) => {
+        setTranslationStatus(pubId, error.message || 'Traduction impossible.', true);
+    })
+    .finally(() => {
+        if (nodes.translateBtn) {
+            nodes.translateBtn.disabled = false;
+            nodes.translateBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
     });
 }
+
+function resetPublicationTranslation(pubId) {
+    const key = String(pubId);
+    const original = originalPublicationContent[key];
+    if (!original) return;
+
+    const nodes = getPublicationNodes(pubId);
+    if (!nodes.title || !nodes.content) return;
+
+    nodes.title.textContent = original.title;
+    nodes.content.textContent = original.content;
+    if (nodes.resetBtn) {
+        nodes.resetBtn.classList.add('hidden');
+    }
+
+    setTranslationStatus(pubId, '');
+}
+
+function likePublication(pubId) {
+    reactPublication(pubId, 'like');
+}
+
+function getLikersList(pubId) {
+    const key = String(pubId);
+    if (!Array.isArray(publicationLikers[key])) {
+        publicationLikers[key] = [];
+    }
+    return publicationLikers[key];
+}
+
+function getInitials(prenom, nom) {
+    const p = (prenom || '').trim();
+    const n = (nom || '').trim();
+    return ((p.charAt(0) + n.charAt(0)) || '?').toUpperCase();
+}
+
+function renderLikesModalList(pubId) {
+    const container = document.getElementById('likes-modal-list');
+    if (!container) return;
+
+    const likers = getLikersList(pubId);
+    container.innerHTML = '';
+
+    if (likers.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'text-sm text-muted-foreground';
+        empty.textContent = 'Aucun like pour le moment.';
+        container.appendChild(empty);
+        return;
+    }
+
+    likers.forEach((liker) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-3 p-3 rounded-xl bg-secondary/40 border border-white/10';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'w-10 h-10 rounded-full overflow-hidden bg-secondary flex items-center justify-center text-xs font-semibold text-muted-foreground';
+        if (liker.image) {
+            const img = document.createElement('img');
+            img.src = `/images/${liker.image}`;
+            img.alt = `${(liker.prenom || '').trim()} ${(liker.nom || '').trim()}`.trim() || 'Utilisateur';
+            img.className = 'w-full h-full object-cover';
+            avatar.appendChild(img);
+        } else {
+            avatar.textContent = getInitials(liker.prenom, liker.nom);
+        }
+
+        const meta = document.createElement('div');
+        meta.className = 'min-w-0';
+
+        const name = document.createElement('p');
+        name.className = 'text-sm font-medium truncate';
+        const fullName = `${(liker.prenom || '').trim()} ${(liker.nom || '').trim()}`.trim();
+        name.textContent = fullName || 'Utilisateur';
+
+        meta.appendChild(name);
+        row.appendChild(avatar);
+        row.appendChild(meta);
+        container.appendChild(row);
+    });
+}
+
+function openLikesModal(pubId) {
+    const modal = document.getElementById('likes-modal');
+    const title = document.getElementById('likes-modal-title');
+    const countEl = document.getElementById('likes-' + pubId);
+    if (!modal || !title) return;
+
+    openedLikesPublicationId = String(pubId);
+    title.textContent = `${countEl ? countEl.innerText : '0'} likes`;
+    renderLikesModalList(pubId);
+
+    modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    if (window.lucide) lucide.createIcons();
+}
+
+function closeLikesModal() {
+    const modal = document.getElementById('likes-modal');
+    if (!modal) return;
+    openedLikesPublicationId = null;
+    modal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
+
+function syncLikersCache(pubId, userReaction) {
+    if (!authUser || !authUser.id) return;
+
+    const key = String(pubId);
+    const authId = String(authUser.id);
+    const existing = getLikersList(pubId);
+    const filtered = existing.filter((item) => String(item.userId) !== authId);
+
+    if (userReaction === 1) {
+        filtered.unshift({
+            userId: authUser.id,
+            prenom: authUser.prenom || '',
+            nom: authUser.nom || '',
+            image: authUser.image || null,
+            likedAt: null,
+        });
+    }
+
+    publicationLikers[key] = filtered;
+}
+
+function reactPublication(pubId, action) {
+    fetch(`/publications/${pubId}/${action}`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(function(response) {
+        return response.json().then(function(data) {
+            return { ok: response.ok, status: response.status, data: data };
+        }).catch(function() {
+            return { ok: false, status: response.status, data: { message: 'Réponse invalide du serveur.' } };
+        });
+    })
+    .then(function(result) {
+        var data = result.data;
+        if (result.ok && data.ok) {
+            if (data.deleted) {
+                var card = document.getElementById('pub-' + pubId);
+                if (card) card.remove();
+                if (openedLikesPublicationId === String(pubId)) closeLikesModal();
+                return;
+            }
+            var likesEl = document.getElementById('likes-' + pubId);
+            if (likesEl) likesEl.innerText = data.likes;
+            updateReactionButtons(pubId, data.user_reaction);
+            syncLikersCache(pubId, data.user_reaction);
+
+            if (openedLikesPublicationId === String(pubId)) {
+                openLikesModal(pubId);
+            }
+            return;
+        }
+        alert(data.message || 'Action impossible');
+    })
+    .catch(function() {
+        alert('Erreur lors de la réaction. Vérifiez votre connexion.');
+    });
+}
+
+function openSignalModal(pubId) {
+    signalModalPubId = pubId;
+    var list = document.querySelectorAll('input[name="signal_reason"]');
+    list.forEach(function(r) { r.checked = false; });
+    document.getElementById('signal-modal').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    if (window.lucide) lucide.createIcons();
+}
+
+function closeSignalModal() {
+    signalModalPubId = null;
+    document.getElementById('signal-modal').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
+
+function submitSignalWithReason() {
+    if (!signalModalPubId) return;
+    var radio = document.querySelector('input[name="signal_reason"]:checked');
+    if (!radio) {
+        alert('Veuillez choisir une cause pour le signalement.');
+        return;
+    }
+    var reason = radio.value;
+    var pubId = signalModalPubId;
+    var btn = document.getElementById('signal-modal-submit');
+    if (btn) { btn.disabled = true; }
+    fetch('/publications/' + pubId + '/signal', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ reason: reason })
+    })
+    .then(function(response) {
+        return response.json().then(function(data) {
+            return { ok: response.ok, status: response.status, data: data };
+        }).catch(function() {
+            return { ok: false, status: response.status, data: { message: 'Réponse invalide du serveur.' } };
+        });
+    })
+    .then(function(result) {
+        var data = result.data;
+        if (result.ok && data.ok) {
+            closeSignalModal();
+            if (data.deleted) {
+                var card = document.getElementById('pub-' + pubId);
+                if (card) card.remove();
+                if (openedLikesPublicationId === String(pubId)) closeLikesModal();
+            } else {
+                var likesEl = document.getElementById('likes-' + pubId);
+                if (likesEl) likesEl.innerText = data.likes;
+                updateReactionButtons(pubId, data.user_reaction);
+                syncLikersCache(pubId, data.user_reaction);
+            }
+        } else {
+            alert(data.message || 'Action impossible');
+        }
+    })
+    .catch(function() {
+        alert('Erreur lors du signalement. Vérifiez votre connexion.');
+    })
+    .finally(function() {
+        if (btn) { btn.disabled = false; }
+    });
+}
+
+function updateReactionButtons(pubId, userReaction) {
+    const likeBtn = document.getElementById('like-btn-' + pubId);
+    if (likeBtn) {
+        likeBtn.classList.remove('text-primary', 'text-muted-foreground');
+        likeBtn.classList.add(userReaction === 1 ? 'text-primary' : 'text-muted-foreground');
+    }
+
+    const signalBtn = document.getElementById('signal-btn-' + pubId);
+    if (signalBtn) {
+        signalBtn.classList.remove('text-red-400', 'text-muted-foreground');
+        signalBtn.classList.add(userReaction === 2 ? 'text-red-400' : 'text-muted-foreground');
+    }
+}
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        if (signalModalPubId) closeSignalModal();
+        else closeLikesModal();
+    }
+});
 </script>
 {% if open_comments_for is defined and open_comments_for %}
 <script>
