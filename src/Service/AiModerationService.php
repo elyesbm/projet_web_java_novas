@@ -2,10 +2,13 @@
 
 namespace App\Service;
 
+use Psr\Log\LoggerInterface;
+
 class AiModerationService
 {
     public function __construct(
-        private GeminiClientService $geminiClient
+        private GeminiClientService $geminiClient,
+        private ?LoggerInterface $logger = null
     ) {
     }
 
@@ -49,7 +52,21 @@ Texte a moderer:
 {$text}
 PROMPT;
 
-        $raw = $this->geminiClient->generateJson($systemPrompt, $userPrompt);
+        try {
+            $raw = $this->geminiClient->generateJson($systemPrompt, $userPrompt);
+        } catch (\Throwable $e) {
+            // Fallback safe mode: do not block form submission when AI provider is down.
+            $this->logger?->warning('AI moderation unavailable, fallback FLAG applied', [
+                'exception' => $e::class,
+                'message' => $e->getMessage(),
+            ]);
+
+            return [
+                'action' => 'FLAG',
+                'riskLevel' => 'MEDIUM',
+                'reasons' => ['Moderation automatique indisponible, revue manuelle requise.'],
+            ];
+        }
 
         $action = strtoupper(trim((string) ($raw['action'] ?? 'FLAG')));
         if (!in_array($action, ['ALLOW', 'FLAG', 'BLOCK'], true)) {
@@ -81,4 +98,3 @@ PROMPT;
         ];
     }
 }
-

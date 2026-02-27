@@ -445,7 +445,20 @@
 
         aiResultBox.className = 'mt-3 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-sm text-emerald-200';
         aiResultBox.textContent = 'Optimisation IA appliquee au formulaire.';
+        renderAiTags(payload);
+      };
 
+      const renderAiWarning = (payload, message) => {
+        if (!aiResultBox) {
+          return;
+        }
+
+        aiResultBox.className = 'mt-3 p-4 rounded-xl border border-orange-500/30 bg-orange-500/10 text-sm text-orange-200';
+        aiResultBox.textContent = message;
+        renderAiTags(payload);
+      };
+
+      const renderAiTags = (payload) => {
         if (!aiTagsContainer) {
           return;
         }
@@ -577,7 +590,11 @@
               textarea.value = data.optimizedDescription.trim();
             }
             applySuggestedCategory(data.suggestedCategory);
-            renderAiSuccess(data);
+            if (data.fallback === true) {
+              renderAiWarning(data, data.warning || 'Service IA temporairement indisponible, optimisation locale appliqu\u00e9e.');
+            } else {
+              renderAiSuccess(data);
+            }
           } catch (error) {
             renderAiError(error.message || 'Le service IA est indisponible.');
           } finally {
