@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-Génération d'image à partir de texte via Hugging Face Inference Providers (ByteDance/SDXL-Lightning).
-Utilisé par PHP quand l'endpoint HTTP renvoie 410/404 ou si HF_IMAGE_SCRIPT est configuré.
+Génération d'image à partir de texte via Hugging Face Inference Providers.
+
+Modèle : ByteDance/SDXL-Lightning (comme sur huggingface.co)
+Provider par défaut : replicate (recommandé par l'UI HF pour ce modèle)
 
 Installation : pip install huggingface_hub
-Usage : echo "Prompt" | python3 hf_image.py
-     ou : python3 hf_image.py "Astronaut riding a horse"
+Usage :
+    echo "Prompt" | python3 hf_image.py
+    python3 hf_image.py "Astronaut riding a horse"
 
 Variables d'environnement :
   HF_TOKEN          (obligatoire) Token HF avec permission "Inference Providers"
-  HF_IMAGE_PROVIDER (optionnel)  "hf-inference" (recommandé), "replicate", "fal-ai", etc.
+  HF_IMAGE_PROVIDER (optionnel)  "replicate" (défaut, recommandé), "hf-inference", "fal-ai", etc.
   HF_IMAGE_MODEL    (optionnel)  Modèle, défaut: ByteDance/SDXL-Lightning
 
 Sortie : une ligne base64 de l'image PNG sur stdout.
@@ -41,7 +44,7 @@ def main() -> None:
         print("huggingface_hub manquant. Exécuter: pip install huggingface_hub", file=sys.stderr)
         sys.exit(2)
 
-    provider = os.environ.get("HF_IMAGE_PROVIDER", "hf-inference").strip() or "hf-inference"
+    provider = os.environ.get("HF_IMAGE_PROVIDER", "replicate").strip() or "replicate"
     model = os.environ.get("HF_IMAGE_MODEL", "ByteDance/SDXL-Lightning").strip() or "ByteDance/SDXL-Lightning"
 
     try:

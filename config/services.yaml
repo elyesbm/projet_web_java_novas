@@ -15,8 +15,7 @@ parameters:
     voicerss_cafile: ''
     app.toxicity.hf_token: '%env(default::HF_TOKEN)%'
     app.toxicity.inference_url: '%env(default::HF_INFERENCE_URL)%'
-    app.toxicity.default_script_path: ''
-    app.toxicity.script_path: '%env(default:app.toxicity.default_script_path:HF_TOXICITY_SCRIPT)%'
+    app.toxicity.script_path: '%env(default::HF_TOXICITY_SCRIPT)%'
     app.toxicity.project_dir: '%kernel.project_dir%'
     app.sentiment.hf_token: '%env(default::HF_TOKEN)%'
     app.sentiment.inference_url: '%env(default::HF_SENTIMENT_URL)%'
@@ -25,13 +24,12 @@ parameters:
     app.sentiment.project_dir: '%kernel.project_dir%'
     app.translation.api_url: '%env(string:TRANSLATION_API_URL)%'
     app.translation.api_key: '%env(string:TRANSLATION_API_KEY)%'
-    app.hf_image.token: '%env(default::HF_TOKEN)%'
-    app.hf_image.model: '%env(default::HF_IMAGE_MODEL)%'
-    app.hf_image.base_url: '%env(default::HF_IMAGE_BASE_URL)%'
-    app.hf_image.default_script_path: ''
-    app.hf_image.script_path: '%env(default:app.hf_image.default_script_path:HF_IMAGE_SCRIPT)%'
-    app.hf_image.provider: '%env(default::HF_IMAGE_PROVIDER)%'
-    app.hf_image.project_dir: '%kernel.project_dir%'
+    app.image.hf_token: '%env(default::HF_TOKEN)%'
+    app.image.model: '%env(default::HF_IMAGE_MODEL)%'
+    app.image.base_url: '%env(default::HF_IMAGE_BASE_URL)%'
+    app.image.script_path: '%env(default::HF_IMAGE_SCRIPT)%'
+    hf_image_default_provider: 'replicate'
+    app.image.provider: '%env(default:hf_image_default_provider:HF_IMAGE_PROVIDER)%'
 
 services:
     App\Service\SkillMarketStatsService:
@@ -88,12 +86,12 @@ services:
 
     App\Service\HuggingFaceImageService:
         arguments:
-            $hfToken: '%app.hf_image.token%'
-            $model: '%app.hf_image.model%'
-            $baseUrl: '%app.hf_image.base_url%'
-            $scriptPath: '%app.hf_image.script_path%'
-            $projectDir: '%app.hf_image.project_dir%'
-            $provider: '%app.hf_image.provider%'
+            $hfToken: '%app.image.hf_token%'
+            $model: '%app.image.model%'
+            $baseUrl: '%app.image.base_url%'
+            $scriptPath: '%app.image.script_path%'
+            $projectDir: '%kernel.project_dir%'
+            $provider: '%app.image.provider%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
@@ -102,4 +100,3 @@ services:
         arguments:
             $geminiApiKey: '%gemini_api_key%'
             $httpClient: '@http_client'
-

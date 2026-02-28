@@ -12,6 +12,20 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20260222150215 extends AbstractMigration
 {
+    private function foreignKeyExists(string $tableName, string $constraintName): bool
+    {
+        $sql = <<<'SQL'
+SELECT COUNT(*)
+FROM information_schema.TABLE_CONSTRAINTS
+WHERE CONSTRAINT_SCHEMA = DATABASE()
+  AND TABLE_NAME = ?
+  AND CONSTRAINT_NAME = ?
+  AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+SQL;
+
+        return (int) $this->connection->fetchOne($sql, [$tableName, $constraintName]) > 0;
+    }
+
     public function getDescription(): string
     {
         return '';
@@ -22,8 +36,12 @@ final class Version20260222150215 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE commentaire ADD deleted_at DATETIME DEFAULT NULL');
         $this->addSql('ALTER TABLE publication ADD deleted_at DATETIME DEFAULT NULL');
-        $this->addSql('ALTER TABLE publication_reaction DROP FOREIGN KEY `FK_529ACDCF6B3CA4B`');
-        $this->addSql('ALTER TABLE publication_reaction DROP FOREIGN KEY `FK_529ACDCFC4E0D4DF`');
+        if ($this->foreignKeyExists('publication_reaction', 'FK_529ACDCF6B3CA4B')) {
+            $this->addSql('ALTER TABLE publication_reaction DROP FOREIGN KEY `FK_529ACDCF6B3CA4B`');
+        }
+        if ($this->foreignKeyExists('publication_reaction', 'FK_529ACDCFC4E0D4DF')) {
+            $this->addSql('ALTER TABLE publication_reaction DROP FOREIGN KEY `FK_529ACDCFC4E0D4DF`');
+        }
         $this->addSql('DROP INDEX idx_529acdcfc4e0d4df ON publication_reaction');
         $this->addSql('CREATE INDEX IDX_8BB0F2A6C4E0D4DF ON publication_reaction (id_pub)');
         $this->addSql('DROP INDEX idx_529acdcf6b3ca4b ON publication_reaction');

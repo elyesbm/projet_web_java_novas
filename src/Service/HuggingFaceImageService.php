@@ -81,7 +81,7 @@ class HuggingFaceImageService
     {
         $provider = trim($this->provider ?? '');
         if ($provider === '') {
-            $provider = 'hf-inference';
+            $provider = 'replicate';
         }
 
         $env = array_merge(getenv(), [
@@ -91,7 +91,7 @@ class HuggingFaceImageService
         ]);
 
         $proc = proc_open(
-            [PHP_OS_FAMILY === 'Windows' ? 'py' : 'python3', ...(PHP_OS_FAMILY === 'Windows' ? ['-3', $scriptPath] : [$scriptPath])],
+            [PHP_OS_FAMILY === 'Windows' ? 'python' : 'python3', $scriptPath],
             [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
             $pipes,
             null,

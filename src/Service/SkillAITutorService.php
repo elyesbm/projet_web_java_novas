@@ -433,7 +433,12 @@ PROMPT;
 
     private function getAiProvider(): string
     {
-        $provider = strtolower(trim((string) ($_ENV['AI_PROVIDER'] ?? 'gemini')));
+        $provider = strtolower(trim((string) (
+            $_ENV['SKILL_AI_PROVIDER']
+            ?? $_SERVER['SKILL_AI_PROVIDER']
+            ?? $_ENV['AI_PROVIDER']
+            ?? 'gemini'
+        )));
         if ($provider === 'openrouter' && !empty($this->getOpenRouterApiKey())) {
             return 'openrouter';
         }
